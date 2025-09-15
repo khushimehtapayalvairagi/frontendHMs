@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState ,useRef} from 'react';
 import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -10,6 +10,7 @@ export default function PaymentForm({ onPaymentSuccess }) {
   const [form, setForm] = useState({ amount: '', method: 'Cash', externalRef: '' });
   const [payments, setPayments] = useState([]);
   const [error, setError] = useState('');
+  const printRef = useRef(null);
 const BASE_URL = process.env.REACT_APP_BASE_URL;
   const token = localStorage.getItem('jwt');
   const headers = { Authorization: `Bearer ${token}` };
@@ -107,6 +108,30 @@ received_by_user_id_ref: user.userId
       setError(err.response?.data?.message || 'Payment error');
     }
   };
+  const handlePrint = () => {
+  if (!printRef.current) return;
+  const printContents = printRef.current.innerHTML;
+  const newWindow = window.open('', '', 'width=900,height=700');
+  newWindow.document.write(`
+    <html>
+      <head>
+        <title>Bill & Payments</title>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 20px; }
+          table { width: 100%; border-collapse: collapse; margin-bottom: 1rem; }
+          th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+          th { background-color: #f5f5f5; }
+          h2, h3, h4 { margin-top: 1rem; }
+        </style>
+      </head>
+      <body>
+        ${printContents}
+      </body>
+    </html>
+  `);
+  newWindow.document.close();
+  newWindow.print();
+};
 
   return (
     <div style={styles.container}>
@@ -123,7 +148,7 @@ received_by_user_id_ref: user.userId
       </div>
 
       {bill && (
-        <div style={styles.section}>
+       <div style={styles.section} ref={printRef}>
 
           <h4 style={{ marginTop: '1.5rem' }}>Charges Summary</h4>
         <div style={styles.tableWrapper}>
@@ -159,6 +184,7 @@ received_by_user_id_ref: user.userId
       </tr>
     </tfoot>
   </table>
+   
 </div>
 
    <p><strong>Balance Due:</strong> ₹{bill.balance_due}</p>
@@ -228,6 +254,13 @@ received_by_user_id_ref: user.userId
       )}
 
       {selectedPatient && !bill && <p style={styles.info}>No pending bills for this patient.</p>}
+      <button
+      style={{ ...styles.button, backgroundColor: 'green' }}
+      type="button"
+      onClick={handlePrint}
+    >
+      Print Bill
+    </button>
    <ToastContainer/>
     </div>
   );

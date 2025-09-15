@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState ,useRef} from 'react';
 import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -8,6 +8,7 @@ const AnesthesiaForm = () => {
   const { procedureScheduleId } = useParams();  // from /anesthesia/:procedureId
   const [doctors, setDoctors] = useState([]);
    const BASE_URL = process.env.REACT_APP_BASE_URL;
+    const printRef = useRef(null);
   const [form, setForm] = useState({
     procedureScheduleId: procedureScheduleId || '',
     anestheticId: '',
@@ -64,9 +65,36 @@ const AnesthesiaForm = () => {
       toast.error(err.response?.data?.message || 'Failed to save anesthesia record');
     }
   };
+   const handlePrint = () => {
+    const printContents = printRef.current.innerHTML;
+    const newWindow = window.open('', '', 'width=900,height=700');
+    newWindow.document.write(`
+      <html>
+        <head>
+          <title>Anesthesia Record</title>
+          <style>
+            body { font-family: Arial, sans-serif; padding: 20px; }
+            h2 { text-align: center; }
+            .field { margin-bottom: 10px; }
+            .label { font-weight: bold; }
+            textarea, input, select { width: 100%; padding: 5px; }
+          </style>
+        </head>
+        <body>
+          ${printContents}
+        </body>
+      </html>
+    `);
+    newWindow.document.close();
+    newWindow.print();
+  };
 
   return (
     <div style={{ maxWidth: 600, margin: '2rem auto', padding: '2rem', background: '#f5f5f5', borderRadius: '10px' }}>
+    <div 
+  ref={printRef} 
+  style={{ maxWidth: 600, margin: '2rem auto', padding: '2rem', background: '#f5f5f5', borderRadius: '10px' }}
+>
       <h2>Anesthesia Record</h2>
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
         <select name="anestheticId" value={form.anestheticId} onChange={handleChange} required>
@@ -93,6 +121,20 @@ const AnesthesiaForm = () => {
           Save Record
         </button>
       </form>
+      </div>
+       <button
+        onClick={handlePrint}
+        style={{
+          marginTop: '1rem',
+          padding: '10px',
+          backgroundColor: '#007bff',
+          color: 'white',
+          border: 'none',
+          borderRadius: '5px'
+        }}
+      >
+        Print Record
+      </button>
       <ToastContainer />
     </div>
   );

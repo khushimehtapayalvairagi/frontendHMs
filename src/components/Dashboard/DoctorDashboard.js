@@ -123,7 +123,32 @@ const drawerContent = (
       )}
     </Box>
      <Box sx={{ display: 'flex', alignItems: 'center' }}>
-        <IconButton
+       <IconButton
+  color="inherit"
+  onClick={async () => {
+    try {
+      const token = localStorage.getItem("jwt");
+      if (token) {
+        await fetch(`${process.env.REACT_APP_BASE_URL}/api/auth/logout`, {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${token}`,
+          },
+        });
+      }
+    } catch (err) {
+      console.error("Logout request failed", err);
+    } finally {
+      localStorage.removeItem("jwt");
+      window.location.href = "/";
+    }
+  }}
+  edge="end"
+  title="Logout"
+>
+  <LogoutIcon />
+</IconButton>
+ {/* <IconButton
           color="inherit"
           onClick={() => {
             localStorage.removeItem("jwt");
@@ -133,7 +158,7 @@ const drawerContent = (
           title="Logout"
         >
           <LogoutIcon />
-        </IconButton>
+        </IconButton> */}
       </Box>
   </Toolbar>
 </AppBar>

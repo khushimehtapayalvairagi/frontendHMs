@@ -1,16 +1,33 @@
 // 👇 Full version of CreateBillForm with clear details for receptionist
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
+
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useLocation } from 'react-router-dom';
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 const CreateBillForm = () => {
+   const styles = `
+    /* Hide print-only stuff when not printing */
+    .print-only {
+      display: none !important;
+    }
+
+    /* Hide screen-only stuff when printing */
+    @media print {
+      .screen-only {
+        display: none !important;
+      }
+      .print-only {
+        display: block !important;
+      }
+    }
+  `;
   const location = useLocation();
   const { patientId: passedPatientId, ipdAdmissionId: passedAdmissionId } = location.state || {};
 const [anesthesiaRecords, setAnesthesiaRecords] = useState([]);
 const BASE_URL = process.env.REACT_APP_BASE_URL;
-
+const printRef = useRef(null);
 const [dailyReports, setDailyReports] = useState([]);
   const [patients, setPatients] = useState([]);
   const [admissions, setAdmissions] = useState([]);
@@ -213,40 +230,90 @@ if (errorMessage === 'This procedure has already been billed.') {
 }
 
   };
+const handlePrint = () => {
+  const printContents = printRef.current.innerHTML;
+  const newWindow = window.open('', '', 'width=900,height=700');
+  newWindow.document.write(`
+    <html>
+      <head>
+        <title>Patient Bill</title>
+         <style>${styles}</style>  
+      </head>
+      <body>
+        ${printContents}
+      </body>
+    </html>
+  `);
+  newWindow.document.close();
+  newWindow.print();
+};
+
 
  return (
     <div style={{ maxWidth: '1000px', margin: '2rem auto', padding: '2rem', fontFamily: 'Arial, sans-serif', background: '#fafafa', borderRadius: '10px', boxShadow: '0 0 8px rgba(0,0,0,0.1)' }}>
+    <div ref={printRef} style={{ maxWidth: '1000px', margin: '2rem auto', padding: '2rem', fontFamily: 'Arial, sans-serif', background: '#fafafa', borderRadius: '10px', boxShadow: '0 0 8px rgba(0,0,0,0.1)' }}>
+     <style>{styles}</style>
       <h2 style={{ textAlign: 'center', marginBottom: '2rem' }}>Create Patient Bill</h2>
       <form onSubmit={handleSubmit}>
         {/* Patient Select */}
-        <div style={{ marginBottom: '1.2rem' }}>
-          <label style={{ display: 'block', marginBottom: '5px' }}>Select Patient</label>
-          <select value={patientId} onChange={e => setPatientId(e.target.value)} required style={{ width: '100%', padding: '8px' }}>
-            <option value="">-- Select Patient --</option>
-            {patients.map(p => (
-              <option key={p._id} value={p._id}>{p.fullName}</option>
-            ))}
-          </select>
-        </div>
+{/* Patient Select */}
+<div style={{ marginBottom: '1.2rem' }}>
+  <label style={{ display: 'block', marginBottom: '5px' }}>Patient</label>
+
+  {/* On screen */}
+  <select
+    className="screen-only"
+    value={patientId}
+    onChange={e => setPatientId(e.target.value)}
+    required
+    style={{ width: '100%', padding: '8px' }}
+  >
+    <option value="">-- Select Patient --</option>
+    {patients.map(p => (
+      <option key={p._id} value={p._id}>{p.fullName}</option>
+    ))}
+  </select>
+
+  {/* For print */}
+  <p className="print-only">
+    {patients.find(p => p._id === patientId)?.fullName || 'N/A'}
+  </p>
+</div>
+
+
 
         {/* Admission Select */}
-        {admissions.length > 0 && (
-          <div style={{ marginBottom: '1.2rem' }}>
-            <label style={{ display: 'block', marginBottom: '5px' }}>Select Admission</label>
-            <select value={ipdAdmissionId} onChange={e => {
-              setIpdAdmissionId(e.target.value);
-              const adm = admissions.find(a => a._id === e.target.value);
-              setVisitId(adm?.visitId?._id || '');
-            }} required style={{ width: '100%', padding: '8px' }}>
-              <option value="">-- Select Admission --</option>
-              {admissions.map(a => (
-                <option key={a._id} value={a._id}>
-                  {a.wardId?.name} (Bed {a.bedNumber})
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
+      {/* Admission Select */}
+{admissions.length > 0 && (
+  <div style={{ marginBottom: '1.2rem' }}>
+    <label style={{ display: 'block', marginBottom: '5px' }}>Admission</label>
+
+    <select
+      className="screen-only"
+      value={ipdAdmissionId}
+      onChange={e => {
+        setIpdAdmissionId(e.target.value);
+        const adm = admissions.find(a => a._id === e.target.value);
+        setVisitId(adm?.visitId?._id || '');
+      }}
+      required
+      style={{ width: '100%', padding: '8px' }}
+    >
+      <option value="">-- Select Admission --</option>
+      {admissions.map(a => (
+        <option key={a._id} value={a._id}>
+          {a.wardId?.name} (Bed {a.bedNumber})
+        </option>
+      ))}
+    </select>
+
+    <p className="print-only">
+      {admissions.find(a => a._id === ipdAdmissionId)?.wardId?.name || 'N/A'} 
+      (Bed {admissions.find(a => a._id === ipdAdmissionId)?.bedNumber || 'N/A'})
+    </p>
+  </div>
+)}
+
 
         {/* Doctor + Room */}
         {ipdAdmissionId && (
@@ -301,79 +368,138 @@ if (errorMessage === 'This procedure has already been billed.') {
         )}
 
         {/* Bill Items */}
-        <h3 style={{ marginTop: '2rem' }}>Billing Items</h3>
-        {items.map((item, index) => (
-          <div key={index} style={{ border: '1px solid #ccc', padding: '1rem', marginBottom: '1.5rem', borderRadius: '6px', background: '#fff' }}>
-            <div style={{ marginBottom: '0.8rem' }}>
-              <label>Type</label>
-              <select value={item.item_type} onChange={e => handleChange(index, 'item_type', e.target.value)} required style={{ width: '100%', padding: '8px' }}>
-                <option value="">Select Type</option>
-                <option value="ProcedureSchedule">Procedure Schedule</option>
-                <option value="Manual">Manual Charge</option>
-                <option value="Open">Open Charge</option>
-              </select>
-            </div>
+      {/* Billing Items */}
+<h3 style={{ marginTop: '2rem' }}>Billing Items</h3>
+{items.map((item, index) => (
+  <div key={index} style={{ border: '1px solid #ccc', padding: '1rem', marginBottom: '1.5rem', borderRadius: '6px', background: '#fff' }}>
+    
+    {/* Type Select */}
+  <div style={{ marginBottom: '0.8rem' }}>
+  <label>Type</label>
 
-            {(item.item_type === 'Manual') && (
-              <div style={{ marginBottom: '0.8rem' }}>
-                <label>Select Item</label>
-                <select value={item.item_source_id} onChange={e => handleChange(index, 'item_source_id', e.target.value)} required style={{ width: '100%', padding: '8px' }}>
-                  <option value="">Select Manual Item</option>
-                  {manualItems.map(mi => (
-                    <option key={mi._id} value={mi._id}>{mi.itemName} – ₹{mi.defaultPrice}</option>
-                  ))}
-                </select>
-              </div>
-            )}
+  {/* Screen dropdown (only visible on screen) */}
+  <select
+    className="screen-only"
+    value={item.item_type}
+    onChange={e => handleChange(index, 'item_type', e.target.value)}
+    required
+    style={{ width: '100%', padding: '8px' }}
+  >
+    <option value="">Select Type</option>
+    <option value="ProcedureSchedule">Procedure Schedule</option>
+    <option value="Manual">Manual Charge</option>
+    <option value="Open">Open Charge</option>
+  </select>
 
-            {(item.item_type === 'ProcedureSchedule') && (
-              <div style={{ marginBottom: '0.8rem' }}>
-                <label>Select Procedure</label>
-                <select value={item.item_source_id} onChange={e => handleChange(index, 'item_source_id', e.target.value)} required style={{ width: '100%', padding: '8px' }}>
-                  <option value="">Select Procedure</option>
-                  {schedules.map(s => (
-                    <option key={s._id} value={s._id}>
-                        {s.procedureId?.name} - Rs. {s.procedureId?.cost} ({s.surgeonId?.userId?.name})
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
+  {/* Print-only fallback (shows selected value in PDF/print) */}
+  <p className="print-only">
+    {item.item_type || "N/A"}
+  </p>
+</div>
 
-            {item.item_type === 'Open' && (
-              <>
-                <input
-                  type="text"
-                  placeholder="Description"
-                  value={item.description}
-                  onChange={e => handleChange(index, 'description', e.target.value)}
-                  required
-                  style={{ width: '100%', padding: '8px', marginBottom: '0.8rem' }}
-                />
-                <input
-                  type="number"
-                  placeholder="Unit Price"
-                  value={item.unit_price}
-                  onChange={e => handleChange(index, 'unit_price', e.target.value)}
-                  required
-                  style={{ width: '100%', padding: '8px', marginBottom: '0.8rem' }}
-                />
-              </>
-            )}
 
-            <input
-              type="number"
-              placeholder="Quantity"
-              value={item.quantity}
-              onChange={e => handleChange(index, 'quantity', e.target.value)}
-              required
-              style={{ width: '100%', padding: '8px', marginBottom: '0.8rem' }}
-            />
-            <button type="button" onClick={() => removeItem(index)} style={{ padding: '6px 12px', background: '#ff6961', color: '#fff', border: 'none', borderRadius: '4px' }}>
-              Remove
-            </button>
-          </div>
-        ))}
+    {/* Manual Items */}
+ {item.item_type === 'Manual' && (
+  <div style={{ marginBottom: '0.8rem' }}>
+    <label>Select Item</label>
+    {manualItems.length > 0 ? (
+      <>
+        {/* Screen view */}
+        <select
+          className="screen-only"
+          value={item.item_source_id}
+          onChange={e => handleChange(index, 'item_source_id', e.target.value)}
+          required
+          style={{ width: '100%', padding: '8px' }}
+        >
+          <option value="">Select Manual Item</option>
+          {manualItems.map(mi => (
+            <option key={mi._id} value={mi._id}>
+              {mi.itemName} – ₹{mi.defaultPrice}
+            </option>
+          ))}
+        </select>
+
+        {/* Print view */}
+        <p className="print-only">
+          {manualItems.find(mi => mi._id === item.item_source_id)?.itemName || 'N/A'} – ₹
+          {manualItems.find(mi => mi._id === item.item_source_id)?.defaultPrice || '0'}
+        </p>
+      </>
+    ) : (
+      <p style={{ color: "red" }}>⚠ No manual charge items available</p>
+    )}
+  </div>
+)}
+
+
+    {/* Procedure Schedules */}
+    {item.item_type === 'ProcedureSchedule' && (
+      <div style={{ marginBottom: '0.8rem' }}>
+        <label>Select Procedure</label>
+        {schedules.length > 0 ? (
+          <select
+            className="screen-only"
+            value={item.item_source_id}
+            onChange={e => handleChange(index, 'item_source_id', e.target.value)}
+            required
+            style={{ width: '100%', padding: '8px' }}
+          >
+            <option value="">Select Procedure</option>
+            {schedules.map(s => (
+              <option key={s._id} value={s._id}>
+                {s.procedureId?.name} – ₹{s.procedureId?.cost} ({s.surgeonId?.userId?.name})
+              </option>
+            ))}
+          </select>
+        ) : (
+          <p style={{ color: "red" }}>⚠ No procedures available for billing</p>
+        )}
+      </div>
+    )}
+
+    {/* Open Charge */}
+    {item.item_type === 'Open' && (
+      <>
+        <input
+          type="text"
+          placeholder="Description"
+          value={item.description}
+          onChange={e => handleChange(index, 'description', e.target.value)}
+          required
+          style={{ width: '100%', padding: '8px', marginBottom: '0.8rem' }}
+        />
+        <input
+          type="number"
+          placeholder="Unit Price"
+          value={item.unit_price}
+          onChange={e => handleChange(index, 'unit_price', e.target.value)}
+          required
+          style={{ width: '100%', padding: '8px', marginBottom: '0.8rem' }}
+        />
+      </>
+    )}
+
+    {/* Quantity */}
+    <input
+      type="number"
+      placeholder="Quantity"
+      value={item.quantity}
+      onChange={e => handleChange(index, 'quantity', e.target.value)}
+      required
+      style={{ width: '100%', padding: '8px', marginBottom: '0.8rem' }}
+    />
+
+    <button
+      type="button"
+      onClick={() => removeItem(index)}
+      style={{ padding: '6px 12px', background: '#ff6961', color: '#fff', border: 'none', borderRadius: '4px' }}
+    >
+      Remove
+    </button>
+  </div>
+))}
+
 
         <button type="button" onClick={addItem} style={{ padding: '10px 15px', background: '#007bff', color: '#fff', border: 'none', borderRadius: '6px', marginRight: '10px' }}>
           + Add Item
@@ -383,6 +509,20 @@ if (errorMessage === 'This procedure has already been billed.') {
           Create Bill
         </button>
       </form>
+         <button
+        onClick={handlePrint}
+        style={{
+          marginTop: '1rem',
+          padding: '10px',
+          backgroundColor: '#007bff',
+          color: 'white',
+          border: 'none',
+          borderRadius: '5px'
+        }}
+      >
+        Print Record
+      </button>
+      </div>
        <ToastContainer position="top-right" autoClose={3000} />
     </div>
   );

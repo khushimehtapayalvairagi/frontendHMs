@@ -1,20 +1,18 @@
-/* PatientForm.css */
-input[type="date"] {
+.date-input-wrapper {
   position: relative;
-  color: transparent; /* hide browser placeholder */
+  flex: 1;
 }
 
-input[type="date"]::before {
-  content: attr(placeholder);
+.date-input-wrapper input[type="date"] {
+  width: 100%;
+  padding: 10px;
+}
+
+.date-input-wrapper span {
   position: absolute;
-  left: 10px;
+  top: 50%;
+  left: 12px;
+  transform: translateY(-50%);
   color: #777;
-}
-
-input[type="date"]:valid {
-  color: black; /* show selected date normally */
-}
-
-input[type="date"]:valid::before {
-  content: "" !important; /* remove custom placeholder when value exists */
+  pointer-events: none;
 }

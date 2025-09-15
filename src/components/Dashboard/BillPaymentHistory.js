@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect ,useRef} from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import {
@@ -15,34 +15,34 @@ export default function BillPaymentHistory() {
   const [payments, setPayments] = useState([]);
   const [error, setError] = useState('');
   const [openDialog, setOpenDialog] = useState(false);
-
+const printRef = useRef(null);
   const token = localStorage.getItem('jwt');
   const headers = { Authorization: `Bearer ${token}` };
   const BASE_URL = process.env.REACT_APP_BASE_URL;
 const isMobile = useMediaQuery('(max-width:600px)');
 
   useEffect(() => {
-    const fetchAdmittedPatients = async () => {
+    const fetchPatients = async () => {
       try {
         const patientRes = await axios.get(`${BASE_URL}/api/receptionist/patients`, { headers });
-        const allPatients = patientRes.data.patients;
-        const admittedPatients = [];
+        // const allPatients = patientRes.data.patients;
+        // const admittedPatients = [];
 
-        for (const patient of allPatients) {
-          const res = await axios.get(`${BASE_URL}/api/ipd/admissions/${patient._id}`, { headers });
-          const admissions = res.data.admissions || [];
-          if (admissions.some(adm => adm.status === 'Admitted')) {
-            admittedPatients.push(patient);
-          }
-        }
+        // for (const patient of allPatients) {
+        //   const res = await axios.get(`${BASE_URL}/api/ipd/admissions/${patient._id}`, { headers });
+        //   const admissions = res.data.admissions || [];
+        //   if (admissions.some(adm => adm.status === 'Admitted')) {
+        //     admittedPatients.push(patient);
+        //   }
+        // }
 
-        setPatients(admittedPatients);
+    setPatients(patientRes.data.patients || []);
       } catch {
-        toast.error('Failed to load admitted patients');
+        toast.error('Failed to load patients');
       }
     };
 
-    fetchAdmittedPatients();
+    fetchPatients();
   }, []);
 
   useEffect(() => {
@@ -62,6 +62,31 @@ const isMobile = useMediaQuery('(max-width:600px)');
     }
     setOpenDialog(true);
   };
+  const handlePrint = () => {
+  if (!printRef.current) return;
+  const printContents = printRef.current.innerHTML;
+  const newWindow = window.open('', '', 'width=900,height=700');
+  newWindow.document.write(`
+    <html>
+      <head>
+        <title>Bill & Payment History</title>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 20px; }
+          table { width: 100%; border-collapse: collapse; margin-bottom: 1rem; }
+          th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+          th { background-color: #f5f5f5; }
+          h2, h3, h4 { margin-top: 1rem; }
+          .payment-card { border:1px solid #ccc; padding:8px; margin-bottom:8px; border-radius:6px; }
+        </style>
+      </head>
+      <body>
+        ${printContents}
+      </body>
+    </html>
+  `);
+  newWindow.document.close();
+  newWindow.print();
+};
 
   return (
     <div style={{ padding: '1.5rem', fontFamily: 'Arial, sans-serif' }}>
@@ -103,7 +128,7 @@ const isMobile = useMediaQuery('(max-width:600px)');
       {/* Bill Details Dialog */}
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="md" fullWidth  fullScreen={isMobile}>
         <DialogTitle>Bill Details</DialogTitle>
-        <DialogContent>
+    <DialogContent ref={printRef}>
           {selectedBill && (
             <>
 <h4>Charges Summary</h4>
@@ -274,6 +299,9 @@ const isMobile = useMediaQuery('(max-width:600px)');
           )}
         </DialogContent>
         <DialogActions>
+           <Button onClick={handlePrint} variant="contained" color="primary">
+    Print
+  </Button>
           <Button onClick={() => setOpenDialog(false)} variant="outlined">Close</Button>
         </DialogActions>
       </Dialog>

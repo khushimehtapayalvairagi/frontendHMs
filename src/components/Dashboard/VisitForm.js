@@ -6,7 +6,9 @@ import { useNavigate } from 'react-router-dom';
 
 
 const VisitForm = () => {
+  const [resData, setResData] = useState(null);
 
+const [patientDetails, setPatientDetails] = useState(null);
   const [patientId, setPatientId] = useState('');
   const [visitType, setVisitType] = useState('');
   const [assignedDoctorId, setAssignedDoctorId] = useState('');
@@ -62,6 +64,24 @@ setSpecialties(specRes.data.specialties || []);
     fetchData();
   }, []);
 
+useEffect(() => {
+  if (!patientId) {
+    setPatientDetails(null);
+    return;
+  }
+  const fetchPatient = async () => {
+    try {
+      const token = localStorage.getItem("jwt");
+      const res = await axios.get(`${BASE_URL}/api/receptionist/patients/${patientId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setPatientDetails(res.data.patient);
+    } catch {
+      setPatientDetails(null);
+    }
+  };
+  fetchPatient();
+}, [patientId]);  // runs whenever patientId changes
 
 
   const handleSubmit = async (e) => {
@@ -99,6 +119,7 @@ setSpecialties(specRes.data.specialties || []);
       });
       // console.log(res);
 
+setResData(res.data.visit);
  if (visitType === 'IPD_Admission' || visitType === 'IPD_Referral') {
   const visitData = res.data.visit;
 
@@ -143,6 +164,29 @@ localStorage.setItem('currentPatientId', patientId);
 
     }
   };
+const handlePrint = () => {
+  if (!resData) return;
+  const w = window.open("", "", "width=800,height=600");
+  w.document.write(`
+    <html>
+      <head><title>Visit Slip</title></head>
+      <body>
+        <h2>Visit Slip</h2>
+        <p><strong>Visit ID:</strong> ${resData._id}</p>
+        <p><strong>Patient ID:</strong> ${resData.patientId}</p>
+        <p><strong>Name:</strong> ${resData.patientName}</p>
+        <p><strong>Age:</strong> ${patientDetails?.age || ""}</p>
+        <p><strong>Gender:</strong> ${patientDetails?.gender || ""}</p>
+        <p><strong>Address:</strong> ${patientDetails?.address || ""}</p>
+        <p><strong>Doctor:</strong> ${resData.doctorName}</p>
+        <p><strong>Visit Type:</strong> ${resData.visitType}</p>
+        <p><strong>Date:</strong> ${new Date(resData.visitDate).toLocaleString()}</p>
+      </body>
+    </html>
+  `);
+  w.document.close();
+  w.print();
+};
 
   const showReferralField = visitType === "IPD_Referral" || visitType === "IPD_Admission";
   const showPaymentField = visitType === "OPD";
@@ -166,11 +210,19 @@ localStorage.setItem('currentPatientId', patientId);
             placeholder="Enter Patient ID"
             value={patientId}
             onChange={(e) => setPatientId(e.target.value)}
+           
             style={{ width: '100%', padding: '0.5rem' }}
             required
           />
         </label>
-
+{patientDetails && (
+  <div style={{ padding: '1rem', border: '1px solid #ccc', borderRadius: '8px', background: '#fff' }}>
+    <p><strong>Name:</strong> {patientDetails.fullName}</p>
+    <p><strong>Age:</strong> {patientDetails.age}</p>
+    <p><strong>Gender:</strong> {patientDetails.gender}</p>
+    <p><strong>Address:</strong> {patientDetails.address}</p>
+  </div>
+)}
         <label>
           Visit Type:
           <select
@@ -202,7 +254,7 @@ localStorage.setItem('currentPatientId', patientId);
   </select>
 </label>
 
-<label>
+{/* <label>
   Day of the Week:
   <select
     value={dayOfWeek}
@@ -210,18 +262,18 @@ localStorage.setItem('currentPatientId', patientId);
     style={{ width: '100%', padding: '0.5rem' }}
     required
   >
-    <option value="">Select Day</option>
+    {/* <option value="">Select Day</option>
     {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map(day => (
       <option key={day} value={day}>{day}</option>
-    ))}
-  </select>
-</label>
+    ))} */}
+  {/* </select>
+</label> */} 
 
 <button
   type="button"
   disabled={loadingDoctors}
   onClick={async () => {
-    if (!specialtyName || !dayOfWeek) {
+    if (!specialtyName ) {
       toast.error("Please select  specialty ");
       return;
     }
@@ -230,12 +282,12 @@ localStorage.setItem('currentPatientId', patientId);
       const token = localStorage.getItem('jwt');
       const res = await axios.post(
         `${BASE_URL}/api/receptionist/doctors`,
-        { specialtyName, dayOfWeek },
+        { specialtyName },
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      setDoctors(res.data.doctors || []);
+    setDoctors(res.data.doctors.filter(doc => doc.isAvailable));
       if (res.data.doctors.length === 0) {
         toast.info("No doctors available for this time.");
       }
@@ -257,6 +309,7 @@ localStorage.setItem('currentPatientId', patientId);
 >
   {loadingDoctors ? 'Checking...' : 'Check Available Doctors'}
 </button>
+
 
         <label>
   Assigned Doctor:
@@ -329,6 +382,11 @@ localStorage.setItem('currentPatientId', patientId);
         }}>
           Create Visit
         </button>
+{resData && (
+  <button onClick={handlePrint} style={{ marginTop: "1rem", background: "#28a745", color: "white", padding: "0.5rem 1rem" }}>
+    🖨️ Print Visit Slip
+  </button>
+)}
 
       
       </form>
