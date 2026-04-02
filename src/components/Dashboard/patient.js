@@ -158,14 +158,14 @@ const payload = {
             required
             style={{ flex: 1 }}
           />
-          {/* <input
+          <input
             name="contactNumber"
             placeholder="📞 Contact Number"
             value={form.contactNumber}
             onChange={handleChange}
             maxLength={10}
             style={{ flex: 1 }}
-          /> */}
+          /> 
         </div>
 
     <div style={twoCol}>
@@ -200,14 +200,14 @@ const payload = {
             onChange={handleChange}
             style={{ flex: 1 }}
           />
-          {/* <input
+           <input
             name="address"
             placeholder="🏠 Address *"
             value={form.address}
             onChange={handleChange}
             required
             style={{ flex: 1 }}
-          /> */}
+          /> 
             <input
             name="contactNumber"
             placeholder="📞 Contact Number"

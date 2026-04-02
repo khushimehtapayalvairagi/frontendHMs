@@ -148,7 +148,7 @@ const drawerContent = (
 >
   <LogoutIcon />
 </IconButton>
- {/* <IconButton
+  <IconButton
           color="inherit"
           onClick={() => {
             localStorage.removeItem("jwt");
@@ -158,7 +158,7 @@ const drawerContent = (
           title="Logout"
         >
           <LogoutIcon />
-        </IconButton> */}
+        </IconButton> 
       </Box>
   </Toolbar>
 </AppBar>

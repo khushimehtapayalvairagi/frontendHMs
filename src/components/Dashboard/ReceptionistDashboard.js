@@ -37,7 +37,7 @@ import { Outlet } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useParams } from 'react-router-dom';
-import SocketContext from '../../context/SocketContext';
+// import SocketContext from '../../context/SocketContext';
 const drawerWidth = 260;
 
 
@@ -74,9 +74,9 @@ const drawerContent = (
         { label: "ViewPatient", path: "/receptionist-dashboard/viewPatient", icon: <PersonIcon /> },
         { label: "Visit Form", path: "/receptionist-dashboard/visit-form", icon: <VisitIcon /> },
         { label: "Patient Visits Viewer", path: "/receptionist-dashboard/patient-visits-viewer", icon: <PharmacyIcon /> },
-        { label: "Update Patient Satus", path: "/receptionist-dashboard/UpdatePatientStatus", icon: <UpdateIcon /> },
+         { label: "Update Patient Satus", path: "/receptionist-dashboard/UpdatePatientStatus", icon: <UpdateIcon /> },
         { label: "IPD Admission Form", path: "/receptionist-dashboard/IPDAdmissionForm", icon: <AdmissionIcon /> },
-        // { label: "IPD Admission List", path: `/receptionist-dashboard/IPDAdmissionList/${patientId}`, icon: <ListIcon /> },
+         { label: "IPD Admission List", path: `/receptionist-dashboard/IPDAdmissionList/${patientId}`, icon: <ListIcon /> },
         { label: "ProcedureForm", path: "/receptionist-dashboard/ProcedureForm", icon: <ProcedureIcon /> },
         { label: "ViewAnesthesiaForm", path: "/receptionist-dashboard/ViewAnesthesiaForm", icon: <AnesthesiaIcon /> },
         { label: "LabourRoom", path: "/receptionist-dashboard/LabourRoom", icon: <LabourRoomIcon /> },
@@ -230,7 +230,7 @@ const drawerContent = (
       {/* Sidebar here */}
       <div style={{ flex: 1 }}>
         <ToastContainer position="top-right" autoClose={3000} />
-        <SocketContext/> {/* ✅ Socket logic */}
+        {/* <SocketContext/> ✅ Socket logic */}
       </div>
     </div>
          <Outlet />

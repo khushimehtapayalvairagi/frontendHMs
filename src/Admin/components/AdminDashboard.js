@@ -316,14 +316,14 @@ const closeDoctorMenu = () => setDoctorAnchor(null);
   <AssignmentInd />
 </IconButton>
       <Menu anchorEl={roleAnchor} open={Boolean(roleAnchor)} onClose={closeRoleMenu}>
-    <MenuItem
+    {/* <MenuItem
   onClick={(e) => {
     closeRoleMenu();
     openDoctorMenu(e);   // open Doctor submenu
   }}
 >
   🩺 Doctor ▸
-</MenuItem>
+</MenuItem> */}
 
     <MenuItem
     onClick={(e) => {
@@ -463,7 +463,7 @@ const closeDoctorMenu = () => setDoctorAnchor(null);
     </MenuItem>
   ))}
 </Menu>
-<Menu
+ <Menu
   anchorEl={doctorAnchor}
   open={Boolean(doctorAnchor)}
   onClose={closeDoctorMenu}
@@ -487,7 +487,7 @@ const closeDoctorMenu = () => setDoctorAnchor(null);
       {item.label}
     </MenuItem>
   ))}
-</Menu>
+</Menu> 
 
 
 

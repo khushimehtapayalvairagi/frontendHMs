@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "./ViewSpecialty.css"; // External CSS
-import BulkUploadSpecialty from "./BulkUploadSpecialty";
 
 const ViewSpecialty = () => {
   const [specialties, setSpecialties] = useState([]);
@@ -41,7 +40,6 @@ const ViewSpecialty = () => {
       <h2 className="specialty-title">Specialties</h2>
 
       {/* ✅ Pass fetchSpecialties so BulkUpload can refresh the list */}
-      <BulkUploadSpecialty onUploadSuccess={fetchSpecialties} />
 
       {specialties.length === 0 ? (
         <p>No specialties found.</p>

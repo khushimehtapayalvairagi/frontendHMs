@@ -13,18 +13,17 @@ const DischargePatient = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedAdmissionId, setSelectedAdmissionId] = useState(null);
   const token = localStorage.getItem('jwt');
-  const BASE_URL = process.env.REACT_APP_BASE_URL;
 
   const fetchAdmittedPatients = async () => {
     try {
-      const patientRes = await axios.get(`${BASE_URL}/api/receptionist/patients`, {
+      const patientRes = await axios.get('http://localhost:8000/api/receptionist/patients', {
         headers: { Authorization: `Bearer ${token}` },
       });
 
       const admittedAdmissions = [];
 
       for (const patient of patientRes.data.patients) {
-        const res = await axios.get(`${BASE_URL}/api/ipd/admissions/${patient._id}`, {
+        const res = await axios.get(`http://localhost:8000/api/ipd/admissions/${patient._id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -41,7 +40,7 @@ const DischargePatient = () => {
 
   const handleDischarge = async () => {
     try {
-      await axios.put(`${BASE_URL}/api/ipd/admissions/${selectedAdmissionId}/discharge`, {}, {
+      await axios.put(`http://localhost:8000/api/ipd/admissions/${selectedAdmissionId}/discharge`, {}, {
         headers: { Authorization: `Bearer ${token}` },
       });
       toast.success('Patient discharged');
@@ -64,57 +63,43 @@ const DischargePatient = () => {
 
   useEffect(() => {
     fetchAdmittedPatients();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
-    <div style={{ padding: '1rem' }}>
-      <h2 style={{ textAlign: 'center', marginBottom: '1rem' }}>Currently Admitted Patients</h2>
-
-      <div style={{ overflowX: 'auto' }}>
-        <table
-          style={{
-            width: '100%',
-            borderCollapse: 'collapse',
-            minWidth: '600px' // prevents columns from squishing too much
-          }}
-        >
-          <thead style={{ backgroundColor: '#f4f4f4' }}>
-            <tr>
-              <th style={thStyle}>Patient</th>
-              <th style={thStyle}>Ward</th>
-              <th style={thStyle}>Bed</th>
-              <th style={thStyle}>Admitted On</th>
-              <th style={thStyle}>Expected Discharge</th>
-              <th style={thStyle}>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {admissions.length === 0 ? (
-              <tr>
-                <td style={tdStyle} colSpan="6" align="center">
-                  No admitted patients
+    <div style={{ padding: '2rem' }}>
+      <h2>Currently Admitted Patients</h2>
+      <table border="1" cellPadding="10" style={{ width: '100%' }}>
+        <thead>
+          <tr>
+            <th>Patient</th>
+            <th>Ward</th>
+            <th>Bed</th>
+            <th>Admitted On</th>
+            <th>Expected Discharge</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {admissions.length === 0 ? (
+            <tr><td colSpan="6">No admitted patients</td></tr>
+          ) : (
+            admissions.map(adm => (
+              <tr key={adm._id}>
+                <td>{adm.patientId?.fullName || 'N/A'}</td>
+                <td>{adm.wardId?.name || 'N/A'}</td>
+                <td>{adm.bedNumber}</td>
+                <td>{new Date(adm.createdAt).toLocaleString()}</td>
+                <td>{new Date(adm.expectedDischargeDate).toLocaleDateString()}</td>
+                <td>
+                  <IconButton onClick={() => handleOpenDialog(adm._id)} color="primary">
+                    <ExitToAppIcon />
+                  </IconButton>
                 </td>
               </tr>
-            ) : (
-              admissions.map(adm => (
-                <tr key={adm._id}>
-                  <td style={tdStyle}>{adm.patientId?.fullName || 'N/A'}</td>
-                  <td style={tdStyle}>{adm.wardId?.name || 'N/A'}</td>
-                  <td style={tdStyle}>{adm.bedNumber}</td>
-                  <td style={tdStyle}>{new Date(adm.createdAt).toLocaleString()}</td>
-                  <td style={tdStyle}>{new Date(adm.expectedDischargeDate).toLocaleDateString()}</td>
-                  <td style={tdStyle}>
-                    <IconButton onClick={() => handleOpenDialog(adm._id)} color="primary">
-                      <ExitToAppIcon />
-                    </IconButton>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+            ))
+          )}
+        </tbody>
+      </table>
 
       <Dialog open={openDialog} onClose={handleCloseDialog}>
         <DialogTitle>Confirm Discharge</DialogTitle>
@@ -128,20 +113,6 @@ const DischargePatient = () => {
       <ToastContainer />
     </div>
   );
-};
-
-// Table cell styles
-const thStyle = {
-  padding: '10px',
-  border: '1px solid #ddd',
-  textAlign: 'left',
-  fontWeight: 'bold'
-};
-
-const tdStyle = {
-  padding: '10px',
-  border: '1px solid #ddd',
-  textAlign: 'left'
 };
 
 export default DischargePatient;

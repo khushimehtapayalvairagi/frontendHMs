@@ -30,13 +30,12 @@ import PatientForm from './components/Dashboard/patient';
 import ViewPatient from './components/Dashboard/ViewPatient';
 
 import VisitForm from './components/Dashboard/VisitForm';
-import DoctorDashboard from './components/Dashboard/DoctorDashboard';
-// import OPDConsultationForm from './components/Dashboard/OPDConsulationForm';
+ import DoctorDashboard from './components/Dashboard/DoctorDashboard';
 import PatientVisitsViewer from './components/Dashboard/PatientVisitsViewer';
-import DoctorDashboardHome from './components/Dashboard/DoctorDashboardHome';
-import OPDConsultationForm from './components/Dashboard/OPDConsultationForm';
-import PreviousConsultations from './components/Dashboard/PreviousConsultantPatient';
-import UpdateVisitStatusPage from './components/Dashboard/UpdateVisitStatus';
+ import DoctorDashboardHome from './components/Dashboard/DoctorDashboardHome';
+ import OPDConsultationForm from './components/Dashboard/OPDConsultationForm';
+ import PreviousConsultations from './components/Dashboard/PreviousConsultantPatient';
+ import UpdateVisitStatusPage from './components/Dashboard/UpdateVisitStatus';
 import IPDAdmissionForm from './components/Dashboard/IPDAdmissionform'
 import IPDAdmissionList from './components/Dashboard/IPDAdmissionList';
 import ProcedureForm from './components/Dashboard/ProcedureForm';
@@ -72,7 +71,7 @@ const App = () => {
     <Route path="viewPatient" element={<ViewPatient />} />
     <Route path="visit-form" element={<VisitForm />} />
     <Route path="patient-visits-viewer" element={<PatientVisitsViewer />} />
-    <Route path="UpdatePatientStatus" element={<UpdateVisitStatusPage />} />
+     <Route path="UpdatePatientStatus" element={<UpdateVisitStatusPage />} /> 
     <Route path="IPDAdmissionForm" element={<IPDAdmissionForm />} />
     <Route path="ProcedureForm" element={<ProcedureForm />} />
     <Route path="ViewAnesthesiaForm" element={<ViewAnesthesiaRecord />} />
@@ -85,6 +84,15 @@ const App = () => {
     <Route path="BillPaymentHistory" element={<BillPaymentHistory />} />
   </Routes>
 );
+const InventoryRoutes =()=>(
+  <Routes>
+<Route path="inventory/InventoryForm" element={<InventoryForm />} />
+  <Route path="inventory/InventoryList" element={<InventoryList />} />
+  <Route path="inventory/RecordTransactionForm" element={<RecordTransactionForm />} />
+  <Route path="inventory/TransactionHistoryForm" element={<TransactionHistoryForm />} /> 
+  </Routes>
+
+)
 
 
 
@@ -129,18 +137,20 @@ const App = () => {
   <Route path="ViewDailyReports" element={<ViewDailyReports />} />
   <Route path="NurseScheduledProcedures" element={<NurseScheduledProcedures />} />
 </Route>
-  <Route path="inventory/InventoryForm" element={<InventoryForm />} />
+<Route path ="inventory/*" element={<InventoryRoutes/>}/>
+{/* {/* <Route path="inventory/InventoryForm" element={<InventoryForm />} />
   <Route path="inventory/InventoryList" element={<InventoryList />} />
   <Route path="inventory/RecordTransactionForm" element={<RecordTransactionForm />} />
-  <Route path="inventory/TransactionHistoryForm" element={<TransactionHistoryForm />} />
-      
+  <Route path="inventory/TransactionHistoryForm" element={<TransactionHistoryForm />} /> */}
+  
+{/*       
       <Route path="doctor/*">
       
   <Route index element={<DoctorDashboardHome />} />
   <Route path="home" element={<DoctorDashboardHome />} />
   <Route path="ConsultationForm/:visitId" element={<OPDConsultationForm />} />
   <Route path="PreviousConsultantPatient/:patientId" element={<PreviousConsultations />} />
-</Route>
+</Route> */}
 
       </Route>
       </Route>
@@ -153,9 +163,10 @@ const App = () => {
    <Route path="viewPatient" element={<ViewPatient/>} />
       <Route path="visit-form" element={<VisitForm/>} />
        <Route path="patient-visits-viewer" element={<PatientVisitsViewer/>} />
-<Route path="UpdatePatientStatus" element={<UpdateVisitStatusPage/>} />
+ <Route path="UpdatePatientStatus" element={<UpdateVisitStatusPage/>} /> 
 <Route path="IPDAdmissionForm" element={<IPDAdmissionForm/>} />
 <Route path="IPDAdmissionList/:patientId" element={<IPDAdmissionList />} />
+ <Route path="IPDAdmissionList" element={<IPDAdmissionList />} />
 
 <Route path="ProcedureForm" element={<ProcedureForm/>} />
 <Route path="AnesthesiaForm/:procedureScheduleId" element={<AnesthesiaForm />} />
@@ -172,7 +183,7 @@ const App = () => {
 <Route path ="BillPaymentHistory" element ={<BillPaymentHistory/>}/>
 </Route>
      </Route>
- <Route  element={<ProtectedRoute role="DOCTOR" />} >
+  <Route  element={<ProtectedRoute role="DOCTOR" />} >
     <Route path="/doctor-dashboard"  element={<DoctorDashboard />}>
  <Route index element={<DoctorDashboardHome />} />
 <Route path="home" element={<DoctorDashboardHome />} />
@@ -182,7 +193,7 @@ const App = () => {
     <Route path="PreviousConsultantPatient/:patientId" element={<PreviousConsultations />} />  
 
 </Route>
-  </Route>
+   </Route> 
 
 <Route  element={<ProtectedRoute role="STAFF" />} >
 <Route path="/nurse-dashboard"  element={<NurseDashboard />}>

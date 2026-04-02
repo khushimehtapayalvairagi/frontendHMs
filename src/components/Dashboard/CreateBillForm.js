@@ -191,7 +191,7 @@ console.log("Calling reports API for", ipdAdmissionId);
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!patientId || !visitId || !ipdAdmissionId || !userId) {
+    if (!patientId || !ipdAdmissionId || !userId) {
       toast.error('Required patient/admission/visit/user info missing');
       return;
     }
@@ -206,7 +206,7 @@ console.log("Calling reports API for", ipdAdmissionId);
 
     const payload = {
       patient_id_ref: patientId,
-      visit_id_ref: visitId,
+      // visit_id_ref: visitId,
       ipd_admission_id_ref: ipdAdmissionId,
       generated_by_user_id: userId,
       items: cleanedItems
@@ -231,22 +231,81 @@ if (errorMessage === 'This procedure has already been billed.') {
 
   };
 const handlePrint = () => {
-  const printContents = printRef.current.innerHTML;
+  const patientName = patients.find(p => p._id === patientId)?.fullName || "N/A";
+  const doctorName = admissions.find(a => a._id === ipdAdmissionId)?.admittingDoctorId?.userId?.name || "N/A";
+  const admitDate = admissions.find(a => a._id === ipdAdmissionId)?.admitDate || "N/A";
+  const billDate = new Date().toLocaleDateString();
+  const total = items.reduce((sum, it) => sum + (it.quantity * (it.unit_price || 0)), 0);
+
+  const billLayout = `
+    <div style="padding: 2rem; font-size: 14px;">
+      <div style="text-align: center; margin-bottom: 1rem;">
+        <h2>Dr. M.I. Jamkhanawala Tibbia Unani Medical College <br/>
+          & Haji Abdul Razzak Kalsekar Tibbia Hospital</h2>
+        <p>Anjuman-I-Islam Complex, Yari Road, Versova, Andheri(W), Mumbai 400 061.</p>
+        <p>Tel: 26321032 / 25361199 / 26351188</p>
+      </div>
+
+      <table style="width: 100%; margin-bottom: 1rem;">
+        <tbody>
+          <tr>
+            <td><strong>Patient:</strong> ${patientName}</td>
+            <td><strong>Bill No:</strong> AutoGen-001</td>
+          </tr>
+          <tr>
+            <td><strong>Doctor:</strong> ${doctorName}</td>
+            <td><strong>Bill Date:</strong> ${billDate}</td>
+          </tr>
+          <tr>
+            <td><strong>Refer Dr:</strong> N/A</td>
+            <td><strong>Admit On:</strong> ${admitDate}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table style="width: 100%; border-collapse: collapse;" border="1">
+        <thead>
+          <tr>
+            <th>Particular</th>
+            <th>Days/Qty</th>
+            <th>Rate</th>
+            <th>Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${items.map(it => `
+            <tr>
+              <td>${it.description}</td>
+              <td>${it.quantity}</td>
+              <td>${it.unit_price}</td>
+              <td>${(it.quantity * it.unit_price) || 0}</td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+
+      <div style="margin-top: 2rem; text-align: right;">
+        <strong>Total: ₹${total}</strong>
+      </div>
+    </div>
+  `;
+
   const newWindow = window.open('', '', 'width=900,height=700');
   newWindow.document.write(`
     <html>
       <head>
         <title>Patient Bill</title>
-         <style>${styles}</style>  
+        <style>${styles}</style>
       </head>
       <body>
-        ${printContents}
+        ${billLayout}
       </body>
     </html>
   `);
   newWindow.document.close();
   newWindow.print();
 };
+
 
 
  return (
@@ -294,7 +353,7 @@ const handlePrint = () => {
       onChange={e => {
         setIpdAdmissionId(e.target.value);
         const adm = admissions.find(a => a._id === e.target.value);
-        setVisitId(adm?.visitId?._id || '');
+         setVisitId(adm?.visitId?._id || '');
       }}
       required
       style={{ width: '100%', padding: '8px' }}
@@ -508,20 +567,26 @@ const handlePrint = () => {
         <button type="submit" style={{ padding: '10px 15px', background: 'green', color: '#fff', border: 'none', borderRadius: '6px' }}>
           Create Bill
         </button>
+        <button
+  type="button"
+  onClick={handlePrint}
+  className="screen-only"
+  style={{
+    padding: "10px 15px",
+    background: "#6c63ff",
+    color: "#fff",
+    border: "none",
+    borderRadius: "6px",
+    marginLeft: "10px",
+  }}
+>
+  🖨 Print Bill
+</button>
+
       </form>
-         <button
-        onClick={handlePrint}
-        style={{
-          marginTop: '1rem',
-          padding: '10px',
-          backgroundColor: '#007bff',
-          color: 'white',
-          border: 'none',
-          borderRadius: '5px'
-        }}
-      >
-        Print Record
-      </button>
+
+ 
+
       </div>
        <ToastContainer position="top-right" autoClose={3000} />
     </div>

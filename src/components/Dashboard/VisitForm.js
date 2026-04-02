@@ -1,14 +1,13 @@
+// VisitForm.js
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
 
-
 const VisitForm = () => {
   const [resData, setResData] = useState(null);
-
-const [patientDetails, setPatientDetails] = useState(null);
+  const [patientDetails, setPatientDetails] = useState(null);
   const [patientId, setPatientId] = useState('');
   const [visitType, setVisitType] = useState('');
   const [assignedDoctorId, setAssignedDoctorId] = useState('');
@@ -21,40 +20,42 @@ const [patientDetails, setPatientDetails] = useState(null);
   const [loadingDoctors, setLoadingDoctors] = useState(false);
 
   const printRef = useRef();
-    const BASE_URL = process.env.REACT_APP_BASE_URL;
+  const BASE_URL = process.env.REACT_APP_BASE_URL;
   const [doctors, setDoctors] = useState([]);
   const [referralPartners, setReferralPartners] = useState([]);
- const navigate = useNavigate()
+  const navigate = useNavigate()
+
   useEffect(() => {
     const fetchData = async () => {
       const token = localStorage.getItem('jwt');
       const user = JSON.parse(localStorage.getItem('user'));
 
       if (!token) {
-      toast.error("Please log in again");
+        toast.error("Please log in again");
         return;
       }
 
       try {
-      const [docRes, refRes, specRes] = await Promise.all([
-  axios.get(`${BASE_URL}/api/receptionist/doctors`, {
-    headers: { Authorization: `Bearer ${token}` },
-  }),
-  axios.get(`${BASE_URL}/api/receptionist/referral-partners`, {
-    headers: { Authorization: `Bearer ${token}` },
-  }),
-  axios.get(`${BASE_URL}/api/receptionist/specialties`, {
-    headers: { Authorization: `Bearer ${token}` },
-  }),
-]);  console.log({
-        docs: docRes.data,
-        refs: refRes.data,
-        specs: specRes.data,
-      });
+        const [docRes, refRes, specRes] = await Promise.all([
+          axios.get(`${BASE_URL}/api/receptionist/doctors`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          axios.get(`${BASE_URL}/api/receptionist/referral-partners`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          axios.get(`${BASE_URL}/api/receptionist/specialties`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+        ]);
+        console.log({
+          docs: docRes.data,
+          refs: refRes.data,
+          specs: specRes.data,
+        });
 
-       setDoctors([]); // initially empty
-setReferralPartners(refRes.data.partners || []);
-setSpecialties(specRes.data.specialties || []);
+        setDoctors([]); // initially empty
+        setReferralPartners(refRes.data.partners || []);
+        setSpecialties(specRes.data.specialties || []);
       } catch (error) {
         console.error("Error fetching data", error);
         toast.error("Failed to load doctor or referral data");
@@ -64,24 +65,24 @@ setSpecialties(specRes.data.specialties || []);
     fetchData();
   }, []);
 
-useEffect(() => {
-  if (!patientId) {
-    setPatientDetails(null);
-    return;
-  }
-  const fetchPatient = async () => {
-    try {
-      const token = localStorage.getItem("jwt");
-      const res = await axios.get(`${BASE_URL}/api/receptionist/patients/${patientId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setPatientDetails(res.data.patient);
-    } catch {
+  useEffect(() => {
+    if (!patientId) {
       setPatientDetails(null);
+      return;
     }
-  };
-  fetchPatient();
-}, [patientId]);  // runs whenever patientId changes
+    const fetchPatient = async () => {
+      try {
+        const token = localStorage.getItem("jwt");
+        const res = await axios.get(`${BASE_URL}/api/receptionist/patients/${patientId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setPatientDetails(res.data.patient);
+      } catch {
+        setPatientDetails(null);
+      }
+    };
+    fetchPatient();
+  }, [patientId]);  // runs whenever patientId changes
 
 
   const handleSubmit = async (e) => {
@@ -95,7 +96,7 @@ useEffect(() => {
     }
 
     if (visitType === "OPD" && (!amount || isNaN(amount) || Number(amount) <= 0 || !isPaid)) {
-       toast.error("Enter valid payment for OPD and ensure payment is marked as paid.");
+      toast.error("Enter valid payment for OPD and ensure payment is marked as paid.");
       return;
     }
 
@@ -119,42 +120,43 @@ useEffect(() => {
       });
       // console.log(res);
 
-setResData(res.data.visit);
- if (visitType === 'IPD_Admission' || visitType === 'IPD_Referral') {
-  const visitData = res.data.visit;
+      setResData(res.data.visit);
+      if (visitType === 'IPD_Admission' || visitType === 'IPD_Referral') {
+        const visitData = res.data.visit;
 
 
- const doctorName = visitData?.doctorName || '';
-const patientName = visitData?.patientName || '';
+        const doctorName = visitData?.doctorName || '';
+        const patientName = visitData?.patientName || '';
 
- const patientDbId = visitData?.patientDbId || '';
+        const patientDbId = visitData?.patientDbId || '';
 
 
-  const commonState = {
-    visit: visitData,
-    patient: {
-      id: patientDbId,
-      name: patientName,
-      doctorName: doctorName
-    }
-  };
+        const commonState = {
+          visit: visitData,
+          patient: {
+            id: patientDbId,
+            name: patientName,
+            doctorName: doctorName
+          }
+        };
 
-  // console.log(commonState);
+        // console.log(commonState);
 
-  if (visitType === 'IPD_Admission') {
-    navigate('/receptionist-dashboard/IPDAdmissionForm', {
-      state: commonState
-    });
-  } else if (visitType === 'IPD_Referral') {
-    navigate('/receptionist-dashboard/IPDAdmissionForm', {
-      state: commonState
-    });
-  }
-} else {
-  toast.success("Visit created successfully!");
-}
+        if (visitType === 'IPD_Admission') {
+          navigate('/receptionist-dashboard/IPDAdmissionForm', {
+            state: commonState
+          });
+        } else if (visitType === 'IPD_Referral') {
+          navigate('/receptionist-dashboard/IPDAdmissionForm', {
+            state: commonState
+          });
+        }
+      } else {
+        toast.success("Visit created successfully!");
+      }
 
-localStorage.setItem('currentPatientId', patientId);
+      localStorage.setItem('currentVisitId', res.data.visit._id);
+      localStorage.setItem('currentPatientId', patientId);
 
       localStorage.setItem('currentPatientId', patientId);
       console.log(res.data);
@@ -164,29 +166,172 @@ localStorage.setItem('currentPatientId', patientId);
 
     }
   };
-const handlePrint = () => {
-  if (!resData) return;
-  const w = window.open("", "", "width=800,height=600");
-  w.document.write(`
-    <html>
-      <head><title>Visit Slip</title></head>
-      <body>
-        <h2>Visit Slip</h2>
-        <p><strong>Visit ID:</strong> ${resData._id}</p>
-        <p><strong>Patient ID:</strong> ${resData.patientId}</p>
-        <p><strong>Name:</strong> ${resData.patientName}</p>
-        <p><strong>Age:</strong> ${patientDetails?.age || ""}</p>
-        <p><strong>Gender:</strong> ${patientDetails?.gender || ""}</p>
-        <p><strong>Address:</strong> ${patientDetails?.address || ""}</p>
-        <p><strong>Doctor:</strong> ${resData.doctorName}</p>
-        <p><strong>Visit Type:</strong> ${resData.visitType}</p>
-        <p><strong>Date:</strong> ${new Date(resData.visitDate).toLocaleString()}</p>
-      </body>
-    </html>
-  `);
-  w.document.close();
-  w.print();
-};
+  const handlePrintCasePaper = () => {
+    if (!resData) return;
+
+    const visitDate = new Date(resData.visitDate);
+
+    const w = window.open("", "", "width=800,height=600");
+    w.document.write(`
+      <html>
+        <head>
+          <title>OPD Case Paper</title>
+          <style>
+            body { font-family: Arial, sans-serif; font-size: 14px; margin: 20px; }
+            .header { text-align: center; }
+            .header h2, .header h3, .header h4 { margin: 2px 0; }
+            .divider { border-top: 2px solid #000; margin: 10px 0; }
+            table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+            td, th { padding: 6px; border: 1px solid #000; }
+            .bold { font-weight: bold; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h3>Anjuman-I-Islam's</h3>
+            <h4>Dr. M.I. Jamkhanawala Tibbia Unani Medical College &</h4>
+            <h4>Haji Abdul Razzak Kalsekar Tibbia Hospital</h4>
+              <h6> Anjuman-I-Islam Complex, Yari Road, Versova, Andheri(W), Mumbai 400 061.</h6>
+          <h6> Telefax: 26351188, Tel.: 26361199 </h6>
+          </div>
+
+          <div class="divider"></div>
+
+          <table>
+            <tr>
+              <td>Patient Name: <b>${patientDetails?.fullName || ""}</b></td>
+              <td>Gender: ${patientDetails?.gender || ""}</td>
+              <td>Age: ${patientDetails?.age || ""}</td>
+            </tr>
+            <tr>
+              <td>Patient ID: ${resData.patientId}</td>
+              <td>Visit Type: ${resData.visitType}</td>
+              <td>Specialty: ${specialtyName || "-"}</td>
+            </tr>
+            <tr>
+              <td>Referral: ${resData.referredBy || "-"}</td>
+              <td>Visit Date: ${visitDate.toLocaleDateString()}</td>
+              <td>Address: ${patientDetails?.address || ""}</td>
+            </tr>
+          </table>
+
+          <div class="divider"></div>
+
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 20%;">Date</th>
+                <th style="width: 40%;">Clinical Notes</th>
+                <th style="width: 40%;">Advice/Treatment</th>
+              </tr>
+            </thead>
+            <tbody>
+              </tbody>
+          </table>
+        </body>
+      </html>
+    `);
+
+    w.document.close();
+    w.print();
+  };
+
+  const handlePrintBill = () => {
+    if (!resData) return;
+
+    const visitDate = new Date(resData.visitDate);
+
+    const w = window.open("", "", "width=800,height=600");
+    w.document.write(`
+      <html>
+        <head>
+          <title>OPD Bill</title>
+          <style>
+            body { font-family: Arial, sans-serif; font-size: 14px; margin: 20px; }
+            .header { text-align: center; }
+            .divider { border-top: 2px solid #000; margin: 10px 0; }
+            table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+            td, th { padding: 6px; border: 1px solid #000; }
+            .right { text-align: right; }
+            .bold { font-weight: bold; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h3>Anjuman-I-Islam's</h3>
+            <h4>Dr. M.I. Jamkhanawala Tibbia Unani Medical College &</h4>
+            <h4>Haji Abdul Razzak Kalsekar Tibbia Hospital</h4>
+          <h6> Anjuman-I-Islam Complex, Yari Road, Versova, Andheri(W), Mumbai 400 061.</h6>
+          <h6> Telefax: 26351188, Tel.: 26361199 </h6>
+
+
+          </div>
+
+          <div class="divider"></div>
+
+          <table>
+            <tr>
+              <td>Patient: <b>${patientDetails?.fullName}</b></td>
+              <td>Gender: ${patientDetails?.gender}</td>
+              <td>Receipt No: ${resData._id}</td>
+            </tr>
+            <tr>
+              <td>Refer By Dr: ${resData.referredBy || "-"}</td>
+              <td>Age: ${patientDetails?.age}</td>
+              <td>Date: ${visitDate.toLocaleDateString()}</td>
+            </tr>
+            <tr>
+              <td>Done By Dr: ${resData.doctorName}</td>
+              <td>OPD Reg. No: ${resData.patientId}</td>
+              <td>Specialty: ${specialtyName || "-"}</td>
+            </tr>
+          </table>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Sr.No.</th>
+                <th>Test/Visit Type</th>
+                <th>Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>1</td>
+                <td>${resData.visitType}</td>
+                <td>${resData.payment?.amount || 0}</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <table>
+            <tr>
+              <td>Paid In :</td>
+              <td class="right">E. & O. E.</td>
+            </tr>
+            <tr>
+              <td><i>In Words :</i></td>
+              <td></td>
+            </tr>
+          </table>
+
+          <table>
+            <tr>
+              <td class="bold">Paid :</td>
+              <td>${resData.payment?.isPaid ? resData.payment?.amount : 0}</td>
+              <td class="bold">Balance :</td>
+              <td>${resData.payment?.isPaid ? 0 : resData.payment?.amount || 0}</td>
+              <td class="bold">Net Total :</td>
+              <td>${resData.payment?.amount || 0}</td>
+            </tr>
+          </table>
+        </body>
+      </html>
+    `);
+
+    w.document.close();
+    w.print();
+  };
 
   const showReferralField = visitType === "IPD_Referral" || visitType === "IPD_Admission";
   const showPaymentField = visitType === "OPD";
@@ -210,19 +355,18 @@ const handlePrint = () => {
             placeholder="Enter Patient ID"
             value={patientId}
             onChange={(e) => setPatientId(e.target.value)}
-           
             style={{ width: '100%', padding: '0.5rem' }}
             required
           />
         </label>
-{patientDetails && (
-  <div style={{ padding: '1rem', border: '1px solid #ccc', borderRadius: '8px', background: '#fff' }}>
-    <p><strong>Name:</strong> {patientDetails.fullName}</p>
-    <p><strong>Age:</strong> {patientDetails.age}</p>
-    <p><strong>Gender:</strong> {patientDetails.gender}</p>
-    <p><strong>Address:</strong> {patientDetails.address}</p>
-  </div>
-)}
+        {patientDetails && (
+          <div style={{ padding: '1rem', border: '1px solid #ccc', borderRadius: '8px', background: '#fff' }}>
+            <p><strong>Name:</strong> {patientDetails.fullName}</p>
+            <p><strong>Age:</strong> {patientDetails.age}</p>
+            <p><strong>Gender:</strong> {patientDetails.gender}</p>
+            <p><strong>Address:</strong> {patientDetails.address}</p>
+          </div>
+        )}
         <label>
           Visit Type:
           <select
@@ -237,96 +381,77 @@ const handlePrint = () => {
             <option value="IPD_Admission">IPD Admission</option>
           </select>
         </label>
-<label>
-  Specialty:
-  <select
-    value={specialtyName}
-    onChange={(e) => setSpecialtyName(e.target.value)}
-    style={{ width: '100%', padding: '0.5rem' }}
-    required
-  >
-    <option value="">Select Specialty</option>
-    {specialties.map((s) => (
-      <option key={s._id} value={s.name}>
-        {s.name}
-      </option>
-    ))}
-  </select>
-</label>
-
-{/* <label>
-  Day of the Week:
-  <select
-    value={dayOfWeek}
-    onChange={(e) => setDayOfWeek(e.target.value)}
-    style={{ width: '100%', padding: '0.5rem' }}
-    required
-  >
-    {/* <option value="">Select Day</option>
-    {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map(day => (
-      <option key={day} value={day}>{day}</option>
-    ))} */}
-  {/* </select>
-</label> */} 
-
-<button
-  type="button"
-  disabled={loadingDoctors}
-  onClick={async () => {
-    if (!specialtyName ) {
-      toast.error("Please select  specialty ");
-      return;
-    }
-    try {
-      setLoadingDoctors(true);
-      const token = localStorage.getItem('jwt');
-      const res = await axios.post(
-        `${BASE_URL}/api/receptionist/doctors`,
-        { specialtyName },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-    setDoctors(res.data.doctors.filter(doc => doc.isAvailable));
-      if (res.data.doctors.length === 0) {
-        toast.info("No doctors available for this time.");
-      }
-    } catch (err) {
-      console.error('Doctor availability fetch error:', err);
-      toast.error(err.response?.data?.message || 'Failed to fetch available doctors.');
-    } finally {
-      setLoadingDoctors(false);
-    }
-  }}
-  style={{
-    padding: '0.5rem',
-    backgroundColor: '#28a745',
-    color: 'white',
-    border: 'none',
-    borderRadius: '5px',
-    marginBottom: '1rem'
-  }}
->
-  {loadingDoctors ? 'Checking...' : 'Check Available Doctors'}
-</button>
+        <label>
+          Specialty:
+          <select
+            value={specialtyName}
+            onChange={(e) => setSpecialtyName(e.target.value)}
+            style={{ width: '100%', padding: '0.5rem' }}
+            required
+          >
+            <option value="">Select Specialty</option>
+            {specialties.map((s) => (
+              <option key={s._id} value={s.name}>
+                {s.name}
+              </option>
+            ))}
+          </select>
+        </label>
+        <button
+          type="button"
+          disabled={loadingDoctors}
+          onClick={async () => {
+            if (!specialtyName) {
+              toast.error("Please select  specialty ");
+              return;
+            }
+            try {
+              setLoadingDoctors(true);
+              const token = localStorage.getItem('jwt');
+              const res = await axios.post(
+                `${BASE_URL}/api/receptionist/doctors`,
+                { specialtyName },
+                {
+                  headers: { Authorization: `Bearer ${token}` },
+                }
+              );
+              setDoctors(res.data.doctors.filter(doc => doc.isAvailable));
+            } catch (err) {
+              console.error('Doctor availability fetch error:', err);
+              toast.error(err.response?.data?.message || 'Failed to fetch available doctors.');
+            } finally {
+              setLoadingDoctors(false);
+            }
+          }}
+          style={{
+            padding: '0.5rem',
+            backgroundColor: '#28a745',
+            color: 'white',
+            border: 'none',
+            borderRadius: '5px',
+            marginBottom: '1rem'
+          }}
+        >
+          {loadingDoctors ? 'Checking...' : 'Check Available Doctors'}
+        </button>
 
 
         <label>
-  Assigned Doctor:
-  <select
-    value={assignedDoctorId}
-    onChange={(e) => setAssignedDoctorId(e.target.value)}
-    style={{ width: '100%', padding: '0.5rem' }}
-    required
-  >
-    <option value="">Select Assigned Doctor</option>
-    {doctors.map((doc) => (
-      <option key={doc._id} value={doc._id}>
-        {doc.userId?.name} ({doc.doctorType})
-      </option>
-    ))}
-  </select>
-</label>
+          Assigned Doctor:
+          <select
+            value={assignedDoctorId}
+            onChange={(e) => setAssignedDoctorId(e.target.value)}
+            style={{ width: '100%', padding: '0.5rem' }}
+            required
+          >
+            <option value="">Select Assigned Doctor</option>
+            {doctors.map((doc) => (
+              <option key={doc._id} value={doc._id}>
+                {doc.userId?.name} ({doc.doctorType})
+              </option>
+            ))}
+          </select>
+        </label>
 
 
         {showReferralField && (
@@ -358,17 +483,14 @@ const handlePrint = () => {
                 style={{ width: '100%', padding: '0.5rem' }}
               />
             </label>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-               Payment Done
-  <input
-    type="checkbox"
-    checked={isPaid}
-    onChange={(e) => setIsPaid(e.target.checked)}
-  />
-    
-</div>
-
-
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              Payment Done
+              <input
+                type="checkbox"
+                checked={isPaid}
+                onChange={(e) => setIsPaid(e.target.checked)}
+              />
+            </div>
           </>
         )}
 
@@ -382,16 +504,14 @@ const handlePrint = () => {
         }}>
           Create Visit
         </button>
-{resData && (
-  <button onClick={handlePrint} style={{ marginTop: "1rem", background: "#28a745", color: "white", padding: "0.5rem 1rem" }}>
-    🖨️ Print Visit Slip
-  </button>
-)}
-
-      
+        {resData && (
+          <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+            <button onClick={handlePrintCasePaper} style={{ background: '#ffc107', color: '#000', padding: '0.5rem 1rem' }}>📝 Print OPD Case Paper</button>
+            <button onClick={handlePrintBill} style={{ background: '#28a745', color: '#fff', padding: '0.5rem 1rem' }}>🖨️ Print OPD Bill</button>
+          </div>
+        )}
       </form>
       <ToastContainer position="top-right" autoClose={3000} />
-
     </div>
   );
 };
