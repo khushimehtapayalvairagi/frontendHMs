@@ -131,9 +131,10 @@ const deleteUser = async (id) => {
             <tr>
               <th>Name</th>
               <th>Email</th>
-              <th>Role</th>
+              {/* <th>Role</th> */}
               {userType === "DOCTOR" && (
                 <>
+                  <th>Role</th>
                   <th>Doctor Type</th>
                   <th>Specialty</th>
                   {/* <th>Department</th> */}
@@ -145,7 +146,7 @@ const deleteUser = async (id) => {
                 <>
                   <th>Designation</th>
                   <th>Contact</th>
-                  <th>Department</th>
+                  {/* <th>Department</th> */}
                 </>
               )}
               <th>Status</th>
@@ -184,7 +185,7 @@ const deleteUser = async (id) => {
                   <>
                     <td>{user.designation || '-'}</td>
                     <td>{user.contactNumber || '-'}</td>
-                    <td>{user.department?.name || '-'}</td>
+                    {/* <td>{user.department?.name || '-'}</td> */}
                   </>
                 )}
 
