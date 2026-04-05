@@ -466,7 +466,7 @@ const VisitForm = () => {
             >
               <option value="">Select Referral Partner</option>
               {referralPartners.map((ref) => (
-                <option key={ref._id} value={ref.name}>{ref.name}</option>
+             <option key={ref._id} value={ref._id}>{ref.name}</option>
               ))}
             </select>
           </label>
