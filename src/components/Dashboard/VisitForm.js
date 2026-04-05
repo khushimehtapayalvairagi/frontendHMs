@@ -408,14 +408,14 @@ const VisitForm = () => {
             try {
               setLoadingDoctors(true);
               const token = localStorage.getItem('jwt');
-              const res = await axios.post(
+              const res = await axios.get(
                 `${BASE_URL}/api/receptionist/doctors`,
                 { specialtyName },
                 {
                   headers: { Authorization: `Bearer ${token}` },
                 }
               );
-              setDoctors(res.data.doctors.filter(doc => doc.isAvailable));
+          setDoctors(res.data.doctors);
             } catch (err) {
               console.error('Doctor availability fetch error:', err);
               toast.error(err.response?.data?.message || 'Failed to fetch available doctors.');
