@@ -642,10 +642,10 @@ import { toast, ToastContainer } from "react-toastify";
 import io from "socket.io-client";
 import "react-toastify/dist/ReactToastify.css";
 import { useAdmissionAdvice } from "../../context/AdmissionAdviceContext";
-
-const socket = io(process.env.REACT_APP_BASE_URL, {
-  withCredentials: true,
-});
+import socket from "../../context/socket"; // ✅ same instance
+// const socket = io(process.env.REACT_APP_BASE_URL, {
+//   withCredentials: true,
+// });
 
 const IPDAdmissionForm = () => {
   const navigate = useNavigate();
@@ -688,7 +688,9 @@ const IPDAdmissionForm = () => {
     fetchWards();
     fetchRoomCategories();
 
-    socket.emit("joinReceptionistRoom");
+    socket.on("connect", () => {
+  socket.emit("joinReceptionistRoom");
+});
 
     socket.on("newIPDAdmissionAdvice", (data) => {
       toast.info(`Doctor advised admission for Patient ID: ${data.patientId}`);
