@@ -53,7 +53,8 @@ const VisitForm = () => {
           specs: specRes.data,
         });
 
-        setDoctors([]); // initially empty
+              setDoctors(docRes.data.doctors || []);
+ // initially empty
         setReferralPartners(refRes.data.partners || []);
         setSpecialties(specRes.data.specialties || []);
       } catch (error) {
@@ -397,7 +398,7 @@ const VisitForm = () => {
             ))}
           </select>
         </label>
-        <button
+        {/* <button
           type="button"
           disabled={loadingDoctors}
           onClick={async () => {
@@ -408,14 +409,14 @@ const VisitForm = () => {
             try {
               setLoadingDoctors(true);
               const token = localStorage.getItem('jwt');
-              const res = await axios.get(
+              const res = await axios.post(
                 `${BASE_URL}/api/receptionist/doctors`,
                 { specialtyName },
                 {
                   headers: { Authorization: `Bearer ${token}` },
                 }
               );
-          setDoctors(res.data.doctors);
+              setDoctors(res.data.doctors());
             } catch (err) {
               console.error('Doctor availability fetch error:', err);
               toast.error(err.response?.data?.message || 'Failed to fetch available doctors.');
@@ -433,7 +434,7 @@ const VisitForm = () => {
           }}
         >
           {loadingDoctors ? 'Checking...' : 'Check Available Doctors'}
-        </button>
+        </button> */}
 
 
         <label>
@@ -445,11 +446,11 @@ const VisitForm = () => {
             required
           >
             <option value="">Select Assigned Doctor</option>
-            {doctors.map((doc) => (
-              <option key={doc._id} value={doc._id}>
-                {doc.userId?.name} ({doc.doctorType})
-              </option>
-            ))}
+          {doctors.map((doc) => (
+  <option key={doc._id} value={doc._id}>
+    {doc.userId?.name} ({doc.specialty?.name || "No Specialty"})
+  </option>
+))}
           </select>
         </label>
 
