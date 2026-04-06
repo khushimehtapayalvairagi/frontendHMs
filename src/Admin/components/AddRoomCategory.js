@@ -82,7 +82,7 @@ const RoomCategory = () => {
       const token = localStorage.getItem("jwt");
 
       const res = await axios.post(
-        `${BASE_URL}/api/bulk/room-category`,
+        `${BASE_URL}/api/admin/room-category`,
         formData,
         {
           headers: {
