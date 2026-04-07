@@ -147,13 +147,7 @@ const AddOperationTheatre = () => {
           </p>
         )}
 
-        <p style={{ fontSize: '12px', marginTop: '10px' }}>
-          Excel format:<br />
-          <b>name | status</b><br />
-          Example:<br />
-          OT-1 | Available<br />
-          OT-2 | Occupied
-        </p>
+        
       </div>
 
       {/* ================= MANUAL FORM ================= */}
