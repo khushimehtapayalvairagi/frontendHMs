@@ -54,7 +54,7 @@ const AddLabour = () => {
       formData.append("file", file);
 
       const res = await axios.post(
-        `${BASE_URL}/api/admin/labour-rooms/bulk-upload`, // ⚠️ check route
+        `${BASE_URL}/api/admin/labour-rooms/bulk`, // ⚠️ check route
         formData,
         {
           headers: {
