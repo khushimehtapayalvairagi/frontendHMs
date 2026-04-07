@@ -6,12 +6,19 @@ const AddOperationTheatre = () => {
   const [errors, setErrors] = useState({});
   const [message, setMessage] = useState('');
   const [showForm, setShowForm] = useState(true);
-const BASE_URL = process.env.REACT_APP_BASE_URL;
+
+  // 🔥 BULK STATES
+  const [bulkFile, setBulkFile] = useState(null);
+  const [bulkMessage, setBulkMessage] = useState('');
+
+  const BASE_URL = process.env.REACT_APP_BASE_URL;
+
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
     setErrors({ ...errors, [e.target.name]: '' });
   };
 
+  // ================= MANUAL SUBMIT =================
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrors({});
@@ -19,41 +26,145 @@ const BASE_URL = process.env.REACT_APP_BASE_URL;
 
     try {
       const token = localStorage.getItem('jwt');
-      const res = await axios.post( `${BASE_URL}/api/admin/operation-theaters`, form, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
+
+      const res = await axios.post(
+        `${BASE_URL}/api/admin/operation-theaters`,
+        form,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
         }
-      });
+      );
 
       setMessage(res.data.message);
       setForm({ name: '', status: 'Available' });
-      setShowForm(false); // hide form after successful creation
+      setShowForm(false);
+
     } catch (err) {
       const errorMsg = err.response?.data?.message || 'Something went wrong';
       if (errorMsg.toLowerCase().includes('already exists')) {
-        setErrors({ name: errorMsg }); // specific field error
+        setErrors({ name: errorMsg });
       } else {
         setMessage(errorMsg);
       }
     }
   };
 
+  // ================= BULK FILE SELECT =================
+  const handleFileChange = (e) => {
+    setBulkFile(e.target.files[0]);
+    setBulkMessage('');
+  };
+
+  // ================= BULK UPLOAD =================
+  const handleBulkUpload = async () => {
+    if (!bulkFile) {
+      setBulkMessage("Please select a file");
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('jwt');
+      const formData = new FormData();
+      formData.append('file', bulkFile);
+
+      const res = await axios.post(
+        `${BASE_URL}/api/admin/operation-theater/bulk`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data'
+          }
+        }
+      );
+
+      setBulkMessage(res.data.message);
+      setBulkFile(null);
+
+    } catch (err) {
+      console.error(err);
+      setBulkMessage(err.response?.data?.message || "Bulk upload failed");
+    }
+  };
+
   const toggleForm = () => {
-    setShowForm(prev => !prev);
+    setShowForm(true);
     setErrors({});
     setMessage('');
   };
 
   return (
-    <div style={{ maxWidth: '500px', margin: '40px auto', padding: '20px', background: '#fff', borderRadius: '8px', boxShadow: '0 0 10px rgba(0,0,0,0.1)' }}>
+    <div style={{
+      maxWidth: '600px',
+      margin: '40px auto',
+      padding: '20px',
+      background: '#fff',
+      borderRadius: '8px',
+      boxShadow: '0 0 10px rgba(0,0,0,0.1)'
+    }}>
+
       <h2 style={{ textAlign: 'center' }}>Add Operation Theater</h2>
 
+      {/* ================= BULK UPLOAD ================= */}
+      <div style={{
+        marginBottom: '30px',
+        padding: '15px',
+        border: '1px dashed #ccc',
+        borderRadius: '8px'
+      }}>
+        <h4>Bulk Upload (Excel)</h4>
+
+        <input
+          type="file"
+          accept=".xlsx, .xls, .csv"
+          onChange={handleFileChange}
+        />
+
+        <button
+          onClick={handleBulkUpload}
+          style={{
+            marginTop: '10px',
+            padding: '8px 15px',
+            backgroundColor: '#28a745',
+            color: '#fff',
+            border: 'none',
+            borderRadius: '5px',
+            cursor: 'pointer'
+          }}
+        >
+          Upload File
+        </button>
+
+        {bulkMessage && (
+          <p style={{
+            marginTop: '10px',
+            color: bulkMessage.toLowerCase().includes('success') ? 'green' : 'red'
+          }}>
+            {bulkMessage}
+          </p>
+        )}
+
+        <p style={{ fontSize: '12px', marginTop: '10px' }}>
+          Excel format:<br />
+          <b>name | status</b><br />
+          Example:<br />
+          OT-1 | Available<br />
+          OT-2 | Occupied
+        </p>
+      </div>
+
+      {/* ================= MANUAL FORM ================= */}
       {!showForm ? (
         <>
           {message && (
-            <p style={{ textAlign: 'center', color: 'green', fontWeight: 'bold' }}>{message}</p>
+            <p style={{ textAlign: 'center', color: 'green', fontWeight: 'bold' }}>
+              {message}
+            </p>
           )}
+
           <div style={{ textAlign: 'center', marginTop: '15px' }}>
             <button onClick={toggleForm} style={{
               padding: '10px 20px',
@@ -69,6 +180,7 @@ const BASE_URL = process.env.REACT_APP_BASE_URL;
         </>
       ) : (
         <form onSubmit={handleSubmit}>
+
           <div style={{ marginBottom: '15px' }}>
             <label>Name</label><br />
             <input
@@ -77,9 +189,11 @@ const BASE_URL = process.env.REACT_APP_BASE_URL;
               value={form.name}
               onChange={handleChange}
               placeholder="Enter Operation Theater Name"
-              style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc' }}
+              style={{ width: '100%', padding: '10px' }}
             />
-            {errors.name && <div style={{ color: 'red', marginTop: '5px' }}>{errors.name}</div>}
+            {errors.name && (
+              <div style={{ color: 'red', marginTop: '5px' }}>{errors.name}</div>
+            )}
           </div>
 
           <div style={{ marginBottom: '15px' }}>
@@ -88,7 +202,7 @@ const BASE_URL = process.env.REACT_APP_BASE_URL;
               name="status"
               value={form.status}
               onChange={handleChange}
-              style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc' }}
+              style={{ width: '100%', padding: '10px' }}
             >
               <option value="Available">Available</option>
               <option value="Occupied">Occupied</option>
@@ -102,13 +216,11 @@ const BASE_URL = process.env.REACT_APP_BASE_URL;
             backgroundColor: '#007bff',
             color: '#fff',
             border: 'none',
-            borderRadius: '5px',
-            cursor: 'pointer'
+            borderRadius: '5px'
           }}>
             Submit
           </button>
 
-          {message && <p style={{ marginTop: '20px', textAlign: 'center', color: 'green' }}>{message}</p>}
         </form>
       )}
     </div>
