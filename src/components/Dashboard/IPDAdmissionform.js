@@ -688,18 +688,16 @@ const IPDAdmissionForm = () => {
     fetchWards();
     fetchRoomCategories();
 
-    socket.on("connect", () => {
-  socket.emit("joinReceptionistRoom");
-});
+ 
 
-    socket.on("newIPDAdmissionAdvice", (data) => {
-      toast.info(`Doctor advised admission for Patient ID: ${data.patientId}`);
-      setPatientId(data.patientId || "");
-      setVisitId(data.visitId || "");
-      setAdmittingDoctorId(data.admittingDoctorId || "");
-      setPatientName(data.patientName || "");
-      setDoctorName(data.doctorName || "");
-    });
+    // socket.on("newIPDAdmissionAdvice", (data) => {
+    //   toast.info(`Doctor advised admission for Patient ID: ${data.patientId}`);
+    //   setPatientId(data.patientId || "");
+    //   setVisitId(data.visitId || "");
+    //   setAdmittingDoctorId(data.admittingDoctorId || "");
+    //   setPatientName(data.patientName || "");
+    //   setDoctorName(data.doctorName || "");
+    // });
 
     return () => socket.off("newIPDAdmissionAdvice");
   }, []);
