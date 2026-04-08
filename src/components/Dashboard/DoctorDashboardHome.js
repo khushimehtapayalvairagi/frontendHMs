@@ -16,7 +16,7 @@ import {
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-
+import socket from "../../context/socket";
 // const socket = io(process.env.REACT_APP_BASE_URL, {
 //   withCredentials: true,
 // });
@@ -71,39 +71,36 @@ const fetchVisits = async () => {
 
 
 
-  useEffect(() => {
-    if (!doctor) return;
-const socket = io(process.env.REACT_APP_BASE_URL, {
-  withCredentials: true,
-});
+useEffect(() => {
+  if (!doctor) return;
+
   const doctorId = doctor.id;
-  console.log(doctorId);
-  doctorRef.current = doctor;
-  tokenRef.current = localStorage.getItem('jwt');
 
-   socket.emit('joinDoctorRoom', doctorId); // ✅ emit to server to join the room
+  // ✅ JOIN ROOM AFTER CONNECT
+  socket.on("connect", () => {
+    console.log("Socket connected:", socket.id);
+    socket.emit("joinDoctorRoom", doctorId);
+    console.log("Joined doctor room:", doctorId);
+  });
 
-  console.log('Joined doctor room:', doctorId);
+  // ✅ LISTEN EVENT
+  socket.on("newAssignedPatient", async (data) => {
+    console.log("Socket received:", data);
 
-  if (!socketInitialized.current) {
-    socket.on('newAssignedPatient', async (data) => {
-      console.log(data);
-      if (data.doctorId === doctorRef.current?.id) {
-        await fetchVisits();
-        toast.success(`🩺 New patient assigned: ${data.patientName || 'Patient'}`);
-      }
-    });
-
-      socketInitialized.current = true;
+    if (data.doctorId === doctorId) {
+      await fetchVisits();
+      toast.success(`🩺 New patient: ${data.patientName}`);
     }
+  });
 
-    fetchVisits();
+  fetchVisits();
 
-    return () => {
-      socket.off('newAssignedPatient');
-      socketInitialized.current = false;
-    };
-  }, [doctor]);
+  return () => {
+    socket.off("newAssignedPatient");
+    socket.off("connect");
+  };
+
+}, [doctor]);
 
   const waitingVisits = assignedVisits.filter(visit => visit.status === 'Waiting');
 
