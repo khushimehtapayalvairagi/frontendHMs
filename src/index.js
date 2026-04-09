@@ -8,12 +8,13 @@ import { Provider } from 'react-redux';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { AdmissionAdviceProvider } from './context/AdmissionAdviceContext';
+import SocketContext from "./context/SocketContext"; 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
         <AdmissionAdviceProvider>
  <BrowserRouter>
-     
+      <SocketContext/>
       <App />
        
    
