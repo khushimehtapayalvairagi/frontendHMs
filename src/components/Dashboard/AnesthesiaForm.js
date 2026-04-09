@@ -9,15 +9,18 @@ const AnesthesiaForm = () => {
   const [doctors, setDoctors] = useState([]);
    const BASE_URL = process.env.REACT_APP_BASE_URL;
     const printRef = useRef(null);
-  const [form, setForm] = useState({
-    procedureScheduleId: procedureScheduleId || '',
-    anestheticId: '',
-    anesthesiaName: '',
-    anesthesiaType: '',
-    induceTime: '',
-    endTime: '',
-    medicinesUsedText: ''
-  });
+ const [form, setForm] = useState({
+  procedureScheduleId: procedureScheduleId || '',
+  patientId: '',
+  ipdAdmissionId: '',
+  procedureType: '',
+  anestheticId: '',
+  anesthesiaName: '',
+  anesthesiaType: '',
+  induceTime: '',
+  endTime: '',
+  medicinesUsedText: ''
+});
 
   const handleChange = e => {
     const { name, value } = e.target;
@@ -39,8 +42,10 @@ const AnesthesiaForm = () => {
     e.preventDefault();
     const token = localStorage.getItem('jwt');
    
- const payload = {
-  procedureScheduleId: procedureScheduleId,  // not form.procedureScheduleId
+const payload = {
+  patientId: form.patientId,
+  ipdAdmissionId: form.ipdAdmissionId,
+  procedureType: form.procedureType,
   anestheticId: form.anestheticId,
   anesthesiaName: form.anesthesiaName,
   anesthesiaType: form.anesthesiaType,
