@@ -639,13 +639,9 @@ import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
-import io from "socket.io-client";
 import "react-toastify/dist/ReactToastify.css";
 import { useAdmissionAdvice } from "../../context/AdmissionAdviceContext";
-import socket from "../../context/socket"; // ✅ same instance
-// const socket = io(process.env.REACT_APP_BASE_URL, {
-//   withCredentials: true,
-// });
+import socket from "../../context/socket";
 
 const IPDAdmissionForm = () => {
   const navigate = useNavigate();
@@ -670,7 +666,9 @@ const IPDAdmissionForm = () => {
   const [patientName, setPatientName] = useState(
     adviceData?.patientName || patient?.name || visit?.patientName || ""
   );
-  const [doctorName, setDoctorName] = useState(visit?.doctorName || "");
+  const [doctorName, setDoctorName] = useState(
+    adviceData?.doctorName || visit?.doctorName || ""
+  );
 
   const [wards, setWards] = useState([]);
   const [roomCategories, setRoomCategories] = useState([]);
@@ -683,24 +681,38 @@ const IPDAdmissionForm = () => {
   const [submitted, setSubmitted] = useState(false);
   const printRef = useRef();
 
-  // 🔄 FETCH DATA
+  // 🔄 FETCH DATA + SOCKET (KEEPING YOUR SOCKET)
   useEffect(() => {
     fetchWards();
     fetchRoomCategories();
 
- 
+    socket.on("newIPDAdmissionAdvice", (data) => {
+      console.log("🔥 FORM SOCKET RECEIVED:", data);
 
-    // socket.on("newIPDAdmissionAdvice", (data) => {
-    //   toast.info(`Doctor advised admission for Patient ID: ${data.patientId}`);
-    //   setPatientId(data.patientId || "");
-    //   setVisitId(data.visitId || "");
-    //   setAdmittingDoctorId(data.admittingDoctorId || "");
-    //   setPatientName(data.patientName || "");
-    //   setDoctorName(data.doctorName || "");
-    // });
+      toast.info(`Doctor advised admission for Patient`);
+
+      setPatientId(data.patientDbId || "");
+      setVisitId(data.visitId || "");
+      setAdmittingDoctorId(data.admittingDoctorId || "");
+      setPatientName(data.patientName || "");
+      setDoctorName(data.doctorName || "");
+    });
 
     return () => socket.off("newIPDAdmissionAdvice");
   }, []);
+
+  // ✅ CONTEXT SYNC (MOST IMPORTANT)
+  useEffect(() => {
+    if (adviceData) {
+      console.log("✅ Context data applied:", adviceData);
+
+      setPatientId(adviceData.patientDbId || "");
+      setVisitId(adviceData.visitId || "");
+      setAdmittingDoctorId(adviceData.admittingDoctorId || "");
+      setPatientName(adviceData.patientName || "");
+      setDoctorName(adviceData.doctorName || "");
+    }
+  }, [adviceData]);
 
   const fetchWards = async () => {
     try {
@@ -744,7 +756,7 @@ const IPDAdmissionForm = () => {
       patientId,
       visitId,
       wardId,
-      bedNumber: bedNumber,
+      bedNumber,
       roomCategoryId,
       admittingDoctorId,
       expectedDischargeDate,
@@ -757,16 +769,16 @@ const IPDAdmissionForm = () => {
 
       toast.success("IPD Admission successful!");
       setSubmitted(true);
-      fetchWards(); // 🔥 refresh beds
-       navigate(`/receptionist-dashboard/IPDAdmissionList/${patientId}`, {
-    state: { patientName },
-  });
+      fetchWards();
+
+      navigate(`/receptionist-dashboard/IPDAdmissionList/${patientId}`, {
+        state: { patientName },
+      });
     } catch (err) {
       toast.error(err.response?.data?.message || "Admission failed");
     }
   };
 
-  // 🧠 Selected ward
   const selectedWard = wards.find((w) => w._id === wardId);
 
   return (
@@ -786,7 +798,6 @@ const IPDAdmissionForm = () => {
           <label>Doctor</label>
           <input readOnly value={doctorName} />
 
-          {/* WARD */}
           <label>Ward</label>
           <select
             value={wardId}
@@ -803,30 +814,29 @@ const IPDAdmissionForm = () => {
             ))}
           </select>
 
-          {/* BED — ONLY AVAILABLE */}
-       <label>Bed Number</label>
-<select
-  value={bedNumber}
-  onChange={(e) => setBedNumber(e.target.value)}
-  disabled={!wardId}
->
-  <option value="">Select a bed</option>
+          <label>Bed Number</label>
+          <select
+            value={bedNumber}
+            onChange={(e) => setBedNumber(e.target.value)}
+            disabled={!wardId}
+          >
+            <option value="">Select a bed</option>
 
-  {selectedWard?.beds?.map((b) => (
-   <option value={b.bedNumber} disabled={b.status !== "available"}>
-  Bed {b.bedNumber} — {b.status}
-</option>
+            {selectedWard?.beds?.map((b) => (
+              <option
+                key={b.bedNumber}
+                value={b.bedNumber}
+                disabled={b.status !== "available"}
+              >
+                Bed {b.bedNumber} — {b.status}
+              </option>
+            ))}
 
-  ))}
+            {!selectedWard?.beds?.length && (
+              <option disabled>No beds found</option>
+            )}
+          </select>
 
-  {!selectedWard?.beds?.length && (
-    <option disabled>No beds found</option>
-  )}
-</select>
-
-
-
-          {/* ROOM CATEGORY */}
           <label>Room Category</label>
           <select
             value={roomCategoryId}
