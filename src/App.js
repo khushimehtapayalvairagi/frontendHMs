@@ -64,6 +64,10 @@ import BillPaymentHistory from './components/Dashboard/BillPaymentHistory.js';
 import IPDReportPage from './Admin/components/IPDReportPage.js';
 import OPDReportPage from './Admin/components/OPDReportPage.js';
 
+
+import SocketContext from "../../context/SocketContext"; // ✅ same instance
+
+
 const App = () => {
   const ReceptionistRoutes = () => (
   <Routes>
@@ -98,7 +102,7 @@ const InventoryRoutes =()=>(
 
   return (
     <>
-  
+  <SocketContext/>
     <Routes>
     <Route element={<ProtectedRoute role="ADMIN" />}>
     <Route
