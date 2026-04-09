@@ -686,19 +686,19 @@ const IPDAdmissionForm = () => {
     fetchWards();
     fetchRoomCategories();
 
-    socket.on("newIPDAdmissionAdvice", (data) => {
-      console.log("🔥 FORM SOCKET RECEIVED:", data);
+    // socket.on("newIPDAdmissionAdvice", (data) => {
+    //   console.log("🔥 FORM SOCKET RECEIVED:", data);
 
-      toast.info(`Doctor advised admission for Patient`);
+    //   toast.info(`Doctor advised admission for Patient`);
 
-      setPatientId(data.patientDbId || "");
-      setVisitId(data.visitId || "");
-      setAdmittingDoctorId(data.admittingDoctorId || "");
-      setPatientName(data.patientName || "");
-      setDoctorName(data.doctorName || "");
-    });
+    //   setPatientId(data.patientDbId || "");
+    //   setVisitId(data.visitId || "");
+    //   setAdmittingDoctorId(data.admittingDoctorId || "");
+    //   setPatientName(data.patientName || "");
+    //   setDoctorName(data.doctorName || "");
+    // });
 
-    return () => socket.off("newIPDAdmissionAdvice");
+    // return () => socket.off("newIPDAdmissionAdvice");
   }, []);
 
   // ✅ CONTEXT SYNC (MOST IMPORTANT)
