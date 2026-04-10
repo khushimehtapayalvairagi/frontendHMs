@@ -78,6 +78,7 @@ const App = () => {
      <Route path="UpdatePatientStatus" element={<UpdateVisitStatusPage />} /> 
     <Route path="IPDAdmissionForm" element={<IPDAdmissionForm />} />
     <Route path="ProcedureForm" element={<ProcedureForm />} />
+    <Route path="AnesthesiaForm" element={<AnesthesiaForm/>}/>
     <Route path="ViewAnesthesiaForm" element={<ViewAnesthesiaRecord />} />
     <Route path="LabourRoom" element={<LabourRoom />} />
     <Route path="ViewLabourRoom" element={<LabourRoomDetailViewer />} />
@@ -173,7 +174,7 @@ const InventoryRoutes =()=>(
  <Route path="IPDAdmissionList" element={<IPDAdmissionList />} />
 
 <Route path="ProcedureForm" element={<ProcedureForm/>} />
-<Route path="AnesthesiaForm/:procedureScheduleId" element={<AnesthesiaForm />} />
+<Route path="AnesthesiaForm" element={<AnesthesiaForm />} />
  
 <Route path="ViewAnesthesiaForm" element={<ViewAnesthesiaRecord />} />
 
