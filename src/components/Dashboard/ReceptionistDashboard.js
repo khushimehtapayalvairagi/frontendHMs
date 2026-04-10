@@ -78,6 +78,7 @@ const drawerContent = (
         { label: "IPD Admission Form", path: "/receptionist-dashboard/IPDAdmissionForm", icon: <AdmissionIcon /> },
          { label: "IPD Admission List", path: `/receptionist-dashboard/IPDAdmissionList/${patientId}`, icon: <ListIcon /> },
         { label: "ProcedureForm", path: "/receptionist-dashboard/ProcedureForm", icon: <ProcedureIcon /> },
+         { label: "AnesthesiaForm", path: "/receptionist-dashboard/AnesthesiaForm", icon: <AnesthesiaIcon /> },
         { label: "ViewAnesthesiaForm", path: "/receptionist-dashboard/ViewAnesthesiaForm", icon: <AnesthesiaIcon /> },
         { label: "LabourRoom", path: "/receptionist-dashboard/LabourRoom", icon: <LabourRoomIcon /> },
         { label: "ViewLabourRoom", path: "/receptionist-dashboard/ViewLabourRoom", icon: <LabourRoomIcon /> },

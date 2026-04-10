@@ -115,22 +115,10 @@ const handleSubmit = async e => {
     const procedureScheduleId = res.data.procedure._id;
 
     if (formData.procedureType === 'OT') {
-      navigate(`/receptionist-dashboard/AnesthesiaForm/${procedureScheduleId}`, {
-  state: {
-    patientId: formData.patientId,
-    ipdAdmissionId: formData.ipdAdmissionId,
-    procedureType: formData.procedureType
-  }
-});
+      navigate(`/receptionist-dashboard/AnesthesiaForm/${procedureScheduleId}`);
     }
     else  if (formData.procedureType === 'Labour Room') {
-    navigate(`/receptionist-dashboard/AnesthesiaForm/${procedureScheduleId}`, {
-  state: {
-    patientId: formData.patientId,
-    ipdAdmissionId: formData.ipdAdmissionId,
-    procedureType: formData.procedureType
-  }
-});
+      navigate(`/receptionist-dashboard/AnesthesiaForm/${procedureScheduleId}`);
     }
 
   } catch (error) {
