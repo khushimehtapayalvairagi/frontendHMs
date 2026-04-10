@@ -58,11 +58,11 @@ const [dailyReports, setDailyReports] = useState([]);
           .filter(p => p.status === 'Scheduled' || p.status === 'Completed') // Optional filter
           .map(p =>
             axios
-              .get(`${BASE_URL}/api/procedures/anesthesia-records/${p._id}`, {
+              .get(`${BASE_URL}/api/procedures/anesthesia-records`, {
                 headers: { Authorization: `Bearer ${token}` },
               })
               .then(res => ({
-                ...res.data.record,
+                ...res.data.records,
                 procedureName: p.procedureId?.name || '',
               }))
               .catch(() => null)
