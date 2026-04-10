@@ -15,49 +15,28 @@ const ViewAnesthesiaRecord = () => {
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [loading, setLoading] = useState(true);
-    const BASE_URL = process.env.REACT_APP_BASE_URL;
+
+  const BASE_URL = process.env.REACT_APP_BASE_URL;
+
+  // ✅ FETCH ONLY ANESTHESIA RECORDS (NO PROCEDURE LINK)
   const fetchAllAnesthesiaRecords = async () => {
     const token = localStorage.getItem('jwt');
+
     try {
-      const patientRes = await axios.get(
-        `${BASE_URL}/api/receptionist/patients`,
-        { headers: { Authorization: `Bearer ${token}` } }
+      const res = await axios.get(
+        `${BASE_URL}/api/procedures/anesthesia-records`,
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
       );
 
-      const patients = patientRes.data.patients;
+      console.log("API DATA:", res.data.records); // debug
 
-      const allProcedurePromises = patients.map(p =>
-        axios
-          .get(`${BASE_URL}/api/procedures/schedules/${p._id}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          })
-          .then(res => res.data.procedures.map(proc => ({ ...proc, patient: p })))
-          .catch(() => [])
-      );
+      setRecords(res.data.records || []);
+      setFilteredRecords(res.data.records || []);
 
-      const allProcedures = (await Promise.all(allProcedurePromises)).flat();
-      const filteredProcedures = allProcedures.filter(p => p.status === 'Scheduled');
-
-      const anesthesiaRecords = await Promise.all(
-        filteredProcedures.map(p =>
-          axios
-            .get(`${BASE_URL}/api/procedures/anesthesia-records`, {
-              headers: { Authorization: `Bearer ${token}` },
-            })
-            .then(res => ({
-              ...res.data.record,
-              procedureName: p.procedureId?.name || '',
-              patient: p.patient
-            }))
-            .catch(() => null)
-        )
-      );
-
-      const validRecords = anesthesiaRecords.filter(r => r !== null);
-      setRecords(validRecords);
-      setFilteredRecords(validRecords);
     } catch (error) {
-      console.error('Error fetching anesthesia records:', error);
+      console.error(error);
       toast.error('Failed to fetch records');
     } finally {
       setLoading(false);
@@ -68,11 +47,14 @@ const ViewAnesthesiaRecord = () => {
     fetchAllAnesthesiaRecords();
   }, []);
 
+  // ✅ SEARCH FILTER
   useEffect(() => {
     const lower = searchTerm.toLowerCase();
+
     const filtered = records.filter(record =>
-      record?.patient?.fullName?.toLowerCase().includes(lower)
+      record?.patientId?.fullName?.toLowerCase().includes(lower)
     );
+
     setFilteredRecords(filtered);
   }, [searchTerm, records]);
 
@@ -86,12 +68,15 @@ const ViewAnesthesiaRecord = () => {
     setSelectedRecord(null);
   };
 
-  if (loading) return <div style={styles.centerText}>Loading...</div>;
+  if (loading) {
+    return <div style={styles.centerText}>Loading...</div>;
+  }
 
   return (
     <div style={styles.container}>
       <h2 style={styles.heading}>Anesthesia Records</h2>
 
+      {/* 🔍 Search */}
       <input
         type="text"
         placeholder="Search by patient name..."
@@ -108,13 +93,22 @@ const ViewAnesthesiaRecord = () => {
             <TableHead>
               <TableRow>
                 <TableCell><strong>👤 Patient Name</strong></TableCell>
+                <TableCell><strong>Procedure Type</strong></TableCell>
                 <TableCell><strong>Details</strong></TableCell>
               </TableRow>
             </TableHead>
+
             <TableBody>
-              {filteredRecords.map((record, index) => (
-                <TableRow key={record._id || index}>
-                  <TableCell>{record.patient?.fullName || 'Unknown'}</TableCell>
+              {filteredRecords.map((record) => (
+                <TableRow key={record._id}>
+                  <TableCell>
+                    {record.patientId?.fullName || 'Unknown'}
+                  </TableCell>
+
+                  <TableCell>
+                    {record.procedureType || 'N/A'}
+                  </TableCell>
+
                   <TableCell>
                     <IconButton onClick={() => handleOpenDialog(record)}>
                       <ExpandMoreIcon />
@@ -123,33 +117,67 @@ const ViewAnesthesiaRecord = () => {
                 </TableRow>
               ))}
             </TableBody>
+
           </Table>
         </TableContainer>
       )}
 
-      {/* Dialog */}
-    <Dialog open={dialogOpen} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
-  <DialogTitle>📝 Anesthesia Record Details</DialogTitle>
-  <DialogContent dividers>
-    {selectedRecord && (
-      <>
-        <p><strong>👤 Patient:</strong> {selectedRecord.patient?.fullName || 'Unknown'}</p>
-        <p><strong>🩺 Procedure:</strong> {selectedRecord.procedureName || 'N/A'}</p>
-        <p><strong>👨‍⚕️ Anesthetist:</strong> {selectedRecord.anestheticId?.userId?.name || 'N/A'}</p>
-        <p><strong>💉 Anesthesia:</strong> {selectedRecord.anesthesiaName} ({selectedRecord.anesthesiaType})</p>
-        <p><strong>⏱️ Induce Time:</strong> {selectedRecord.induceTime ? new Date(selectedRecord.induceTime).toLocaleString() : 'N/A'}</p>
-        <p><strong>✅ End Time:</strong> {selectedRecord.endTime ? new Date(selectedRecord.endTime).toLocaleString() : 'N/A'}</p>
-        <p><strong>💊 Medicines Used:</strong> {selectedRecord.medicinesUsedText || 'N/A'}</p>
-      </>
-    )}
-  </DialogContent>
-  <DialogActions>
-    <Button onClick={handleCloseDialog} color="primary" variant="contained">
-      Close
-    </Button>
-  </DialogActions>
-</Dialog>
+      {/* ✅ DETAILS DIALOG */}
+      <Dialog open={dialogOpen} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
+        <DialogTitle>📝 Anesthesia Record Details</DialogTitle>
 
+        <DialogContent dividers>
+          {selectedRecord && (
+            <>
+              <p>
+                <strong>👤 Patient:</strong>{" "}
+                {selectedRecord.patientId?.fullName || 'Unknown'}
+              </p>
+
+              <p>
+                <strong>🏥 Procedure Type:</strong>{" "}
+                {selectedRecord.procedureType || 'N/A'}
+              </p>
+
+              <p>
+                <strong>👨‍⚕️ Anesthetist:</strong>{" "}
+                {selectedRecord.anestheticId?.userId?.name || 'N/A'}
+              </p>
+
+              <p>
+                <strong>💉 Anesthesia:</strong>{" "}
+                {selectedRecord.anesthesiaName || 'N/A'} (
+                {selectedRecord.anesthesiaType || 'N/A'})
+              </p>
+
+              <p>
+                <strong>⏱️ Induce Time:</strong>{" "}
+                {selectedRecord.induceTime
+                  ? new Date(selectedRecord.induceTime).toLocaleString()
+                  : 'N/A'}
+              </p>
+
+              <p>
+                <strong>✅ End Time:</strong>{" "}
+                {selectedRecord.endTime
+                  ? new Date(selectedRecord.endTime).toLocaleString()
+                  : 'N/A'}
+              </p>
+
+              <p>
+                <strong>💊 Medicines Used:</strong>{" "}
+                {selectedRecord.medicinesUsedText || 'N/A'}
+              </p>
+            </>
+          )}
+        </DialogContent>
+
+        <DialogActions>
+          <Button onClick={handleCloseDialog} variant="contained">
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <ToastContainer />
     </div>
@@ -158,7 +186,7 @@ const ViewAnesthesiaRecord = () => {
 
 export default ViewAnesthesiaRecord;
 
-// Styles
+// 🎨 STYLES
 const styles = {
   container: {
     maxWidth: '900px',
