@@ -109,18 +109,58 @@ console.log("Calling reports API for", ipdAdmissionId);
       .catch(() => toast.error('Failed to load manual charge items'));
   }, []);
 
-  useEffect(() => {
-    const token = localStorage.getItem('jwt');
-    if (!patientId) return;
+useEffect(() => {
+  const token = localStorage.getItem('jwt');
+  if (!patientId) return;
 
-    axios.get(`${BASE_URL}/api/procedures/schedules/${patientId}`, {
-      headers: { Authorization: `Bearer ${token}` }
-    }).then(res => {
-      const filtered = (res.data.procedures || []).filter(p => p.status === 'Completed' && !p.isBilled);
-      setSchedules(filtered);
-      
-    }).catch(() => toast.error('Failed to load procedures'));
-  }, [patientId]);
+  axios.get(`${BASE_URL}/api/procedures/schedules/${patientId}`, {
+    headers: { Authorization: `Bearer ${token}` }
+  }).then(res => {
+
+    const allProcedures = res.data.procedures || [];
+
+    console.log("All Procedures 👉", allProcedures);
+
+    const completedNotBilled = allProcedures.filter(p => {
+      const status = p.status?.toLowerCase();
+      return status === 'completed' && !p.isBilled;
+    });
+
+    // ✅ SET DATA
+    setSchedules(completedNotBilled);
+
+    // ✅ 🎯 TOAST CONDITIONS
+
+    if (allProcedures.length === 0) {
+      toast.warning('⚠ No procedures found for this patient');
+    } 
+    else if (completedNotBilled.length === 0) {
+
+      const hasIncomplete = allProcedures.some(
+        p => p.status?.toLowerCase() !== 'completed'
+      );
+
+      const allBilled = allProcedures.every(
+        p => p.isBilled === true
+      );
+
+      if (hasIncomplete) {
+        toast.info('ℹ️ Procedure not completed yet. Only completed procedures can be billed.');
+      } 
+      else if (allBilled) {
+        toast.warning('⚠ All procedures are already billed');
+      } 
+      else {
+        toast.warning('⚠ No procedures available for billing');
+      }
+    }
+
+  }).catch((err) => {
+    console.error(err);
+    toast.error('Failed to load procedures');
+  });
+
+}, [patientId]);
 
   useEffect(() => {
     const token = localStorage.getItem('jwt');
