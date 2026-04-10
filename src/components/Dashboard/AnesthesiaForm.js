@@ -3,17 +3,18 @@ import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useParams } from 'react-router-dom';
-
+import { useLocation } from "react-router-dom";
 const AnesthesiaForm = () => {
   const { procedureScheduleId } = useParams();  // from /anesthesia/:procedureId
   const [doctors, setDoctors] = useState([]);
    const BASE_URL = process.env.REACT_APP_BASE_URL;
     const printRef = useRef(null);
+    const location = useLocation();
  const [form, setForm] = useState({
   procedureScheduleId: procedureScheduleId || '',
-  patientId: '',
-  ipdAdmissionId: '',
-  procedureType: '',
+  patientId: location.state?.patientId || '',
+  ipdAdmissionId: location.state?.ipdAdmissionId || '',
+  procedureType: location.state?.procedureType || '',
   anestheticId: '',
   anesthesiaName: '',
   anesthesiaType: '',
