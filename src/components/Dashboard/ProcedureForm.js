@@ -112,14 +112,14 @@ const handleSubmit = async e => {
     );
 
     toast.success('Procedure scheduled successfully!');
-    const procedureScheduleId = res.data.procedure._id;
+    // const procedureScheduleId = res.data.procedure._id;
 
-    if (formData.procedureType === 'OT') {
-      navigate(`/receptionist-dashboard/AnesthesiaForm/${procedureScheduleId}`);
-    }
-    else  if (formData.procedureType === 'Labour Room') {
-      navigate(`/receptionist-dashboard/AnesthesiaForm/${procedureScheduleId}`);
-    }
+    // if (formData.procedureType === 'OT') {
+    //   navigate(`/receptionist-dashboard/AnesthesiaForm/${procedureScheduleId}`);
+    // }
+    // else  if (formData.procedureType === 'Labour Room') {
+    //   navigate(`/receptionist-dashboard/AnesthesiaForm/${procedureScheduleId}`);
+    // }
 
   } catch (error) {
     toast.error(error.response?.data?.message || 'Scheduling failed');
