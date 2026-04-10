@@ -41,7 +41,7 @@ const ViewAnesthesiaRecord = () => {
       const anesthesiaRecords = await Promise.all(
         filteredProcedures.map(p =>
           axios
-            .get(`${BASE_URL}/api/procedures/anesthesia-records/${p._id}`, {
+            .get(`${BASE_URL}/api/procedures/anesthesia-records`, {
               headers: { Authorization: `Bearer ${token}` },
             })
             .then(res => ({
