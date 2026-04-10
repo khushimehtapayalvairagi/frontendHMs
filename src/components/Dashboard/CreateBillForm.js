@@ -45,32 +45,41 @@ const [dailyReports, setDailyReports] = useState([]);
     const token = localStorage.getItem('jwt');
 
     try {
-      // Step 1: Get all procedures for this patient
-      const procRes = await axios.get(`${BASE_URL}/api/procedures/schedules/${patientId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      // ✅ Step 1: Get procedures
+      const procRes = await axios.get(
+        `${BASE_URL}/api/procedures/schedules/${patientId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
       const procedures = procRes.data.procedures || [];
 
-      // Step 2: For each, fetch anesthesia record
-      const records = await Promise.all(
-        procedures
-          .filter(p => p.status === 'Scheduled' || p.status === 'Completed') // Optional filter
-          .map(p =>
-            axios
-              .get(`${BASE_URL}/api/procedures/anesthesia-records`, {
-                headers: { Authorization: `Bearer ${token}` },
-              })
-              .then(res => ({
-                ...res.data.records,
-                procedureName: p.procedureId?.name || '',
-              }))
-              .catch(() => null)
-          )
+      // ✅ Step 2: Get ALL anesthesia records ONCE
+      const anaRes = await axios.get(
+        `${BASE_URL}/api/procedures/anesthesia-records`,
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      setAnesthesiaRecords(records.filter(Boolean));
+      const allRecords = anaRes.data.records || [];
+
+      // ✅ Step 3: Filter by patient + map correctly
+      const mappedRecords = allRecords
+        .filter(r => r.patientId?._id === patientId) // ✅ correct filtering
+        .map(r => {
+          // find matching procedure
+          const proc = procedures.find(
+            p => p.ipdAdmissionId === r.ipdAdmissionId
+          );
+
+          return {
+            ...r,
+            procedureName: proc?.procedureId?.name || r.procedureType || 'N/A'
+          };
+        });
+
+      setAnesthesiaRecords(mappedRecords);
+
     } catch (error) {
+      console.error(error);
       toast.error('Failed to load anesthesia records');
     }
   };
