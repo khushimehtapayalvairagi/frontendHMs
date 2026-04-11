@@ -81,7 +81,7 @@ const user = JSON.parse(localStorage.getItem("user"));
     e.preventDefault();
     setError('');
     const amt = Number(form.amount);
-    if (!(amt < 0)) return setError('Amount cannot be negative');
+    // if (!(amt > 0)) return setError('Amount cannot be negative');
     if (amt > bill.balance_due) return setError(`Cannot exceed balance due (₹${bill.balance_due})`);
     if (form.method === 'External_Reference' && !form.externalRef.trim()) {
       return setError('External reference required');
