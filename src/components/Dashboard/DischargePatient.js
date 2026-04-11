@@ -16,7 +16,7 @@ const DischargePatient = () => {
 const BASE_URL = process.env.REACT_APP_BASE_URL;
   const fetchAdmittedPatients = async () => {
     try {
-      const patientRes = await axios.get('${BASE_URL}/api/receptionist/patients', {
+      const patientRes = await axios.get(`${BASE_URL}/api/receptionist/patients`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
