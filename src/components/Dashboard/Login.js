@@ -46,8 +46,9 @@ const BASE_URL = process.env.REACT_APP_BASE_URL;
     if (user.role === "ADMIN") navigate("/admin-dashboard");
     else if (user.designation === "Receptionist") navigate("/receptionist-dashboard");
     else if (user.role === "DOCTOR") navigate("/doctor-dashboard");
-    else if (user.designation === "Head Nurse") navigate("/nurse-dashboard");
-    else if (user.designation === "Inventory Manager") navigate("/inventoryManager-dashboard");
+    else if (user.designation === "Metron") navigate("/nurse-dashboard");
+    else if (user.designation === "O.T. Attendant") navigate("/nurse-dashboard");
+    else if (user.designation === "Pharmacists") navigate("/inventoryManager-dashboard");
     else toast.error("Unknown role, cannot navigate", { position: "top-center", autoClose: 4000 });
 
   } catch (err) {
