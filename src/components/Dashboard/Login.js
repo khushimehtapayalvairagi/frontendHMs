@@ -43,43 +43,14 @@ const BASE_URL = process.env.REACT_APP_BASE_URL;
     localStorage.setItem("user", JSON.stringify(user));
     localStorage.setItem("staff", JSON.stringify(staff));
     // Navigate based on role/designation
-    // if (user.role === "ADMIN") navigate("/admin-dashboard");
-    // else if (user.designation === "Receptionist") navigate("/receptionist-dashboard");
-    // else if (user.role === "DOCTOR") navigate("/doctor-dashboard");
-    // else if (user.designation === "Metron") navigate("/nurse-dashboard");
-    // else if (user.designation === "O.T. Attendant") navigate("/nurse-dashboard");
-    // else if (user.designation === "Pharmacists") navigate("/inventoryManager-dashboard");
-    // else toast.error("Unknown role, cannot navigate", { position: "top-center", autoClose: 4000 });
-    if (user.role === "ADMIN") {
-  navigate("/admin-dashboard");
-}
+    if (user.role === "ADMIN") navigate("/admin-dashboard");
+    else if (user.designation === "Receptionist") navigate("/receptionist-dashboard");
+    else if (user.role === "DOCTOR") navigate("/doctor-dashboard");
+    else if (user.designation === "Metron") navigate("/nurse-dashboard");
+    else if (user.designation === "O.T. Attendant") navigate("/nurse-dashboard");
+    else if (user.designation === "Pharmacists") navigate("/inventoryManager-dashboard");
+    else toast.error("Unknown role, cannot navigate", { position: "top-center", autoClose: 4000 });
 
-else if (user.role === "DOCTOR") {
-  navigate("/doctor-dashboard");
-}
-
-else if (user.role === "STAFF") {
-
-  if (staff?.designation === "Receptionist") {
-    navigate("/receptionist-dashboard");
-  }
-
-  else if (
-    staff?.designation === "Metron" ||
-    staff?.designation === "Head Nurse" ||
-    staff?.designation === "O.T. Attendant"
-  ) {
-    navigate("/nurse-dashboard");
-  }
-
-  else if (staff?.designation === "Pharmacists") {
-    navigate("/inventoryManager-dashboard");
-  }
-
-  else {
-    toast.error("Unknown staff designation");
-  }
-}
   } catch (err) {
     console.error("Login error:", err.response?.data || err.message);
     toast.error(err.response?.data?.message || "Invalid email or password");
