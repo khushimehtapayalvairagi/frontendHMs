@@ -223,11 +223,16 @@ const InventoryRoutes =()=>(
 
 </Route>
 <Route element={<ProtectedRoute role="STAFF" />}>
- <Route path="/lab-dashboard" element={<LabDashboard/>}/>
-  <Route path="tests" element={<AllTests/>} />
-  <Route path="add-test" element={<AddTest/>} />
-  <Route path="upload-report" element={<UploadReport/>} />
-  <Route path="payments" element={<LabPayment/>} />
+  <Route path="/lab-dashboard" element={<LabDashboard />}>
+    
+    <Route index element={<h2>Welcome Lab Dashboard</h2>} />
+
+    <Route path="tests" element={<AllTests />} />
+    <Route path="add-test" element={<AddTest />} />
+    <Route path="upload-report" element={<UploadReport />} />
+    <Route path="payments" element={<LabPayment />} />
+
+  </Route>
 </Route>
 
       <Route path="/" element={<Login />} />
