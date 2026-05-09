@@ -66,7 +66,11 @@ import OPDReportPage from './Admin/components/OPDReportPage.js';
 
 
 import SocketContext from "./context/SocketContext"; // ✅ same instance
-
+import LabDashboard from './components/Dashboard/LabDashboard.js';
+import AllTests from './components/Dashboard/AllTests.js';
+import AddTest from './components/Dashboard/AddTests.js';
+import UploadReport from './components/Dashboard/UploadReport.js';
+import LabPayment from './components/Dashboard/LabPayment.js';
 
 const App = () => {
   const ReceptionistRoutes = () => (
@@ -217,6 +221,13 @@ const InventoryRoutes =()=>(
 <Route path ="TransactionHistoryForm" element={<TransactionHistoryForm/>}/>
 </Route>
 
+</Route>
+<Route element={<ProtectedRoute role="STAFF" />}>
+ <Route path="/lab-dashboard" element={<LabDashboard/>}/>
+  <Route path="tests" element={<AllTests/>} />
+  <Route path="add-test" element={<AddTest/>} />
+  <Route path="upload-report" element={<UploadReport/>} />
+  <Route path="payments" element={<LabPayment/>} />
 </Route>
 
       <Route path="/" element={<Login />} />

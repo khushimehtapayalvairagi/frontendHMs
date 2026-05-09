@@ -48,6 +48,7 @@ const BASE_URL = process.env.REACT_APP_BASE_URL;
     else if (user.role === "DOCTOR") navigate("/doctor-dashboard");
     else if (user.designation === "Metron") navigate("/nurse-dashboard");
     else if (user.designation === "O.T. Attendant") navigate("/nurse-dashboard");
+     else if (user.designation === "Pathologist") navigate("/lab-dashboard")
     else if (user.designation === "Pharmacists") navigate("/inventoryManager-dashboard");
     else toast.error("Unknown role, cannot navigate", { position: "top-center", autoClose: 4000 });
 
