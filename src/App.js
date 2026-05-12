@@ -227,10 +227,10 @@ const InventoryRoutes =()=>(
     
     <Route index element={<h2>Welcome Lab Dashboard</h2>} />
 
-    <Route path="tests" element={<AllTests />} />
-    <Route path="add-test" element={<AddTest />} />
-    <Route path="upload-report" element={<UploadReport />} />
-    <Route path="payments" element={<LabPayment />} />
+    <Route path="tests" element={<AllTests/>} />
+    <Route path="add-test" element={<AddTest/>} />
+    <Route path="upload-report" element={<UploadReport/>} />
+    <Route path="payments" element={<LabPayment/>} />
 
   </Route>
 </Route>

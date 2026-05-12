@@ -26,7 +26,7 @@ const ProtectedRoute = ({ role: requiredRole }) => {
 
     // Staff-based access
     if (requiredRole === 'STAFF') {
-      const allowedDesignations = ['Receptionist', 'Head Nurse'];
+    const allowedDesignations = ['Receptionist', 'Head Nurse', 'Pathologist'];
       if (userRole === 'STAFF' && allowedDesignations.includes(userDesignation)) {
         return <Outlet />;
       }
