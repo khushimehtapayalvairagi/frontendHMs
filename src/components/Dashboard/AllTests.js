@@ -22,22 +22,39 @@ const AllTests = () => {
   }, []);
 
   // ✅ Copy Function
-  const handleCopy = (test) => {
-    const text = `
-Patient: ${test.patientId?.fullName} (${test.patientId?.patientId})
-Test: ${test.testType}
-Category: ${test.category}
-Priority: ${test.priority}
-Status: ${test.status}
-Results: ${test.results?.join(", ")}
-Notes: ${test.notes}
-Date: ${new Date(test.date).toLocaleDateString()}
-    `;
+ const handlePrint = (test) => {
+  const printWindow = window.open("", "_blank");
 
-    navigator.clipboard.writeText(text);
-    alert("Copied!");
-  };
+  printWindow.document.write(`
+    <html>
+      <head>
+        <title>Lab Test Report</title>
+        <style>
+          body { font-family: Arial; padding: 20px; }
+          h2 { text-align: center; }
+          p { font-size: 14px; margin: 5px 0; }
+        </style>
+      </head>
+      <body>
 
+        <h2>Lab Test Report</h2>
+
+        <p><b>Patient:</b> ${test.patientId?.fullName} (${test.patientId?.patientId})</p>
+        <p><b>Test:</b> ${test.testType}</p>
+        <p><b>Category:</b> ${test.category || "-"}</p>
+        <p><b>Priority:</b> ${test.priority}</p>
+        <p><b>Status:</b> ${test.status}</p>
+        <p><b>Results:</b> ${test.results?.join(", ") || "-"}</p>
+        <p><b>Notes:</b> ${test.notes || "-"}</p>
+        <p><b>Date:</b> ${new Date(test.date).toLocaleDateString()}</p>
+
+      </body>
+    </html>
+  `);
+
+  printWindow.document.close();
+  printWindow.print();
+};
   return (
     <div style={styles.container}>
       <h2 style={styles.title}>All Lab Tests</h2>
@@ -96,12 +113,12 @@ Date: ${new Date(test.date).toLocaleDateString()}
                   </td>
 
                   <td>
-                    <button
-                      style={styles.button}
-                      onClick={() => handleCopy(t)}
-                    >
-                      Copy
-                    </button>
+                 <button
+  style={styles.button}
+  onClick={() => handlePrint(t)}
+>
+  Print
+</button>
                   </td>
                 </tr>
               ))}
@@ -135,27 +152,26 @@ const styles = {
     boxShadow: "0 4px 15px rgba(0,0,0,0.08)"
   },
 
-  table: {
-    width: "100%",
-    borderCollapse: "collapse",
-    minWidth: "900px"
-  },
+table: {
+  width: "100%",
+  borderCollapse: "collapse",
+  minWidth: "900px"
+},
 
-  th: {
-    backgroundColor: "#1976d2",
-    color: "#fff",
-    padding: "12px",
-    textAlign: "left",
-    fontSize: "14px",
-    position: "sticky",
-    top: 0
-  },
+th: {
+  backgroundColor: "#1976d2",
+  color: "#fff",
+  padding: "12px",
+  textAlign: "left",
+  fontSize: "14px",
+  border: "1px solid #ddd"   // ✅ ADD THIS
+},
 
-  td: {
-    padding: "10px",
-    borderBottom: "1px solid #eee",
-    fontSize: "14px"
-  },
+td: {
+  padding: "10px",
+  fontSize: "14px",
+  border: "1px solid #ddd"   // ✅ ADD THIS
+},
 
   row: {
     transition: "0.2s"
