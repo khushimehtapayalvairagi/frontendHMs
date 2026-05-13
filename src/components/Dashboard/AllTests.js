@@ -117,23 +117,48 @@ export default AllTests;
 
 const styles = {
   container: {
-    padding: "20px"
+    padding: "25px",
+    backgroundColor: "#f4f6f8",
+    minHeight: "100vh"
   },
 
   title: {
     textAlign: "center",
-    marginBottom: "20px"
+    marginBottom: "20px",
+    color: "#333"
   },
 
   tableWrapper: {
-    overflowX: "auto"
+    overflowX: "auto",
+    backgroundColor: "#fff",
+    borderRadius: "10px",
+    boxShadow: "0 4px 15px rgba(0,0,0,0.08)"
   },
 
   table: {
     width: "100%",
     borderCollapse: "collapse",
-    backgroundColor: "#fff",
-    boxShadow: "0 2px 10px rgba(0,0,0,0.1)"
+    minWidth: "900px"
+  },
+
+  th: {
+    backgroundColor: "#1976d2",
+    color: "#fff",
+    padding: "12px",
+    textAlign: "left",
+    fontSize: "14px",
+    position: "sticky",
+    top: 0
+  },
+
+  td: {
+    padding: "10px",
+    borderBottom: "1px solid #eee",
+    fontSize: "14px"
+  },
+
+  row: {
+    transition: "0.2s"
   },
 
   button: {
@@ -142,6 +167,39 @@ const styles = {
     color: "#fff",
     border: "none",
     borderRadius: "5px",
-    cursor: "pointer"
+    cursor: "pointer",
+    fontSize: "12px"
+  },
+
+  badgeUrgent: {
+    color: "#fff",
+    backgroundColor: "red",
+    padding: "3px 8px",
+    borderRadius: "5px",
+    fontSize: "12px"
+  },
+
+  badgeNormal: {
+    color: "#fff",
+    backgroundColor: "green",
+    padding: "3px 8px",
+    borderRadius: "5px",
+    fontSize: "12px"
+  },
+
+  statusPending: {
+    color: "#fff",
+    backgroundColor: "orange",
+    padding: "3px 8px",
+    borderRadius: "5px",
+    fontSize: "12px"
+  },
+
+  statusDone: {
+    color: "#fff",
+    backgroundColor: "#2e7d32",
+    padding: "3px 8px",
+    borderRadius: "5px",
+    fontSize: "12px"
   }
 };
