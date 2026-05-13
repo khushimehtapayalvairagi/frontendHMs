@@ -35,7 +35,7 @@ Date: ${new Date(test.date).toLocaleDateString()}
     `;
 
     navigator.clipboard.writeText(text);
-    alert("Copied to clipboard!");
+    alert("Copied!");
   };
 
   return (
@@ -45,51 +45,68 @@ Date: ${new Date(test.date).toLocaleDateString()}
       {tests.length === 0 ? (
         <p>No Tests Found</p>
       ) : (
-        <div style={styles.grid}>
-          {tests.map(t => (
-            <div key={t._id} style={styles.card}>
-              
-              <h4 style={styles.name}>
-                {t.patientId?.fullName}
-                <span style={styles.id}> ({t.patientId?.patientId})</span>
-              </h4>
+        <div style={styles.tableWrapper}>
+          <table style={styles.table}>
+            <thead>
+              <tr>
+                <th>Patient</th>
+                <th>Test</th>
+                <th>Category</th>
+                <th>Priority</th>
+                <th>Status</th>
+                <th>Results</th>
+                <th>Notes</th>
+                <th>Date</th>
+                <th>Action</th>
+              </tr>
+            </thead>
 
-              <p><b>Test:</b> {t.testType}</p>
-              <p><b>Category:</b> {t.category || "-"}</p>
+            <tbody>
+              {tests.map((t) => (
+                <tr key={t._id}>
+                  <td>
+                    {t.patientId?.fullName}
+                    <br />
+                    <small>({t.patientId?.patientId})</small>
+                  </td>
 
-              <p>
-                <b>Priority:</b>{" "}
-                <span style={{
-                  color: t.priority === "Urgent" ? "red" : "green",
-                  fontWeight: "bold"
-                }}>
-                  {t.priority}
-                </span>
-              </p>
+                  <td>{t.testType}</td>
 
-              <p>
-                <b>Status:</b>{" "}
-                <span style={{
-                  color: t.status === "Completed" ? "green" : "orange"
-                }}>
-                  {t.status}
-                </span>
-              </p>
+                  <td>{t.category || "-"}</td>
 
-              <p><b>Results:</b> {t.results?.join(", ") || "-"}</p>
-              <p><b>Notes:</b> {t.notes || "-"}</p>
-              <p><b>Date:</b> {new Date(t.date).toLocaleDateString()}</p>
+                  <td style={{
+                    color: t.priority === "Urgent" ? "red" : "green",
+                    fontWeight: "bold"
+                  }}>
+                    {t.priority}
+                  </td>
 
-              {/* ✅ Copy Button */}
-              <button 
-                style={styles.button}
-                onClick={() => handleCopy(t)}
-              >
-                Copy
-              </button>
+                  <td style={{
+                    color: t.status === "Completed" ? "green" : "orange"
+                  }}>
+                    {t.status}
+                  </td>
 
-            </div>
-          ))}
+                  <td>{t.results?.join(", ") || "-"}</td>
+
+                  <td>{t.notes || "-"}</td>
+
+                  <td>
+                    {new Date(t.date).toLocaleDateString()}
+                  </td>
+
+                  <td>
+                    <button
+                      style={styles.button}
+                      onClick={() => handleCopy(t)}
+                    >
+                      Copy
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
     </div>
@@ -97,36 +114,30 @@ Date: ${new Date(test.date).toLocaleDateString()}
 };
 
 export default AllTests;
+
 const styles = {
   container: {
     padding: "20px"
   },
+
   title: {
     textAlign: "center",
     marginBottom: "20px"
   },
-  grid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-    gap: "15px"
+
+  tableWrapper: {
+    overflowX: "auto"
   },
-  card: {
-    background: "#fff",
-    padding: "15px",
-    borderRadius: "10px",
-    boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-    borderLeft: "5px solid #1976d2"
+
+  table: {
+    width: "100%",
+    borderCollapse: "collapse",
+    backgroundColor: "#fff",
+    boxShadow: "0 2px 10px rgba(0,0,0,0.1)"
   },
-  name: {
-    marginBottom: "8px"
-  },
-  id: {
-    fontSize: "12px",
-    color: "gray"
-  },
+
   button: {
-    marginTop: "10px",
-    padding: "6px 10px",
+    padding: "5px 10px",
     backgroundColor: "#1976d2",
     color: "#fff",
     border: "none",
