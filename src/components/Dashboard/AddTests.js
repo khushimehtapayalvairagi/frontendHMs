@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const AddTest = () => {
   const [patients, setPatients] = useState([]);
@@ -28,7 +30,7 @@ const AddTest = () => {
   // ✅ Handle submit
   const handleSubmit = async () => {
     if (!form.patientId || !form.testType) {
-      return alert("Patient & Test Type required");
+      return toast.error("Patient & Test Type required");
     }
 
     try {
@@ -39,7 +41,7 @@ const AddTest = () => {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      alert("✅ Test Added Successfully");
+     toast.success("✅ Test Added Successfully");
 
       // reset form
       setForm({
@@ -54,12 +56,13 @@ const AddTest = () => {
 
     } catch (err) {
       console.log(err);
-      alert("❌ Error adding test");
+      toast.error("❌ Error adding test");
     }
   };
 
   return (
     <div style={styles.container}>
+      <ToastContainer position="top-right" autoClose={3000} />
       <div style={styles.card}>
         <h2 style={styles.title}>Add Lab Test</h2>
 
