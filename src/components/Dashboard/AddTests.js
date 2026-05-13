@@ -73,7 +73,7 @@ const AddTest = () => {
           <option value="">Select Patient</option>
           {patients.map(p => (
             <option key={p._id} value={p._id}>
-              {p.name} ({p.phone})
+             {p.fullName} ({p.patientId})
             </option>
           ))}
         </select>
