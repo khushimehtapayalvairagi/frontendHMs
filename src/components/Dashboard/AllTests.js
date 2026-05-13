@@ -28,11 +28,27 @@ const AllTests = () => {
       {tests.length === 0 ? (
         <p>No Tests Found</p>
       ) : (
-        tests.map(t => (
-          <div key={t._id} style={{ marginBottom: "10px" }}>
-            <strong>{t.patientId?.name}</strong> - {t.testType} - {t.status}
-          </div>
-        ))
+     tests.map(t => (
+  <div key={t._id} style={{
+    border: "1px solid #ccc",
+    padding: "10px",
+    marginBottom: "10px",
+    borderRadius: "8px"
+  }}>
+    <h4>{t.patientId?.fullName} ({t.patientId?.patientId})</h4>
+
+    <p><b>Test:</b> {t.testType}</p>
+    <p><b>Category:</b> {t.category}</p>
+    <p><b>Priority:</b> {t.priority}</p>
+    <p><b>Status:</b> {t.status}</p>
+
+    <p><b>Results:</b> {t.results?.join(", ")}</p>
+
+    <p><b>Notes:</b> {t.notes}</p>
+
+    <p><b>Date:</b> {new Date(t.date).toLocaleDateString()}</p>
+  </div>
+))
       )}
     </div>
   );
