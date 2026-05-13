@@ -97,3 +97,40 @@ Date: ${new Date(test.date).toLocaleDateString()}
 };
 
 export default AllTests;
+const styles = {
+  container: {
+    padding: "20px"
+  },
+  title: {
+    textAlign: "center",
+    marginBottom: "20px"
+  },
+  grid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+    gap: "15px"
+  },
+  card: {
+    background: "#fff",
+    padding: "15px",
+    borderRadius: "10px",
+    boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+    borderLeft: "5px solid #1976d2"
+  },
+  name: {
+    marginBottom: "8px"
+  },
+  id: {
+    fontSize: "12px",
+    color: "gray"
+  },
+  button: {
+    marginTop: "10px",
+    padding: "6px 10px",
+    backgroundColor: "#1976d2",
+    color: "#fff",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer"
+  }
+};
