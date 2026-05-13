@@ -14,7 +14,7 @@ const AddTest = () => {
 
   // 🔥 Fetch all patients
   useEffect(() => {
-    axios.get(`${BASE_URL}/api/receptionist/patients`, {
+    axios.get(`${BASE_URL}/api/lab/patients`, {
       headers: { Authorization: `Bearer ${token}` }
     })
     .then(res => {
