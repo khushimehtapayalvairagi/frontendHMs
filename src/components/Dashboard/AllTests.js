@@ -1,278 +1,182 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const AllTests = () => {
   const [tests, setTests] = useState([]);
+  const [selectedTest, setSelectedTest] = useState(null);
+  const [amount, setAmount] = useState("");
 
   const BASE_URL = process.env.REACT_APP_BASE_URL;
   const token = localStorage.getItem("jwt");
 
-  useEffect(() => {
+  // 🔥 Fetch tests
+  const fetchTests = () => {
     axios.get(`${BASE_URL}/api/lab/tests`, {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
+      headers: { Authorization: `Bearer ${token}` }
     })
-    .then(res => {
-      setTests(res.data.tests || []);
-    })
-    .catch(err => {
-      console.log(err);
-    });
+    .then(res => setTests(res.data.tests || []))
+    .catch(err => console.log(err));
+  };
+
+  useEffect(() => {
+    fetchTests();
   }, []);
 
-  // ✅ Copy Function
-const handlePrint = (test) => {
-  const printWindow = window.open("", "_blank");
+  // ✅ Upload Report + Payment
+  const handleUpload = async () => {
+    if (!amount) return toast.error("Enter amount");
 
-  printWindow.document.write(`
-    <html>
-      <head>
-        <title>Lab Test Report</title>
+    try {
+      await axios.post(`${BASE_URL}/api/lab/upload-report`, {
+        testId: selectedTest._id,
+        amount
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
 
-        <style>
-          body {
-            font-family: Arial, sans-serif;
-            padding: 30px;
-            background: #f4f6f8;
-          }
+      toast.success("✅ Report + Payment Done");
 
-          .report-container {
-            max-width: 700px;
-            margin: auto;
-            background: #fff;
-            padding: 25px;
-            border-radius: 10px;
-            border: 1px solid #ddd;
-          }
+      setSelectedTest(null);
+      setAmount("");
+      fetchTests();
 
-          .header {
-            text-align: center;
-            border-bottom: 2px solid #1976d2;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-          }
+    } catch (err) {
+      console.log(err);
+      toast.error("❌ Failed");
+    }
+  };
 
-          .header h1 {
-            margin: 0;
-            color: #1976d2;
-          }
+  // 🖨️ PRINT REPORT
+  const handlePrint = (test) => {
+    const win = window.open("", "_blank");
 
-          .header p {
-            margin: 2px 0;
-            font-size: 13px;
-            color: #555;
-          }
+    win.document.write(`
+      <html>
+        <head>
+          <title>Lab Report</title>
+          <style>
+            body { font-family: Arial; padding: 30px; }
+            .box { border:1px solid #ddd; padding:20px; border-radius:10px; }
+            h2 { text-align:center; color:#1976d2; }
+            .row { display:flex; justify-content:space-between; margin:6px 0; }
+          </style>
+        </head>
+        <body>
+          <div class="box">
+            <h2>🧪 Lab Report</h2>
 
-          .section {
-            margin-bottom: 15px;
-          }
+            <div class="row"><b>Patient:</b> ${test.patientId?.fullName}</div>
+            <div class="row"><b>ID:</b> ${test.patientId?.patientId}</div>
+            <div class="row"><b>Test:</b> ${test.testType}</div>
+            <div class="row"><b>Status:</b> ${test.status}</div>
+            <div class="row"><b>Results:</b> ${test.results?.join(", ")}</div>
 
-          .row {
-            display: flex;
-            justify-content: space-between;
-            margin: 6px 0;
-            font-size: 14px;
-          }
-
-          .label {
-            font-weight: bold;
-            color: #333;
-          }
-
-          .value {
-            color: #555;
-          }
-
-          .badge {
-            padding: 3px 8px;
-            border-radius: 5px;
-            font-size: 12px;
-            color: #fff;
-          }
-
-          .urgent {
-            background: red;
-          }
-
-          .normal {
-            background: green;
-          }
-
-          .pending {
-            background: orange;
-          }
-
-          .completed {
-            background: #2e7d32;
-          }
-
-          .footer {
-            margin-top: 30px;
-            text-align: right;
-            font-size: 13px;
-          }
-
-          .sign {
-            margin-top: 40px;
-          }
-
-          @media print {
-            body {
-              background: #fff;
-            }
-          }
-        </style>
-      </head>
-
-      <body>
-
-        <div class="report-container">
-
-          <div class="header">
-            <h1>🧪 Lab Test Report</h1>
-            <p>Hospital Management System</p>
-            <p>Date: ${new Date().toLocaleDateString()}</p>
+            <br/><br/>
+            <div>Signature: __________</div>
           </div>
+        </body>
+      </html>
+    `);
 
-          <div class="section">
-            <div class="row">
-              <span class="label">Patient Name:</span>
-              <span class="value">${test.patientId?.fullName}</span>
-            </div>
+    win.document.close();
+    win.print();
+  };
 
-            <div class="row">
-              <span class="label">Patient ID:</span>
-              <span class="value">${test.patientId?.patientId}</span>
-            </div>
-
-            <div class="row">
-              <span class="label">Test:</span>
-              <span class="value">${test.testType}</span>
-            </div>
-
-            <div class="row">
-              <span class="label">Category:</span>
-              <span class="value">${test.category || "-"}</span>
-            </div>
-
-            <div class="row">
-              <span class="label">Priority:</span>
-              <span class="value">
-                <span class="badge ${test.priority === "Urgent" ? "urgent" : "normal"}">
-                  ${test.priority}
-                </span>
-              </span>
-            </div>
-
-            <div class="row">
-              <span class="label">Status:</span>
-              <span class="value">
-                <span class="badge ${test.status === "Completed" ? "completed" : "pending"}">
-                  ${test.status}
-                </span>
-              </span>
-            </div>
-
-            <div class="row">
-              <span class="label">Results:</span>
-              <span class="value">${test.results?.join(", ") || "-"}</span>
-            </div>
-
-            <div class="row">
-              <span class="label">Notes:</span>
-              <span class="value">${test.notes || "-"}</span>
-            </div>
-
-            <div class="row">
-              <span class="label">Test Date:</span>
-              <span class="value">${new Date(test.date).toLocaleDateString()}</span>
-            </div>
-          </div>
-
-          <div class="footer">
-            <p class="sign">________________________</p>
-            <p>Authorized Signature</p>
-          </div>
-
-        </div>
-
-      </body>
-    </html>
-  `);
-
-  printWindow.document.close();
-  printWindow.print();
-};
   return (
     <div style={styles.container}>
+      <ToastContainer />
+
       <h2 style={styles.title}>All Lab Tests</h2>
 
-      {tests.length === 0 ? (
-        <p>No Tests Found</p>
-      ) : (
-        <div style={styles.tableWrapper}>
-          <table style={styles.table}>
-            <thead>
-              <tr>
-                <th>Patient</th>
-                <th>Test</th>
-                <th>Category</th>
-                <th>Priority</th>
-                <th>Status</th>
-                <th>Results</th>
-                <th>Notes</th>
-                <th>Date</th>
-                <th>Action</th>
-              </tr>
-            </thead>
+      <div style={styles.tableWrapper}>
+        <table style={styles.table}>
+          <thead>
+            <tr>
+              <th style={styles.th}>Patient</th>
+              <th style={styles.th}>Test</th>
+              <th style={styles.th}>Status</th>
+              <th style={styles.th}>Results</th>
+              <th style={styles.th}>Date</th>
+              <th style={styles.th}>Actions</th>
+            </tr>
+          </thead>
 
-            <tbody>
-              {tests.map((t) => (
-                <tr key={t._id}>
-                  <td>
-                    {t.patientId?.fullName}
-                    <br />
-                    <small>({t.patientId?.patientId})</small>
-                  </td>
+          <tbody>
+            {tests.map(t => (
+              <tr key={t._id}>
+                <td style={styles.td}>
+                  {t.patientId?.fullName}
+                </td>
 
-                  <td>{t.testType}</td>
+                <td style={styles.td}>{t.testType}</td>
 
-                  <td>{t.category || "-"}</td>
-
-                  <td style={{
-                    color: t.priority === "Urgent" ? "red" : "green",
+                <td style={styles.td}>
+                  <span style={{
+                    color: t.status === "Completed" ? "green" : "orange",
                     fontWeight: "bold"
                   }}>
-                    {t.priority}
-                  </td>
-
-                  <td style={{
-                    color: t.status === "Completed" ? "green" : "orange"
-                  }}>
                     {t.status}
-                  </td>
+                  </span>
+                </td>
 
-                  <td>{t.results?.join(", ") || "-"}</td>
+                <td style={styles.td}>
+                  {t.results?.join(", ") || "-"}
+                </td>
 
-                  <td>{t.notes || "-"}</td>
+                <td style={styles.td}>
+                  {new Date(t.date).toLocaleDateString()}
+                </td>
 
-                  <td>
-                    {new Date(t.date).toLocaleDateString()}
-                  </td>
+                <td style={styles.td}>
+                  <button style={styles.btn} onClick={() => handlePrint(t)}>
+                    Print
+                  </button>
 
-                  <td>
-                 <button
-  style={styles.button}
-  onClick={() => handlePrint(t)}
->
-  Print
-</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  {t.status === "Pending" && (
+                    <button
+                      style={styles.uploadBtn}
+                      onClick={() => setSelectedTest(t)}
+                    >
+                      Upload Report
+                    </button>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* ✅ MODAL */}
+      {selectedTest && (
+        <div style={styles.modal}>
+          <div style={styles.modalBox}>
+            <h3>Upload Report</h3>
+
+            <p>{selectedTest.patientId?.fullName}</p>
+
+            <input
+              placeholder="Enter Amount"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              style={styles.input}
+            />
+
+            <div>
+              <button style={styles.btn} onClick={handleUpload}>
+                Submit
+              </button>
+
+              <button
+                style={styles.cancel}
+                onClick={() => setSelectedTest(null)}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
@@ -281,90 +185,93 @@ const handlePrint = (test) => {
 
 export default AllTests;
 
+
 const styles = {
   container: {
-    padding: "25px",
-    backgroundColor: "#f4f6f8",
+    padding: "20px",
+    background: "#f4f6f8",
     minHeight: "100vh"
   },
 
   title: {
     textAlign: "center",
-    marginBottom: "20px",
-    color: "#333"
+    marginBottom: "20px"
   },
 
   tableWrapper: {
-    overflowX: "auto",
-    backgroundColor: "#fff",
+    background: "#fff",
     borderRadius: "10px",
-    boxShadow: "0 4px 15px rgba(0,0,0,0.08)"
+    overflowX: "auto",
+    boxShadow: "0 4px 10px rgba(0,0,0,0.1)"
   },
 
-table: {
-  width: "100%",
-  borderCollapse: "collapse",
-  minWidth: "900px"
-},
-
-th: {
-  backgroundColor: "#1976d2",
-  color: "#fff",
-  padding: "12px",
-  textAlign: "left",
-  fontSize: "14px",
-  border: "1px solid #ddd"   // ✅ ADD THIS
-},
-
-td: {
-  padding: "10px",
-  fontSize: "14px",
-  border: "1px solid #ddd"   // ✅ ADD THIS
-},
-
-  row: {
-    transition: "0.2s"
+  table: {
+    width: "100%",
+    borderCollapse: "collapse"
   },
 
-  button: {
-    padding: "5px 10px",
-    backgroundColor: "#1976d2",
+  th: {
+    border: "1px solid #ddd",
+    padding: "10px",
+    background: "#1976d2",
+    color: "#fff"
+  },
+
+  td: {
+    border: "1px solid #ddd", // ✅ vertical lines fixed
+    padding: "10px"
+  },
+
+  btn: {
+    margin: "2px",
+    padding: "5px 8px",
+    background: "#1976d2",
     color: "#fff",
     border: "none",
-    borderRadius: "5px",
-    cursor: "pointer",
-    fontSize: "12px"
+    borderRadius: "4px"
   },
 
-  badgeUrgent: {
+  uploadBtn: {
+    margin: "2px",
+    padding: "5px 8px",
+    background: "green",
     color: "#fff",
-    backgroundColor: "red",
-    padding: "3px 8px",
-    borderRadius: "5px",
-    fontSize: "12px"
+    border: "none",
+    borderRadius: "4px"
   },
 
-  badgeNormal: {
-    color: "#fff",
-    backgroundColor: "green",
-    padding: "3px 8px",
-    borderRadius: "5px",
-    fontSize: "12px"
+  modal: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: "rgba(0,0,0,0.4)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center"
   },
 
-  statusPending: {
-    color: "#fff",
-    backgroundColor: "orange",
-    padding: "3px 8px",
-    borderRadius: "5px",
-    fontSize: "12px"
+  modalBox: {
+    background: "#fff",
+    padding: "20px",
+    borderRadius: "10px",
+    width: "300px",
+    textAlign: "center"
   },
 
-  statusDone: {
+  input: {
+    width: "100%",
+    padding: "8px",
+    margin: "10px 0",
+    border: "1px solid #ccc"
+  },
+
+  cancel: {
+    marginLeft: "10px",
+    padding: "5px 8px",
+    background: "red",
     color: "#fff",
-    backgroundColor: "#2e7d32",
-    padding: "3px 8px",
-    borderRadius: "5px",
-    fontSize: "12px"
+    border: "none"
   }
 };
