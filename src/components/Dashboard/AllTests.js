@@ -24,7 +24,7 @@ const AllTests = () => {
     fetchTests();
   }, []);
 
-  // ✅ Upload Report + Payment
+  // ✅ Upload Report + Payment (PRO SYSTEM)
   const handleUpload = async () => {
     if (!amount) return toast.error("Enter amount");
 
@@ -48,7 +48,7 @@ const AllTests = () => {
     }
   };
 
-  // 🖨️ PRINT REPORT
+  // 🖨️ PRINT REPORT (ADVANCED DESIGN)
   const handlePrint = (test) => {
     const win = window.open("", "_blank");
 
@@ -56,26 +56,79 @@ const AllTests = () => {
       <html>
         <head>
           <title>Lab Report</title>
+
           <style>
-            body { font-family: Arial; padding: 30px; }
-            .box { border:1px solid #ddd; padding:20px; border-radius:10px; }
-            h2 { text-align:center; color:#1976d2; }
-            .row { display:flex; justify-content:space-between; margin:6px 0; }
+            body {
+              font-family: Arial;
+              padding: 30px;
+              background: #f4f6f8;
+            }
+
+            .container {
+              max-width: 700px;
+              margin: auto;
+              background: #fff;
+              padding: 25px;
+              border-radius: 10px;
+              border: 1px solid #ddd;
+            }
+
+            .header {
+              text-align: center;
+              border-bottom: 2px solid #1976d2;
+              margin-bottom: 20px;
+            }
+
+            .header h2 {
+              margin: 0;
+              color: #1976d2;
+            }
+
+            .row {
+              display: flex;
+              justify-content: space-between;
+              margin: 8px 0;
+            }
+
+            .label {
+              font-weight: bold;
+            }
+
+            .footer {
+              margin-top: 40px;
+              text-align: right;
+            }
+
+            .sign {
+              margin-top: 50px;
+            }
           </style>
         </head>
+
         <body>
-          <div class="box">
-            <h2>🧪 Lab Report</h2>
 
-            <div class="row"><b>Patient:</b> ${test.patientId?.fullName}</div>
-            <div class="row"><b>ID:</b> ${test.patientId?.patientId}</div>
-            <div class="row"><b>Test:</b> ${test.testType}</div>
-            <div class="row"><b>Status:</b> ${test.status}</div>
-            <div class="row"><b>Results:</b> ${test.results?.join(", ")}</div>
+          <div class="container">
 
-            <br/><br/>
-            <div>Signature: __________</div>
+            <div class="header">
+              <h2>🧪 Lab Test Report</h2>
+              <p>Date: ${new Date().toLocaleDateString()}</p>
+            </div>
+
+            <div class="row"><span class="label">Patient:</span> ${test.patientId?.fullName}</div>
+            <div class="row"><span class="label">Patient ID:</span> ${test.patientId?.patientId}</div>
+            <div class="row"><span class="label">Test:</span> ${test.testType}</div>
+            <div class="row"><span class="label">Category:</span> ${test.category || "-"}</div>
+            <div class="row"><span class="label">Status:</span> ${test.status}</div>
+            <div class="row"><span class="label">Results:</span> ${test.results?.join(", ") || "-"}</div>
+            <div class="row"><span class="label">Notes:</span> ${test.notes || "-"}</div>
+
+            <div class="footer">
+              <div class="sign">_______________________</div>
+              <p>Authorized Signature</p>
+            </div>
+
           </div>
+
         </body>
       </html>
     `);
@@ -88,7 +141,7 @@ const AllTests = () => {
     <div style={styles.container}>
       <ToastContainer />
 
-      <h2 style={styles.title}>All Lab Tests</h2>
+      <h2 style={styles.title}>🧪 All Lab Tests</h2>
 
       <div style={styles.tableWrapper}>
         <table style={styles.table}>
@@ -108,6 +161,8 @@ const AllTests = () => {
               <tr key={t._id}>
                 <td style={styles.td}>
                   {t.patientId?.fullName}
+                  <br />
+                  <small>({t.patientId?.patientId})</small>
                 </td>
 
                 <td style={styles.td}>{t.testType}</td>
@@ -130,7 +185,7 @@ const AllTests = () => {
                 </td>
 
                 <td style={styles.td}>
-                  <button style={styles.btn} onClick={() => handlePrint(t)}>
+                  <button style={styles.printBtn} onClick={() => handlePrint(t)}>
                     Print
                   </button>
 
@@ -153,24 +208,24 @@ const AllTests = () => {
       {selectedTest && (
         <div style={styles.modal}>
           <div style={styles.modalBox}>
-            <h3>Upload Report</h3>
+            <h3>Upload Report + Billing</h3>
 
-            <p>{selectedTest.patientId?.fullName}</p>
+            <p><b>{selectedTest.patientId?.fullName}</b></p>
 
             <input
-              placeholder="Enter Amount"
+              placeholder="Enter Amount ₹"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               style={styles.input}
             />
 
             <div>
-              <button style={styles.btn} onClick={handleUpload}>
+              <button style={styles.submitBtn} onClick={handleUpload}>
                 Submit
               </button>
 
               <button
-                style={styles.cancel}
+                style={styles.cancelBtn}
                 onClick={() => setSelectedTest(null)}
               >
                 Cancel
@@ -186,6 +241,7 @@ const AllTests = () => {
 export default AllTests;
 
 
+// ✅ INTERNAL CSS
 const styles = {
   container: {
     padding: "20px",
@@ -218,11 +274,11 @@ const styles = {
   },
 
   td: {
-    border: "1px solid #ddd", // ✅ vertical lines fixed
+    border: "1px solid #ddd",
     padding: "10px"
   },
 
-  btn: {
+  printBtn: {
     margin: "2px",
     padding: "5px 8px",
     background: "#1976d2",
@@ -267,9 +323,17 @@ const styles = {
     border: "1px solid #ccc"
   },
 
-  cancel: {
+  submitBtn: {
+    padding: "6px 10px",
+    background: "#1976d2",
+    color: "#fff",
+    border: "none",
+    borderRadius: "5px"
+  },
+
+  cancelBtn: {
     marginLeft: "10px",
-    padding: "5px 8px",
+    padding: "6px 10px",
     background: "red",
     color: "#fff",
     border: "none"
