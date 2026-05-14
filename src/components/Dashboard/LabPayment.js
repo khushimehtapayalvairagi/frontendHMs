@@ -3,6 +3,7 @@ import axios from "axios";
 
 const LabPayment = () => {
   const [payments, setPayments] = useState([]);
+  const [activeTab, setActiveTab] = useState("pending");
 
   const BASE_URL = process.env.REACT_APP_BASE_URL;
   const token = localStorage.getItem("jwt");
@@ -19,7 +20,7 @@ const LabPayment = () => {
     fetchData();
   }, []);
 
-  // ✅ Mark Paid
+  // ✅ Pay
   const markPaid = async (id) => {
     try {
       await axios.put(`${BASE_URL}/api/lab/payments/${id}/pay`, {}, {
@@ -28,14 +29,12 @@ const LabPayment = () => {
 
       alert("✅ Payment Done");
       fetchData();
-
     } catch (err) {
-      console.log(err);
       alert("❌ Error");
     }
   };
 
-  // ✅ PRINT RECEIPT
+  // 🖨️ PRINT RECEIPT
   const handlePrint = (p) => {
     const win = window.open("", "_blank");
 
@@ -43,41 +42,80 @@ const LabPayment = () => {
       <html>
         <head>
           <title>Receipt</title>
+
           <style>
-            body { font-family: Arial; padding: 20px; }
-            .receipt {
-              width: 320px;
-              border: 1px solid #000;
-              padding: 15px;
-              margin: auto;
+            body {
+              font-family: Arial;
+              padding: 30px;
+              background: #f4f6f8;
             }
-            h3 { text-align: center; margin-bottom: 10px; }
-            p { margin: 4px 0; font-size: 14px; }
-            hr { margin: 10px 0; }
+
+            .receipt {
+              max-width: 400px;
+              margin: auto;
+              border: 1px solid #ddd;
+              padding: 20px;
+              border-radius: 10px;
+              background: #fff;
+            }
+
+            h2 {
+              text-align: center;
+              color: #1976d2;
+              margin-bottom: 10px;
+            }
+
+            .row {
+              display: flex;
+              justify-content: space-between;
+              margin: 6px 0;
+            }
+
+            .total {
+              font-size: 16px;
+              font-weight: bold;
+              margin-top: 10px;
+            }
+
+            .footer {
+              text-align: center;
+              margin-top: 20px;
+              font-size: 13px;
+            }
           </style>
         </head>
+
         <body>
 
           <div class="receipt">
-            <h3>Lab Payment Receipt</h3>
+            <h2>Lab Payment Receipt</h2>
 
-            <p><b>Patient:</b> ${p.patientId?.fullName}</p>
-            <p><b>ID:</b> ${p.patientId?.patientId}</p>
-            <p><b>Test:</b> ${p.testId?.testType}</p>
+            <div class="row"><span>Patient:</span> ${p.patientId?.fullName}</div>
+            <div class="row"><span>ID:</span> ${p.patientId?.patientId}</div>
+            <div class="row"><span>Test:</span> ${p.testId?.testType}</div>
 
-            <hr />
+            <hr/>
 
-            <p><b>Amount:</b> ₹${p.amount}</p>
-            <p><b>Status:</b> ${p.status}</p>
+            <div class="row total">
+              <span>Total:</span> ₹${p.amount}
+            </div>
 
-            <p><b>Date:</b> ${
-              p.paymentDate
-                ? new Date(p.paymentDate).toLocaleDateString()
-                : "Pending"
-            }</p>
+            <div class="row">
+              <span>Status:</span> ${p.status}
+            </div>
 
-            <hr />
-            <p style="text-align:center">Thank You</p>
+            <div class="row">
+              <span>Date:</span>
+              ${
+                p.paymentDate
+                  ? new Date(p.paymentDate).toLocaleDateString()
+                  : "-"
+              }
+            </div>
+
+            <div class="footer">
+              Thank You 🙏
+            </div>
           </div>
 
         </body>
@@ -88,80 +126,108 @@ const LabPayment = () => {
     win.print();
   };
 
+  // 🔍 FILTER
+  const filteredPayments = payments.filter(p =>
+    activeTab === "pending"
+      ? p.status === "Pending"
+      : p.status === "Paid"
+  );
+
   return (
     <div style={styles.container}>
-      <h2 style={styles.title}>Lab Payments</h2>
+      <h2 style={styles.title}>💳 Lab Payments</h2>
 
-      {payments.length === 0 ? (
-        <p style={{ textAlign: "center" }}>No Pending Payments</p>
-      ) : (
-        <table style={styles.table}>
-          <thead>
-            <tr>
-              <th style={styles.th}>Patient</th>
-              <th style={styles.th}>Test</th>
-              <th style={styles.th}>Amount</th>
-              <th style={styles.th}>Status</th>
-              <th style={styles.th}>Date</th>
-              <th style={styles.th}>Action</th>
-            </tr>
-          </thead>
+      {/* ✅ Tabs */}
+      <div style={styles.tabs}>
+        <button
+          style={{
+            ...styles.tabBtn,
+            background: activeTab === "pending" ? "#1976d2" : "#ccc"
+          }}
+          onClick={() => setActiveTab("pending")}
+        >
+          Pending
+        </button>
 
-          <tbody>
-            {payments.map((p) => (
-              <tr key={p._id}>
-                <td style={styles.td}>
-                  {p.patientId?.fullName}
-                  <br />
-                  <small>({p.patientId?.patientId})</small>
-                </td>
+        <button
+          style={{
+            ...styles.tabBtn,
+            background: activeTab === "history" ? "#1976d2" : "#ccc"
+          }}
+          onClick={() => setActiveTab("history")}
+        >
+          History
+        </button>
+      </div>
 
-                <td style={styles.td}>
-                  {p.testId?.testType}
-                </td>
+      {/* ✅ Table */}
+      <table style={styles.table}>
+        <thead>
+          <tr>
+            <th style={styles.th}>Patient</th>
+            <th style={styles.th}>Test</th>
+            <th style={styles.th}>Amount</th>
+            <th style={styles.th}>Status</th>
+            <th style={styles.th}>Date</th>
+            <th style={styles.th}>Action</th>
+          </tr>
+        </thead>
 
-                <td style={styles.td}>₹{p.amount}</td>
+        <tbody>
+          {filteredPayments.map((p) => (
+            <tr key={p._id}>
+              <td style={styles.td}>
+                {p.patientId?.fullName}
+                <br />
+                <small>({p.patientId?.patientId})</small>
+              </td>
 
-                <td style={styles.td}>
-                  <span style={styles.pending}>
-                    {p.status}
-                  </span>
-                </td>
+              <td style={styles.td}>{p.testId?.testType}</td>
 
-                <td style={styles.td}>
-                  {p.paymentDate
-                    ? new Date(p.paymentDate).toLocaleDateString()
-                    : "-"}
-                </td>
+              <td style={styles.td}>₹{p.amount}</td>
 
-                <td style={styles.td}>
+              <td style={styles.td}>
+                <span style={{
+                  ...styles.status,
+                  background: p.status === "Paid" ? "green" : "orange"
+                }}>
+                  {p.status}
+                </span>
+              </td>
+
+              <td style={styles.td}>
+                {p.paymentDate
+                  ? new Date(p.paymentDate).toLocaleDateString()
+                  : "-"}
+              </td>
+
+              <td style={styles.td}>
+                {p.status === "Pending" && (
                   <button
                     style={styles.payBtn}
                     onClick={() => markPaid(p._id)}
                   >
                     Pay
                   </button>
+                )}
 
-                  <button
-                    style={styles.printBtn}
-                    onClick={() => handlePrint(p)}
-                  >
-                    Print
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+                <button
+                  style={styles.printBtn}
+                  onClick={() => handlePrint(p)}
+                >
+                  Receipt
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 };
 
 export default LabPayment;
 
-
-// ✅ Internal CSS
 const styles = {
   container: {
     padding: "20px",
@@ -174,32 +240,41 @@ const styles = {
     marginBottom: "20px"
   },
 
+  tabs: {
+    textAlign: "center",
+    marginBottom: "15px"
+  },
+
+  tabBtn: {
+    margin: "5px",
+    padding: "8px 15px",
+    border: "none",
+    color: "#fff",
+    borderRadius: "5px",
+    cursor: "pointer"
+  },
+
   table: {
     width: "100%",
     borderCollapse: "collapse",
-    background: "#fff",
-    borderRadius: "10px",
-    overflow: "hidden",
-    boxShadow: "0 4px 15px rgba(0,0,0,0.08)"
+    background: "#fff"
   },
 
   th: {
+    border: "1px solid #ddd",
+    padding: "10px",
     background: "#1976d2",
-    color: "#fff",
-    padding: "12px",
-    border: "1px solid #ddd"
+    color: "#fff"
   },
 
   td: {
-    padding: "10px",
     border: "1px solid #ddd",
-    fontSize: "14px"
+    padding: "10px"
   },
 
-  pending: {
-    background: "orange",
+  status: {
     color: "#fff",
-    padding: "3px 8px",
+    padding: "4px 8px",
     borderRadius: "5px",
     fontSize: "12px"
   },
