@@ -22,31 +22,180 @@ const AllTests = () => {
   }, []);
 
   // ✅ Copy Function
- const handlePrint = (test) => {
+const handlePrint = (test) => {
   const printWindow = window.open("", "_blank");
 
   printWindow.document.write(`
     <html>
       <head>
         <title>Lab Test Report</title>
+
         <style>
-          body { font-family: Arial; padding: 20px; }
-          h2 { text-align: center; }
-          p { font-size: 14px; margin: 5px 0; }
+          body {
+            font-family: Arial, sans-serif;
+            padding: 30px;
+            background: #f4f6f8;
+          }
+
+          .report-container {
+            max-width: 700px;
+            margin: auto;
+            background: #fff;
+            padding: 25px;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+          }
+
+          .header {
+            text-align: center;
+            border-bottom: 2px solid #1976d2;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+          }
+
+          .header h1 {
+            margin: 0;
+            color: #1976d2;
+          }
+
+          .header p {
+            margin: 2px 0;
+            font-size: 13px;
+            color: #555;
+          }
+
+          .section {
+            margin-bottom: 15px;
+          }
+
+          .row {
+            display: flex;
+            justify-content: space-between;
+            margin: 6px 0;
+            font-size: 14px;
+          }
+
+          .label {
+            font-weight: bold;
+            color: #333;
+          }
+
+          .value {
+            color: #555;
+          }
+
+          .badge {
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-size: 12px;
+            color: #fff;
+          }
+
+          .urgent {
+            background: red;
+          }
+
+          .normal {
+            background: green;
+          }
+
+          .pending {
+            background: orange;
+          }
+
+          .completed {
+            background: #2e7d32;
+          }
+
+          .footer {
+            margin-top: 30px;
+            text-align: right;
+            font-size: 13px;
+          }
+
+          .sign {
+            margin-top: 40px;
+          }
+
+          @media print {
+            body {
+              background: #fff;
+            }
+          }
         </style>
       </head>
+
       <body>
 
-        <h2>Lab Test Report</h2>
+        <div class="report-container">
 
-        <p><b>Patient:</b> ${test.patientId?.fullName} (${test.patientId?.patientId})</p>
-        <p><b>Test:</b> ${test.testType}</p>
-        <p><b>Category:</b> ${test.category || "-"}</p>
-        <p><b>Priority:</b> ${test.priority}</p>
-        <p><b>Status:</b> ${test.status}</p>
-        <p><b>Results:</b> ${test.results?.join(", ") || "-"}</p>
-        <p><b>Notes:</b> ${test.notes || "-"}</p>
-        <p><b>Date:</b> ${new Date(test.date).toLocaleDateString()}</p>
+          <div class="header">
+            <h1>🧪 Lab Test Report</h1>
+            <p>Hospital Management System</p>
+            <p>Date: ${new Date().toLocaleDateString()}</p>
+          </div>
+
+          <div class="section">
+            <div class="row">
+              <span class="label">Patient Name:</span>
+              <span class="value">${test.patientId?.fullName}</span>
+            </div>
+
+            <div class="row">
+              <span class="label">Patient ID:</span>
+              <span class="value">${test.patientId?.patientId}</span>
+            </div>
+
+            <div class="row">
+              <span class="label">Test:</span>
+              <span class="value">${test.testType}</span>
+            </div>
+
+            <div class="row">
+              <span class="label">Category:</span>
+              <span class="value">${test.category || "-"}</span>
+            </div>
+
+            <div class="row">
+              <span class="label">Priority:</span>
+              <span class="value">
+                <span class="badge ${test.priority === "Urgent" ? "urgent" : "normal"}">
+                  ${test.priority}
+                </span>
+              </span>
+            </div>
+
+            <div class="row">
+              <span class="label">Status:</span>
+              <span class="value">
+                <span class="badge ${test.status === "Completed" ? "completed" : "pending"}">
+                  ${test.status}
+                </span>
+              </span>
+            </div>
+
+            <div class="row">
+              <span class="label">Results:</span>
+              <span class="value">${test.results?.join(", ") || "-"}</span>
+            </div>
+
+            <div class="row">
+              <span class="label">Notes:</span>
+              <span class="value">${test.notes || "-"}</span>
+            </div>
+
+            <div class="row">
+              <span class="label">Test Date:</span>
+              <span class="value">${new Date(test.date).toLocaleDateString()}</span>
+            </div>
+          </div>
+
+          <div class="footer">
+            <p class="sign">________________________</p>
+            <p>Authorized Signature</p>
+          </div>
+
+        </div>
 
       </body>
     </html>
