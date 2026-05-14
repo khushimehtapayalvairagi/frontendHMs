@@ -9,7 +9,7 @@ const LabPayment = () => {
   const token = localStorage.getItem("jwt");
 
   const fetchData = () => {
-    axios.get(`${BASE_URL}/api/lab/payments`, {
+    axios.get(`${BASE_URL}/api/lab/payments/all`, {
       headers: { Authorization: `Bearer ${token}` }
     })
     .then(res => setPayments(res.data.payments || []))
@@ -117,6 +117,7 @@ const LabPayment = () => {
               Thank You 🙏
             </div>
           </div>
+
 
         </body>
       </html>
