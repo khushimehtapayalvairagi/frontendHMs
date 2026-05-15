@@ -24,14 +24,15 @@ const AllTests = () => {
     fetchTests();
   }, []);
 
-  // ✅ Upload Report + Payment
+  // ✅ Upload Report + Payment (MERGED FLOW)
   const handleUpload = async () => {
     if (!amount) return toast.error("Enter amount");
 
     try {
       await axios.post(`${BASE_URL}/api/lab/upload-report`, {
         testId: selectedTest._id,
-        amount
+        amount,
+        paymentStatus: "Paid" // ✅ IMPORTANT
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -48,7 +49,7 @@ const AllTests = () => {
     }
   };
 
-  // 🖨️ PRINT REPORT
+  // 🖨️ PRINT REPORT + PAYMENT TOGETHER
   const handlePrint = (test) => {
     const win = window.open("", "_blank");
 
@@ -89,9 +90,10 @@ const AllTests = () => {
               font-weight: bold;
             }
 
-            .footer {
-              margin-top: 40px;
-              text-align: right;
+            .section {
+              margin-top: 20px;
+              padding-top: 10px;
+              border-top: 1px dashed #aaa;
             }
           </style>
         </head>
@@ -100,7 +102,7 @@ const AllTests = () => {
           <div class="container">
 
             <div class="header">
-              <h2>🧪 Lab Test Report</h2>
+              <h2>🧪 Lab Report</h2>
               <p>Date: ${new Date().toLocaleDateString()}</p>
             </div>
 
@@ -113,8 +115,10 @@ const AllTests = () => {
             <div class="row"><span class="label">Results:</span> ${test.results?.join(", ") || "-"}</div>
             <div class="row"><span class="label">Notes:</span> ${test.notes || "-"}</div>
 
-            <div class="footer">
-              <p>Authorized Signature</p>
+            <div class="section">
+              <h3>💳 Payment</h3>
+              <div class="row"><span class="label">Amount:</span> ₹${test.amount || "-"}</div>
+              <div class="row"><span class="label">Status:</span> ${test.status === "Completed" ? "Paid" : "Pending"}</div>
             </div>
 
           </div>
@@ -208,7 +212,6 @@ const AllTests = () => {
 
             <p><b>{selectedTest.patientId?.fullName}</b></p>
 
-            {/* ✅ DETAILS */}
             <p>Test: {selectedTest.testType}</p>
             <p>Category: {selectedTest.category || "-"}</p>
             <p>Priority: {selectedTest.priority || "-"}</p>
@@ -240,6 +243,9 @@ const AllTests = () => {
 };
 
 export default AllTests;
+
+
+// ✅ STYLES (IMPORTANT – ERROR FIX)
 const styles = {
   container: {
     padding: "20px",
