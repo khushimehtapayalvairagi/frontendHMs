@@ -118,6 +118,7 @@ const AllTests = () => {
             <div class="row"><span class="label">Patient ID:</span> ${test.patientId?.patientId}</div>
             <div class="row"><span class="label">Test:</span> ${test.testType}</div>
             <div class="row"><span class="label">Category:</span> ${test.category || "-"}</div>
+                 <div class="row"><span class="label">Priority:</span> ${test.priority || "-"}</div>
             <div class="row"><span class="label">Status:</span> ${test.status}</div>
             <div class="row"><span class="label">Results:</span> ${test.results?.join(", ") || "-"}</div>
             <div class="row"><span class="label">Notes:</span> ${test.notes || "-"}</div>
@@ -149,6 +150,8 @@ const AllTests = () => {
             <tr>
               <th style={styles.th}>Patient</th>
               <th style={styles.th}>Test</th>
+              <th style={styles.th}>Category</th>   {/* ✅ ADD */}
+               <th style={styles.th}>Priority</th>   
               <th style={styles.th}>Status</th>
               <th style={styles.th}>Results</th>
               <th style={styles.th}>Date</th>
@@ -166,6 +169,8 @@ const AllTests = () => {
                 </td>
 
                 <td style={styles.td}>{t.testType}</td>
+                 <td>{t.category || "-"}</td>     {/* ✅ */}
+                 <td>{t.priority || "-"}</td> 
 
                 <td style={styles.td}>
                   <span style={{
