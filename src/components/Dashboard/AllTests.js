@@ -24,7 +24,7 @@ const AllTests = () => {
     fetchTests();
   }, []);
 
-  // ✅ Upload Report + Payment (PRO SYSTEM)
+  // ✅ Upload Report + Payment
   const handleUpload = async () => {
     if (!amount) return toast.error("Enter amount");
 
@@ -48,7 +48,7 @@ const AllTests = () => {
     }
   };
 
-  // 🖨️ PRINT REPORT (ADVANCED DESIGN)
+  // 🖨️ PRINT REPORT
   const handlePrint = (test) => {
     const win = window.open("", "_blank");
 
@@ -79,11 +79,6 @@ const AllTests = () => {
               margin-bottom: 20px;
             }
 
-            .header h2 {
-              margin: 0;
-              color: #1976d2;
-            }
-
             .row {
               display: flex;
               justify-content: space-between;
@@ -98,15 +93,10 @@ const AllTests = () => {
               margin-top: 40px;
               text-align: right;
             }
-
-            .sign {
-              margin-top: 50px;
-            }
           </style>
         </head>
 
         <body>
-
           <div class="container">
 
             <div class="header">
@@ -118,18 +108,16 @@ const AllTests = () => {
             <div class="row"><span class="label">Patient ID:</span> ${test.patientId?.patientId}</div>
             <div class="row"><span class="label">Test:</span> ${test.testType}</div>
             <div class="row"><span class="label">Category:</span> ${test.category || "-"}</div>
-                 <div class="row"><span class="label">Priority:</span> ${test.priority || "-"}</div>
+            <div class="row"><span class="label">Priority:</span> ${test.priority || "-"}</div>
             <div class="row"><span class="label">Status:</span> ${test.status}</div>
             <div class="row"><span class="label">Results:</span> ${test.results?.join(", ") || "-"}</div>
             <div class="row"><span class="label">Notes:</span> ${test.notes || "-"}</div>
 
             <div class="footer">
-              <div class="sign">_______________________</div>
               <p>Authorized Signature</p>
             </div>
 
           </div>
-
         </body>
       </html>
     `);
@@ -144,14 +132,15 @@ const AllTests = () => {
 
       <h2 style={styles.title}>🧪 All Lab Tests</h2>
 
+      {/* TABLE */}
       <div style={styles.tableWrapper}>
         <table style={styles.table}>
           <thead>
             <tr>
               <th style={styles.th}>Patient</th>
               <th style={styles.th}>Test</th>
-              <th style={styles.th}>Category</th>   {/* ✅ ADD */}
-               <th style={styles.th}>Priority</th>   
+              <th style={styles.th}>Category</th>
+              <th style={styles.th}>Priority</th>
               <th style={styles.th}>Status</th>
               <th style={styles.th}>Results</th>
               <th style={styles.th}>Date</th>
@@ -169,8 +158,10 @@ const AllTests = () => {
                 </td>
 
                 <td style={styles.td}>{t.testType}</td>
-                 <td style={styles.td}>{t.category || "-"}</td>     {/* ✅ */}
-                 <td style={styles.td}>{t.priority || "-"}</td> 
+
+                <td style={styles.td}>{t.category || "-"}</td>
+
+                <td style={styles.td}>{t.priority || "-"}</td>
 
                 <td style={styles.td}>
                   <span style={{
@@ -209,13 +200,18 @@ const AllTests = () => {
         </table>
       </div>
 
-      {/* ✅ MODAL */}
+      {/* MODAL */}
       {selectedTest && (
         <div style={styles.modal}>
           <div style={styles.modalBox}>
             <h3>Upload Report + Billing</h3>
 
             <p><b>{selectedTest.patientId?.fullName}</b></p>
+
+            {/* ✅ DETAILS */}
+            <p>Test: {selectedTest.testType}</p>
+            <p>Category: {selectedTest.category || "-"}</p>
+            <p>Priority: {selectedTest.priority || "-"}</p>
 
             <input
               placeholder="Enter Amount ₹"
@@ -244,103 +240,3 @@ const AllTests = () => {
 };
 
 export default AllTests;
-
-
-// ✅ INTERNAL CSS
-const styles = {
-  container: {
-    padding: "20px",
-    background: "#f4f6f8",
-    minHeight: "100vh"
-  },
-
-  title: {
-    textAlign: "center",
-    marginBottom: "20px"
-  },
-
-  tableWrapper: {
-    background: "#fff",
-    borderRadius: "10px",
-    overflowX: "auto",
-    boxShadow: "0 4px 10px rgba(0,0,0,0.1)"
-  },
-
-  table: {
-    width: "100%",
-    borderCollapse: "collapse"
-  },
-
-  th: {
-    border: "1px solid #ddd",
-    padding: "10px",
-    background: "#1976d2",
-    color: "#fff"
-  },
-
-  td: {
-    border: "1px solid #ddd",
-    padding: "10px"
-  },
-
-  printBtn: {
-    margin: "2px",
-    padding: "5px 8px",
-    background: "#1976d2",
-    color: "#fff",
-    border: "none",
-    borderRadius: "4px"
-  },
-
-  uploadBtn: {
-    margin: "2px",
-    padding: "5px 8px",
-    background: "green",
-    color: "#fff",
-    border: "none",
-    borderRadius: "4px"
-  },
-
-  modal: {
-    position: "fixed",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    background: "rgba(0,0,0,0.4)",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center"
-  },
-
-  modalBox: {
-    background: "#fff",
-    padding: "20px",
-    borderRadius: "10px",
-    width: "300px",
-    textAlign: "center"
-  },
-
-  input: {
-    width: "100%",
-    padding: "8px",
-    margin: "10px 0",
-    border: "1px solid #ccc"
-  },
-
-  submitBtn: {
-    padding: "6px 10px",
-    background: "#1976d2",
-    color: "#fff",
-    border: "none",
-    borderRadius: "5px"
-  },
-
-  cancelBtn: {
-    marginLeft: "10px",
-    padding: "6px 10px",
-    background: "red",
-    color: "#fff",
-    border: "none"
-  }
-};
