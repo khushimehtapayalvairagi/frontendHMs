@@ -169,8 +169,8 @@ const AllTests = () => {
                 </td>
 
                 <td style={styles.td}>{t.testType}</td>
-                 <td>{t.category || "-"}</td>     {/* ✅ */}
-                 <td>{t.priority || "-"}</td> 
+                 <td style={styles.td}>{t.category || "-"}</td>     {/* ✅ */}
+                 <td style={styles.td}>{t.priority || "-"}</td> 
 
                 <td style={styles.td}>
                   <span style={{
