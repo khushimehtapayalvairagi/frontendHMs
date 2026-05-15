@@ -240,3 +240,104 @@ const AllTests = () => {
 };
 
 export default AllTests;
+const styles = {
+  container: {
+    padding: "20px",
+    background: "#f4f6f8",
+    minHeight: "100vh"
+  },
+
+  title: {
+    textAlign: "center",
+    marginBottom: "20px"
+  },
+
+  tableWrapper: {
+    background: "#fff",
+    borderRadius: "10px",
+    overflowX: "auto",
+    boxShadow: "0 4px 10px rgba(0,0,0,0.1)"
+  },
+
+  table: {
+    width: "100%",
+    borderCollapse: "collapse"
+  },
+
+  th: {
+    border: "1px solid #ddd",
+    padding: "10px",
+    background: "#1976d2",
+    color: "#fff"
+  },
+
+  td: {
+    border: "1px solid #ddd",
+    padding: "10px"
+  },
+
+  printBtn: {
+    margin: "2px",
+    padding: "5px 8px",
+    background: "#1976d2",
+    color: "#fff",
+    border: "none",
+    borderRadius: "4px",
+    cursor: "pointer"
+  },
+
+  uploadBtn: {
+    margin: "2px",
+    padding: "5px 8px",
+    background: "green",
+    color: "#fff",
+    border: "none",
+    borderRadius: "4px",
+    cursor: "pointer"
+  },
+
+  modal: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: "rgba(0,0,0,0.4)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center"
+  },
+
+  modalBox: {
+    background: "#fff",
+    padding: "20px",
+    borderRadius: "10px",
+    width: "300px",
+    textAlign: "center"
+  },
+
+  input: {
+    width: "100%",
+    padding: "8px",
+    margin: "10px 0",
+    border: "1px solid #ccc"
+  },
+
+  submitBtn: {
+    padding: "6px 10px",
+    background: "#1976d2",
+    color: "#fff",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer"
+  },
+
+  cancelBtn: {
+    marginLeft: "10px",
+    padding: "6px 10px",
+    background: "red",
+    color: "#fff",
+    border: "none",
+    cursor: "pointer"
+  }
+};
