@@ -115,11 +115,28 @@ const AllTests = () => {
             <div class="row"><span class="label">Results:</span> ${test.results?.join(", ") || "-"}</div>
             <div class="row"><span class="label">Notes:</span> ${test.notes || "-"}</div>
 
-            <div class="section">
-              <h3>💳 Payment</h3>
-              <div class="row"><span class="label">Amount:</span> ₹${test.amount || "-"}</div>
-              <div class="row"><span class="label">Status:</span> ${test.status === "Completed" ? "Paid" : "Pending"}</div>
-            </div>
+          <div class="section">
+  <h3>💳 Payment</h3>
+
+  <div class="row">
+    <span class="label">Amount:</span>
+    ₹${test.payment?.amount || "-"}
+  </div>
+
+  <div class="row">
+    <span class="label">Status:</span>
+    ${test.payment?.status || "Pending"}
+  </div>
+
+  <div class="row">
+    <span class="label">Date:</span>
+    ${
+      test.payment?.paymentDate
+        ? new Date(test.payment.paymentDate).toLocaleDateString()
+        : "-"
+    }
+  </div>
+</div>
 
           </div>
         </body>
