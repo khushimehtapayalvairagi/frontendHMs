@@ -48,7 +48,7 @@ const LabDashboard = () => {
           { label: "Dashboard", path: "/lab-dashboard", icon: <DashboardIcon /> },
           { label: "All Tests", path: "/lab-dashboard/tests", icon: <TestIcon /> },
           { label: "Add Test", path: "/lab-dashboard/add-test", icon: <LabIcon /> },
-          { label: "Upload Report", path: "/lab-dashboard/upload-report", icon: <UploadIcon /> },
+          // { label: "Upload Report", path: "/lab-dashboard/upload-report", icon: <UploadIcon /> },
           { label: "Payments", path: "/lab-dashboard/payments", icon: <PaymentIcon /> },
         ].map(({ label, path, icon }) => (
           <ListItem
