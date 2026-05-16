@@ -109,6 +109,7 @@ const PatientForm = () => {
       );
 
       toast.success("✅ Patient + Visit Created");
+localStorage.setItem("currentPatientId", res.data.patient.patientId);
 
       setSubmittedData({
         patient: res.data.patient,
