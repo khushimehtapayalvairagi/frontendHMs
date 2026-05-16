@@ -158,14 +158,14 @@ const PatientForm = () => {
           <option value="IPD_Admission">IPD Admission</option>
         </select>
 
-        <select value={assignedDoctorId} onChange={(e) => setAssignedDoctorId(e.target.value)}>
-          <option value="">Select Doctor</option>
-          {doctors.map(doc => (
-            <option key={doc._id} value={doc._id}>
-              {doc.userId?.name}
-            </option>
-          ))}
-        </select>
+       <select value={assignedDoctorId} onChange={(e) => setAssignedDoctorId(e.target.value)}>
+  <option value="">Select Doctor</option>
+  {doctors.map((doc) => (
+    <option key={doc._id} value={doc._id}>
+      {doc.userId?.name} ({doc.specialty?.name || "No Specialty"})
+    </option>
+  ))}
+</select>
 
         {/* PAYMENT */}
         {visitType === "OPD" && (
