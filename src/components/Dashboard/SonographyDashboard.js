@@ -14,7 +14,7 @@ import {
 
 import CreateSonography from "./CreateSonography";
 import SonographyList from "./SonographyList";
-import SonographyBulkUpload from "./SonographyBulkUpload";
+// import SonographyBulkUpload from "./SonographyBulkUpload";
 
 import { Button } from "@mui/material";
 import { useNavigate } from "react-router-dom";
