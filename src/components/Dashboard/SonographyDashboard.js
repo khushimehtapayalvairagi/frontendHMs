@@ -49,8 +49,8 @@ const handleLogout = () => {
       case "list":
         return <SonographyList />;
 
-          case "bulk":
-      return <SonographyBulkUpload />;  
+    //       case "bulk":
+    //   return <SonographyBulkUpload />;  
 
       default:
         return (
