@@ -66,11 +66,15 @@ import OPDReportPage from './Admin/components/OPDReportPage.js';
 
 
 import SocketContext from "./context/SocketContext"; // ✅ same instance
-import LabDashboard from './components/Dashboard/LabDashboard.js';
-import AllTests from './components/Dashboard/AllTests.js';
-import AddTest from './components/Dashboard/AddTests.js';
-import UploadReport from './components/Dashboard/UploadReport.js';
-import LabPayment from './components/Dashboard/LabPayment.js';
+
+
+import SonographyList from "./components/Dashboard/SonographyList";
+
+import CreateSonography from "./components/Dashboard/CreateSonography";
+import CompleteScan from './components/Dashboard/CompleteScan';
+
+
+import SonographyDashboard from "./components/Dashboard/SonographyDashboard";
 
 const App = () => {
   const ReceptionistRoutes = () => (
@@ -91,6 +95,8 @@ const App = () => {
     <Route path="PaymentForm" element={<PaymentForm />} />
     <Route path="DischargePatient" element={<DischargePatient />} />
     <Route path="BillPaymentHistory" element={<BillPaymentHistory />} />
+
+    {/* <Route path="create-sonography" element={<CreateSonography />} /> */}
   </Routes>
 );
 const InventoryRoutes =()=>(
@@ -190,6 +196,35 @@ const InventoryRoutes =()=>(
 <Route path='ViewBill' element={<ViewBill/>}/>
 <Route path ="PaymentForm" element={<PaymentForm/>}/>
 <Route path ="BillPaymentHistory" element ={<BillPaymentHistory/>}/>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+{/* 
+<Route path="create-sonography" element={<CreateSonography />} />
+
+<Route path="sonography-list" element={<SonographyList />} />
+
+  {/* ✅ YE ADD KARO */}
+  {/* <Route path="completeScan/:id" element={<CompleteScan />} />
+ */} 
+
 </Route>
      </Route>
   <Route  element={<ProtectedRoute role="DOCTOR" />} >
@@ -200,6 +235,13 @@ const InventoryRoutes =()=>(
    
    <Route path="ConsultationForm/:visitId" element={<OPDConsultationForm />} />
     <Route path="PreviousConsultantPatient/:patientId" element={<PreviousConsultations />} />  
+
+
+{/* <Route
+  path="/sonography-dashboard"
+  element={<SonographyDashboard />}
+/> */}
+
 
 </Route>
    </Route> 
@@ -213,26 +255,45 @@ const InventoryRoutes =()=>(
 </Route>
 </Route>
 <Route element={<ProtectedRoute role="STAFF" />}>
+
+{/* <Route path="/sonography-dashboard" element={<SonographyDashboard />} /> */}
+
+<Route
+  path="/sonography-dashboard"
+  element={<SonographyDashboard />}
+/>
+
+{/* <Route path="/sonography-dashboard" element={<SonographyDashboard />}>
+
+  <Route
+    path="create-sonography"
+    element={<CreateSonography />}
+  />
+
+  <Route
+    path="sonography-list"
+    element={<SonographyList />}
+  />
+
+  <Route
+    path="completeScan/:id"
+    element={<CompleteScan />}
+  />
+
+</Route> */}
+
+
+
 <Route path="/inventoryManager-dashboard"  element={<InventoryManagerDashboard />} >
 <Route path ="InventoryForm" element ={<InventoryForm/>}/>
 <Route path ="InventoryList" element ={<InventoryList/>}/>
 <Route path="inventory/edit/:id" element={<EditInventoryForm />} />
 <Route path ="RecordTransactionForm" element={<RecordTransactionForm/>}/>
 <Route path ="TransactionHistoryForm" element={<TransactionHistoryForm/>}/>
-</Route>
+
 
 </Route>
-<Route element={<ProtectedRoute role="STAFF" />}>
-  <Route path="/lab-dashboard" element={<LabDashboard />}>
-    
-    <Route index element={<h2>Welcome Lab Dashboard</h2>} />
 
-    <Route path="tests" element={<AllTests/>} />
-    <Route path="add-test" element={<AddTest/>} />
-    <Route path="upload-report" element={<UploadReport/>} />
-    <Route path="payments" element={<LabPayment/>} />
-
-  </Route>
 </Route>
 
       <Route path="/" element={<Login />} />

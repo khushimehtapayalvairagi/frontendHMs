@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import {
   Box,
@@ -79,8 +78,8 @@ const handleLogout = () => {
       <AppBar
         position="fixed"
         sx={{
-          width: calc(100% - ${drawerWidth}px),
-          ml: ${drawerWidth}px,
+          width: `calc(100% - ${drawerWidth}px)`,
+          ml: `${drawerWidth}px`,
           backgroundColor: "#1976d2",
         }}
       >
@@ -219,3 +218,33 @@ const handleLogout = () => {
 };
 
 export default SonographyDashboard;
+
+
+
+
+
+
+
+
+
+
+
+// import React from "react";
+// import CreateSonography from "./CreateSonography";
+// import ViewSonography from "./SonographyList";
+
+// const SonographyDashboard = () => {
+//   return (
+//     <div>
+//       <h2>Sonography Dashboard</h2>
+
+//       <CreateSonography />
+
+//       <hr />
+
+//       <ViewSonography />
+//     </div>
+//   );
+// };
+
+// export default SonographyDashboard;
