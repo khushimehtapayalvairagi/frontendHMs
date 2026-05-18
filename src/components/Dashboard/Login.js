@@ -42,6 +42,7 @@ const BASE_URL = process.env.REACT_APP_BASE_URL;
     localStorage.setItem("jwt", token);
     localStorage.setItem("user", JSON.stringify(user));
     localStorage.setItem("staff", JSON.stringify(staff));
+    console.log("Stored User:", JSON.parse(localStorage.getItem("user")))
     // Navigate based on role/designation
     if (user.role === "ADMIN") navigate("/admin-dashboard");
     else if (user.designation === "Receptionist") navigate("/receptionist-dashboard");
