@@ -360,7 +360,8 @@ const OPDReportPage = () => {
         );
 
         setDepartmentWiseData(
-          res.data.departmentWiseRegister || {}
+        res.data.specialtyWiseRegister || {}
+
         );
       }
 
@@ -626,8 +627,7 @@ const OPDReportPage = () => {
                         </td>
 
                         <td>
-                          {c.doctorId?.department
-                            ?.name || 'N/A'}
+                         {c.doctorId?.specialty?.name}
                         </td>
 
                         <td>

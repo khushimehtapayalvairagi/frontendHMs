@@ -1815,7 +1815,7 @@ const handlePrint = () => {
                       <td>
                         {
                           item.patient
-                            ?.fullName
+                            ?.name
                         }
                       </td>
 
