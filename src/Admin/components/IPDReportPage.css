@@ -108,30 +108,3 @@
 }
 
 
-/* REPORT CONTENT SCROLL FIX */
-
-.report-container{
-  overflow-x: hidden;
-}
-
-/* Table wrapper scroll */
-.report-container table{
-  display: block;
-  width: 100%;
-  overflow-x: auto;
-  white-space: nowrap;
-}
-
-/* Table cells wrap fix */
-.table td,
-.table th{
-  white-space: normal;
-  word-break: break-word;
-}
-
-/* Large content vertical scroll */
-.report-container > div{
-  max-height: 70vh;
-  overflow-y: auto;
-  padding-right: 10px;
-}
