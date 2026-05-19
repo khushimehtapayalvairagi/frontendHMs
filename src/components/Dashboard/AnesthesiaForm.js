@@ -1,11 +1,10 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const AnesthesiaForm = () => {
   const BASE_URL = process.env.REACT_APP_BASE_URL;
-  const printRef = useRef(null);
 
   const [patients, setPatients] = useState([]);
   const [ipdAdmissions, setIpdAdmissions] = useState([]);
@@ -23,7 +22,7 @@ const AnesthesiaForm = () => {
     medicinesUsedText: ''
   });
 
-  // ✅ Load initial data
+  // Load Data
   useEffect(() => {
     const token = localStorage.getItem('jwt');
 
@@ -40,16 +39,15 @@ const AnesthesiaForm = () => {
 
         setPatients(patientRes.data.patients || []);
         setDoctors(doctorRes.data.doctors || []);
-
-      } catch (err) {
+      } catch {
         toast.error('Failed to load data');
       }
     };
 
     fetchData();
-  }, []);
+  }, [BASE_URL]);
 
-  // ✅ Load admissions when patient selected
+  // Load Admission
   useEffect(() => {
     if (!form.patientId) return;
 
@@ -61,16 +59,15 @@ const AnesthesiaForm = () => {
       })
       .then(res => setIpdAdmissions(res.data.admissions || []))
       .catch(() => toast.error('Failed to load admissions'));
+  }, [form.patientId, BASE_URL]);
 
-  }, [form.patientId]);
-
-  const handleChange = (e) => {
+  const handleChange = e => {
     const { name, value } = e.target;
     setForm(prev => ({ ...prev, [name]: value }));
   };
 
-  // ✅ Submit
-  const handleSubmit = async (e) => {
+  // Submit
+  const handleSubmit = async e => {
     e.preventDefault();
     const token = localStorage.getItem('jwt');
 
@@ -90,123 +87,274 @@ const AnesthesiaForm = () => {
       await axios.post(
         `${BASE_URL}/api/procedures/anesthesia-records`,
         payload,
-        { headers: { Authorization: `Bearer ${token}` } }
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
       );
 
-      toast.success('✅ Anesthesia record saved successfully!');
-
-      // ✅ reset form
-      setForm({
-        patientId: '',
-        ipdAdmissionId: '',
-        procedureType: '',
-        anestheticId: '',
-        anesthesiaName: '',
-        anesthesiaType: '',
-        induceTime: '',
-        endTime: '',
-        medicinesUsedText: ''
-      });
-
+      toast.success('Anesthesia record saved successfully!');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to save');
     }
   };
 
-  // ✅ Print
+  // Get Names
+  const patientName =
+    patients.find(p => p._id === form.patientId)?.fullName || '';
+
+  const doctorName =
+    doctors.find(d => d._id === form.anestheticId)?.userId?.name || '';
+
+  const admissionName =
+    ipdAdmissions.find(a => a._id === form.ipdAdmissionId)?.wardId?.name || '';
+
+  // PRINT FILLED DATA
   const handlePrint = () => {
-    const printContents = printRef.current.innerHTML;
-    const newWindow = window.open('', '', 'width=900,height=700');
-    newWindow.document.write(`
+    const printWindow = window.open('', '_blank', 'width=900,height=800');
+
+    printWindow.document.write(`
       <html>
-        <head>
-          <title>Anesthesia Record</title>
-        </head>
-        <body>${printContents}</body>
+      <head>
+        <title>Anesthesia Record</title>
+
+        <style>
+          @page {
+            size: A4;
+            margin: 15mm;
+          }
+
+          body{
+            font-family: Arial;
+            padding:20px;
+            color:#000;
+          }
+
+          h2{
+            text-align:center;
+            margin-bottom:25px;
+          }
+
+          .row{
+            margin-bottom:14px;
+          }
+
+          .label{
+            font-weight:bold;
+            margin-bottom:4px;
+          }
+
+          .box{
+            border:1px solid #000;
+            padding:10px;
+            min-height:18px;
+          }
+
+          textarea{
+            width:100%;
+            min-height:80px;
+          }
+        </style>
+      </head>
+
+      <body>
+
+        <h2>Anesthesia Record (Independent)</h2>
+
+        <div class="row">
+          <div class="label">Patient</div>
+          <div class="box">${patientName}</div>
+        </div>
+
+        <div class="row">
+          <div class="label">Admission</div>
+          <div class="box">${admissionName}</div>
+        </div>
+
+        <div class="row">
+          <div class="label">Procedure Type</div>
+          <div class="box">${form.procedureType}</div>
+        </div>
+
+        <div class="row">
+          <div class="label">Anesthetist</div>
+          <div class="box">${doctorName}</div>
+        </div>
+
+        <div class="row">
+          <div class="label">Anesthesia Name</div>
+          <div class="box">${form.anesthesiaName}</div>
+        </div>
+
+        <div class="row">
+          <div class="label">Anesthesia Type</div>
+          <div class="box">${form.anesthesiaType}</div>
+        </div>
+
+        <div class="row">
+          <div class="label">Induce Time</div>
+          <div class="box">${form.induceTime}</div>
+        </div>
+
+        <div class="row">
+          <div class="label">End Time</div>
+          <div class="box">${form.endTime}</div>
+        </div>
+
+        <div class="row">
+          <div class="label">Medicines Used</div>
+          <div class="box">${form.medicinesUsedText}</div>
+        </div>
+
+      </body>
       </html>
     `);
-    newWindow.document.close();
-    newWindow.print();
+
+    printWindow.document.close();
+
+    setTimeout(() => {
+      printWindow.focus();
+      printWindow.print();
+      printWindow.close();
+    }, 500);
   };
 
   return (
-    <div style={{ maxWidth: 600, margin: '2rem auto', padding: '2rem', background: '#f5f5f5', borderRadius: '10px' }}>
-      
-      <div ref={printRef}>
-        <h2>Anesthesia Record (Independent)</h2>
+    <div
+      style={{
+        maxWidth: 600,
+        margin: '2rem auto',
+        padding: '2rem',
+        background: '#f5f5f5',
+        borderRadius: '10px'
+      }}
+    >
+      <h2>Anesthesia Record (Independent)</h2>
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      <form
+        onSubmit={handleSubmit}
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '1rem'
+        }}
+      >
+        <select
+          name="patientId"
+          value={form.patientId}
+          onChange={handleChange}
+          required
+        >
+          <option value="">Select Patient</option>
+          {patients.map(p => (
+            <option key={p._id} value={p._id}>
+              {p.fullName}
+            </option>
+          ))}
+        </select>
 
-          {/* Patient */}
-          <select name="patientId" value={form.patientId} onChange={handleChange} required>
-            <option value="">Select Patient</option>
-            {patients.map(p => (
-              <option key={p._id} value={p._id}>{p.fullName}</option>
-            ))}
-          </select>
-
-          {/* Admission */}
-          {form.patientId && (
-            <select name="ipdAdmissionId" value={form.ipdAdmissionId} onChange={handleChange}>
-              <option value="">Select Admission</option>
-              {ipdAdmissions.map(a => (
-                <option key={a._id} value={a._id}>
-                  {a.wardId?.name}
-                </option>
-              ))}
-            </select>
-          )}
-
-          {/* Procedure Type */}
-          <select name="procedureType" value={form.procedureType} onChange={handleChange} required>
-            <option value="">Select Procedure Type</option>
-            <option value="OT">OT</option>
-            <option value="Labour Room">Labour Room</option>
-          </select>
-
-          {/* Doctor */}
-          <select name="anestheticId" value={form.anestheticId} onChange={handleChange} required>
-            <option value="">Select Anesthetist</option>
-            {doctors.map(doc => (
-              <option key={doc._id} value={doc._id}>
-                {doc.userId?.name}
+        {form.patientId && (
+          <select
+            name="ipdAdmissionId"
+            value={form.ipdAdmissionId}
+            onChange={handleChange}
+          >
+            <option value="">Select Admission</option>
+            {ipdAdmissions.map(a => (
+              <option key={a._id} value={a._id}>
+                {a.wardId?.name}
               </option>
             ))}
           </select>
+        )}
 
-          <input
-            name="anesthesiaName"
-            value={form.anesthesiaName}
-            onChange={handleChange}
-            placeholder="Anesthesia Name"
-            required
-          />
+        <select
+          name="procedureType"
+          value={form.procedureType}
+          onChange={handleChange}
+          required
+        >
+          <option value="">Select Procedure Type</option>
+          <option value="OT">OT</option>
+          <option value="Labour Room">Labour Room</option>
+        </select>
 
-          <select name="anesthesiaType" value={form.anesthesiaType} onChange={handleChange} required>
-            <option value="">Select Type</option>
-            <option value="General">General</option>
-            <option value="Local">Local</option>
-            <option value="Epidural">Epidural</option>
-          </select>
+        <select
+          name="anestheticId"
+          value={form.anestheticId}
+          onChange={handleChange}
+          required
+        >
+          <option value="">Select Anesthetist</option>
+          {doctors.map(doc => (
+            <option key={doc._id} value={doc._id}>
+              {doc.userId?.name}
+            </option>
+          ))}
+        </select>
 
-          <input type="datetime-local" name="induceTime" value={form.induceTime} onChange={handleChange} />
-          <input type="datetime-local" name="endTime" value={form.endTime} onChange={handleChange} />
+        <input
+          name="anesthesiaName"
+          value={form.anesthesiaName}
+          onChange={handleChange}
+          placeholder="Anesthesia Name"
+          required
+        />
 
-          <textarea
-            name="medicinesUsedText"
-            value={form.medicinesUsedText}
-            onChange={handleChange}
-            placeholder="Medicines used (optional)"
-          />
+        <select
+          name="anesthesiaType"
+          value={form.anesthesiaType}
+          onChange={handleChange}
+          required
+        >
+          <option value="">Select Type</option>
+          <option value="General">General</option>
+          <option value="Local">Local</option>
+          <option value="Epidural">Epidural</option>
+        </select>
 
-          <button type="submit" style={{ padding: '10px', background: 'green', color: 'white' }}>
-            Save Record
-          </button>
+        <input
+          type="datetime-local"
+          name="induceTime"
+          value={form.induceTime}
+          onChange={handleChange}
+        />
 
-        </form>
-      </div>
+        <input
+          type="datetime-local"
+          name="endTime"
+          value={form.endTime}
+          onChange={handleChange}
+        />
 
-      <button onClick={handlePrint} style={{ marginTop: '1rem' }}>
+        <textarea
+          name="medicinesUsedText"
+          value={form.medicinesUsedText}
+          onChange={handleChange}
+          placeholder="Medicines used"
+        />
+
+        <button
+          type="submit"
+          style={{
+            padding: '10px',
+            background: 'green',
+            color: '#fff',
+            border: 'none'
+          }}
+        >
+          Save Record
+        </button>
+      </form>
+
+      <button
+        onClick={handlePrint}
+        style={{
+          marginTop: '1rem',
+          padding: '10px'
+        }}
+      >
         Print
       </button>
 
