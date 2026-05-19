@@ -995,20 +995,18 @@ const handlePrint = () => {
     return;
   }
 
-  const printWindow = window.open(
+  const win = window.open(
     "",
     "_blank",
     "width=1200,height=900"
   );
 
-  if (!printWindow) {
-    toast.error("Please allow popups for printing");
+  if (!win) {
+    toast.error("Please allow popup for printing");
     return;
   }
 
-  printWindow.document.open();
-
-  printWindow.document.write(`
+  win.document.write(`
     <!DOCTYPE html>
     <html>
       <head>
@@ -1026,36 +1024,62 @@ const handlePrint = () => {
             color:#000;
           }
 
-          h1{
+          .report-container{
+            width:100%;
+          }
+
+          .header{
             text-align:center;
-            margin-bottom:10px;
+            border-bottom:3px solid #000;
+            padding-bottom:10px;
+            margin-bottom:20px;
+          }
+
+          .hospital-title{
+            font-size:24px;
+            font-weight:bold;
+          }
+
+          .hospital-sub{
+            font-size:13px;
+            margin-top:4px;
+          }
+
+          .report-title{
+            font-size:20px;
+            font-weight:bold;
+            margin-top:10px;
+          }
+
+          .date-row{
+            display:flex;
+            justify-content:space-between;
+            margin:15px 0 25px;
+            font-size:14px;
+            flex-wrap:wrap;
+            gap:10px;
           }
 
           h2{
-            margin-top:40px;
-            margin-bottom:15px;
-            border-bottom:2px solid #000;
+            margin-top:25px;
+            margin-bottom:10px;
+            border-bottom:1px solid #000;
             padding-bottom:5px;
           }
 
           h3{
-            margin-top:20px;
-            margin-bottom:10px;
-          }
-
-          p{
-            margin:5px 0;
+            margin-top:15px;
+            margin-bottom:8px;
           }
 
           table{
             width:100%;
             border-collapse:collapse;
             margin-top:10px;
-            margin-bottom:30px;
+            margin-bottom:25px;
           }
 
-          th,
-          td{
+          th,td{
             border:1px solid #000;
             padding:8px;
             font-size:12px;
@@ -1064,7 +1088,8 @@ const handlePrint = () => {
           }
 
           th{
-            background:#f0f0f0 !important;
+            background:#eeeeee !important;
+            font-weight:bold;
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
           }
@@ -1073,20 +1098,24 @@ const handlePrint = () => {
             page-break-inside:avoid;
           }
 
-          @page{
-            size:auto;
-            margin:15mm;
+          .footer{
+            margin-top:40px;
+            display:flex;
+            justify-content:space-between;
+            font-size:13px;
           }
 
-          @media print {
+          @page{
+            size:A4;
+            margin:12mm;
+          }
+
+          @media print{
 
             body{
-              print-color-adjust: exact;
+              margin:0;
               -webkit-print-color-adjust: exact;
-            }
-
-            button{
-              display:none !important;
+              print-color-adjust: exact;
             }
 
           }
@@ -1096,54 +1125,85 @@ const handlePrint = () => {
 
       <body>
 
-        <h1>🏥 IPD REPORT DASHBOARD</h1>
+        <div class="report-container">
 
-        <p>
-          <strong>Start Date:</strong>
-          ${startDate}
-        </p>
+          <div class="header">
 
-        <p>
-          <strong>End Date:</strong>
-          ${endDate}
-        </p>
+            <div class="hospital-title">
+              Dr. M.I. Jamkhanawala Tibbia Medical College
+            </div>
 
-        <p>
-          <strong>Department:</strong>
-          ${
-            departments.find(
-              (d) => d._id === selectedDepartment
-            )?.name || "All"
-          }
-        </p>
+            <div class="hospital-sub">
+              Haji Abdul Razzak Kalsekar Tibbia Hospital
+            </div>
 
-        <hr />
+            <div class="hospital-sub">
+              Anjuman-I-Islam Complex, Versova, Mumbai
+            </div>
 
-        ${printContents}
+            <div class="report-title">
+               IPD REPORT
+            </div>
+
+          </div>
+
+          <div class="date-row">
+
+            <div>
+              <b>From:</b> ${startDate || "N/A"}
+            </div>
+
+            <div>
+              <b>To:</b> ${endDate || "N/A"}
+            </div>
+
+            <div>
+              <b>Department:</b>
+              ${
+                departments.find(
+                  (d) => d._id === selectedDepartment
+                )?.name || "All"
+              }
+            </div>
+
+            <div>
+              <b>Printed:</b>
+              ${new Date().toLocaleString()}
+            </div>
+
+          </div>
+
+          ${printContents}
+
+          <div class="footer">
+
+            <div>
+              Generated by Hospital System
+            </div>
+
+            <div style="text-align:center;">
+              __________________<br/>
+              Authorized Sign
+            </div>
+
+          </div>
+
+        </div>
+
+        <script>
+          window.onload = function () {
+            setTimeout(function () {
+              window.print();
+              window.close();
+            }, 500);
+          };
+        </script>
 
       </body>
     </html>
   `);
 
-  printWindow.document.close();
-
-  // WAIT FOR CONTENT LOAD
-
-  printWindow.onload = () => {
-
-    setTimeout(() => {
-
-      printWindow.focus();
-
-      printWindow.print();
-
-      // OPTIONAL
-      // printWindow.close();
-
-    }, 1000);
-
-  };
-
+  win.document.close();
 };
 
 

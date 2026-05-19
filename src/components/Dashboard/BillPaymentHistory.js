@@ -1,4 +1,4 @@
-import React, { useState, useEffect ,useRef} from 'react';
+// import React, { useState, useEffect ,useRef} from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import {
@@ -117,7 +117,15 @@ const isMobile = useMediaQuery('(max-width:600px)');
                   fullWidth
                   style={{ justifyContent: 'flex-start' }}
                 >
-                  {new Date(b.bill_date).toLocaleDateString()} ({b.payment_status})
+                  {/* {new Date(b.bill_date).toLocaleDateString()} ({b.payment_status}) */}
+
+{new Date(b.bill_date).toLocaleDateString()}
+{" - "}
+{b.ipd_admission_id_ref ? "🏥 IPD" : "🩺 OPD"}
+{" "}
+({b.payment_status})
+
+
                 </Button>
               </li>
             ))}
@@ -131,6 +139,29 @@ const isMobile = useMediaQuery('(max-width:600px)');
     <DialogContent ref={printRef}>
           {selectedBill && (
             <>
+
+
+            <p
+  style={{
+    backgroundColor:
+      selectedBill.ipd_admission_id_ref ? "#ffe5e5" : "#e5f2ff",
+
+    color:
+      selectedBill.ipd_admission_id_ref ? "#c62828" : "#1565c0",
+
+    padding: "8px 14px",
+    borderRadius: "6px",
+    fontWeight: "bold",
+    display: "inline-block",
+    marginBottom: "1rem"
+  }}
+>
+  {selectedBill.ipd_admission_id_ref
+    ? "🏥 IPD Patient"
+    : "🩺 OPD Patient"}
+</p>
+
+
 <h4>Charges Summary</h4>
 
 {isMobile ? (

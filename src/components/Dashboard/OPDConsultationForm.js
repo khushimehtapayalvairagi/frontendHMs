@@ -69,20 +69,171 @@ const handleSubmit = async (e) => {
   }
 };
 
-  const handlePrintPrescription = () => {
-    if (!prescriptionRef.current) return;
-    const content = prescriptionRef.current.innerHTML;
-    const w = window.open('', '', 'width=800,height=600');
-    w.document.write(`
-      <html>
-        <head><title>Prescription</title></head>
-        <body>${content}</body>
-      </html>
-    `);
-    w.document.close();
-    w.print();
-  };
+ const handlePrintPrescription = () => {
+  const printWindow = window.open('', '_blank', 'width=900,height=700');
 
+  printWindow.document.write(`
+    <html>
+      <head>
+        <title>Prescription</title>
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            color: #000;
+          }
+
+          .bill-container {
+            width: 100%;
+            border: 1px solid #000;
+            padding: 15px;
+          }
+
+          .header {
+            text-align: center;
+            border-bottom: 2px solid #000;
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+          }
+
+          .hospital-name {
+            font-size: 20px;
+            font-weight: bold;
+          }
+
+          .hospital-address {
+            font-size: 12px;
+          }
+
+          .patient-info {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-size: 14px;
+          }
+
+          .section {
+            margin-top: 15px;
+          }
+
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+          }
+
+          table, th, td {
+            border: 1px solid #000;
+          }
+
+          th, td {
+            padding: 8px;
+            text-align: left;
+          }
+
+          .footer {
+            margin-top: 50px;
+            display: flex;
+            justify-content: space-between;
+          }
+
+          @media print {
+            body {
+              margin: 0;
+            }
+          }
+        </style>
+      </head>
+
+      <body>
+        <div class="bill-container">
+
+          <div class="header">
+            <div class="hospital-name">
+              Dr. M.I. Jamkhanawala Tibbia Medical College
+            </div>
+            <div class="hospital-address">
+              Anjuman-I-Islam Complex, Mumbai 400061
+            </div>
+            <div><strong>OPD PRESCRIPTION</strong></div>
+          </div>
+
+          <div class="patient-info">
+            <div>
+              <p><b>Patient:</b> ${visit.patientDbId?.fullName || ''}</p>
+              <p><b>Patient ID:</b> ${visit.patientId}</p>
+              <p><b>Mobile:</b> ${visit.patientDbId?.contactNumber || ''}</p>
+            </div>
+
+            <div>
+              <p><b>Date:</b> ${new Date().toLocaleDateString()}</p>
+              <p><b>DOB:</b> ${
+                visit.patientDbId?.dob
+                  ? new Date(visit.patientDbId.dob).toLocaleDateString()
+                  : ''
+              }</p>
+            </div>
+          </div>
+
+          <div class="section">
+            <table>
+              <tr>
+                <th>Chief Complaint</th>
+                <td>${chiefComplaint}</td>
+              </tr>
+
+              <tr>
+                <th>Diagnosis</th>
+                <td>${diagnosis}</td>
+              </tr>
+
+              <tr>
+                <th>Doctor Notes</th>
+                <td>${doctorNotes}</td>
+              </tr>
+
+              <tr>
+                <th>Lab Investigations</th>
+                <td>${labInvestigationsSuggested}</td>
+              </tr>
+
+              <tr>
+                <th>Medicines</th>
+                <td>${medicinesPrescribedText}</td>
+              </tr>
+            </table>
+          </div>
+
+          <div class="footer">
+            <div>
+              ${
+                transcribedFromPaperNotes
+                  ? `<p><b>Transcribed By:</b> ${user.name}</p>`
+                  : ''
+              }
+            </div>
+
+            <div>
+              <br><br>
+              ____________________<br>
+              Doctor Signature
+            </div>
+          </div>
+
+        </div>
+
+        <script>
+          window.onload = function() {
+            window.print();
+            window.close();
+          }
+        </script>
+      </body>
+    </html>
+  `);
+
+  printWindow.document.close();
+};
   useEffect(() => {
   if (visit) {
     setLoading(false); // 👈 this fixes your issue
