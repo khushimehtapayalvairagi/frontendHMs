@@ -890,7 +890,7 @@ const OPDReportPage = () => {
                         </td>
 
                         <td>
-                       {s.procedureType || s.manualChargeId?.name || 'N/A'}
+                     {s.procedureType || s.manualChargeId?.itemName || 'N/A'}
                         </td>
 
                         <td>
