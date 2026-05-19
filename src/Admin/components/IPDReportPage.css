@@ -1,10 +1,9 @@
+/* IPDReportPage.css */
+
 .report-container{
   padding:20px;
   background:#f4f7fb;
   min-height:100vh;
-
-  /* ✅ ADD */
-  overflow-x:auto;
 }
 
 .report-title{
@@ -38,7 +37,6 @@
   margin-top:20px;
   display:flex;
   gap:15px;
-  flex-wrap:wrap; /* ✅ fix overflow buttons */
 }
 
 .generate-btn,
@@ -69,17 +67,12 @@
   background:#000;
 }
 
-/* ✅ TABLE FIX START */
 .table{
   width:100%;
   border-collapse:collapse;
   background:white;
   margin-top:20px;
   margin-bottom:35px;
-
-  display:block;              /* IMPORTANT */
-  overflow-x:auto;            /* SCROLL ENABLE */
-  white-space:nowrap;         /* PREVENT CUT */
 }
 
 .table th{
@@ -87,33 +80,17 @@
   color:white;
   padding:10px;
   border:1px solid #ddd;
-  white-space:nowrap;
 }
 
 .table td{
   padding:10px;
   border:1px solid #ddd;
-
-  /* ✅ TEXT BREAK FIX */
-  white-space:normal;
-  word-break:break-word;
-  max-width:200px;
 }
 
 .table tr:nth-child(even){
   background:#f9fafb;
 }
 
-/* OPTIONAL: smooth scroll look */
-.table::-webkit-scrollbar{
-  height:8px;
-}
-.table::-webkit-scrollbar-thumb{
-  background:#ccc;
-  border-radius:10px;
-}
-
-/* PRINT FIX */
 @media print{
 
   .form-section,
@@ -127,11 +104,7 @@
 
   .report-container{
     padding:0;
-    overflow:visible;
-  }
-
-  .table{
-    display:table;   /* print me normal table */
-    white-space:normal;
   }
 }
+
+
