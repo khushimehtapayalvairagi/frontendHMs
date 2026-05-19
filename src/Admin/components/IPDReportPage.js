@@ -1711,9 +1711,9 @@ const handlePrint = () => {
                 // <div key={dept.departmentId}>
                 <div key={dept.departmentId || index}>
 
-                  <h3>
-                    {dept.department}
-                  </h3>
+                <h3>
+  {dept.specialty || 'N/A'}
+</h3>
 
                   <table className="table">
 
