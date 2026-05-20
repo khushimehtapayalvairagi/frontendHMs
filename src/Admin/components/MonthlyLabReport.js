@@ -96,24 +96,25 @@ const MonthlyLabReport = () => {
               gap:10px;
             }
 
-            table{
-              width:100%;
-              border-collapse:collapse;
-              table-layout:fixed;
-              word-wrap:break-word;
-              margin-top:15px;
-            }
+          table{
+  width:100%;
+  border-collapse:collapse;
+  table-layout:auto;
+  margin-top:15px;
+}
 
-            th,td{
-              border:1px solid #000;
-              padding:10px;
-              font-size:12px;
-              text-align:left;
-            }
+th,td{
+  border:1px solid #000;
+  padding:8px;
+  font-size:11px;
+  text-align:left;
+  word-break:break-word;
+}
 
-            th{
-              background:#f0f0f0;
-            }
+th{
+  background:#f0f0f0 !important;
+  -webkit-print-color-adjust: exact;
+}
 
             .footer{
               margin-top:50px;
@@ -127,12 +128,16 @@ const MonthlyLabReport = () => {
             }
 
             @media print{
+           
+ 
               body{
                 margin:0;
+                 zoom:0.85;
               }
 
               table{
                 page-break-inside:auto;
+                 width:100%;
               }
 
               tr{
@@ -327,79 +332,107 @@ const MonthlyLabReport = () => {
               minWidth: "900px",
             }}
           >
-            <thead>
-              <tr
-                style={{
-                  background: "#1e293b",
-                  color: "#fff",
-                }}
-              >
-                <th style={thStyle}>Date</th>
-                <th style={thStyle}>Patient ID</th>
-                <th style={thStyle}>Patient Name</th>
-                <th style={thStyle}>Test Type</th>
-                <th style={thStyle}>Priority</th>
-                <th style={thStyle}>Status</th>
-                <th style={thStyle}>Technician</th>
-              </tr>
-            </thead>
+          <thead>
+  <tr
+    style={{
+      background: "#1e293b",
+      color: "#fff",
+    }}
+  >
+    <th style={thStyle}>Date</th>
+    <th style={thStyle}>Patient ID</th>
+    <th style={thStyle}>Patient Name</th>
+    <th style={thStyle}>Test Type</th>
+    <th style={thStyle}>Payment Amount</th>
+    <th style={thStyle}>Payment Status</th>
+    <th style={thStyle}>Priority</th>
+    <th style={thStyle}>Status</th>
+    <th style={thStyle}>Technician</th>
+  </tr>
+</thead>
 
-            <tbody>
-              {reports.length > 0 ? (
-                reports.map((r, index) => (
-                  <tr
-                    key={r._id || index}
-                    style={{
-                      background:
-                        index % 2 === 0 ? "#fff" : "#f8fafc",
-                    }}
-                  >
-                    <td style={tdStyle}>
-                      {r.date
-                        ? new Date(r.date).toLocaleDateString()
-                        : "N/A"}
-                    </td>
+<tbody>
+  {reports.length > 0 ? (
+    reports.map((r, index) => (
+      <tr
+        key={r._id || index}
+        style={{
+          background:
+            index % 2 === 0 ? "#fff" : "#f8fafc",
+        }}
+      >
+        {/* DATE */}
+        <td style={tdStyle}>
+          {r.date
+            ? new Date(r.date).toLocaleDateString()
+            : "N/A"}
+        </td>
 
-                    <td style={tdStyle}>
-                      {r.patientId?.patientId || "N/A"}
-                    </td>
+        {/* PATIENT ID */}
+        <td style={tdStyle}>
+          {r.patientId?.patientId || "N/A"}
+        </td>
 
-                    <td style={tdStyle}>
-                      {r.patientId?.fullName || "N/A"}
-                    </td>
+        {/* PATIENT NAME */}
+        <td style={tdStyle}>
+          {r.patientId?.fullName || "N/A"}
+        </td>
 
-                    <td style={tdStyle}>
-                      {r.testType || "N/A"}
-                    </td>
+        {/* TEST TYPE */}
+        <td style={tdStyle}>
+          {r.testType || "N/A"}
+        </td>
 
-                    <td style={tdStyle}>
-                      {r.priority || "N/A"}
-                    </td>
+        {/* PAYMENT AMOUNT */}
+        <td style={tdStyle}>
+          ₹ {r.payment?.amount || 0}
+        </td>
 
-                    <td style={tdStyle}>
-                      {r.status || "N/A"}
-                    </td>
+        {/* PAYMENT STATUS */}
+        <td
+          style={{
+            ...tdStyle,
+            color:
+              r.payment?.status === "Paid"
+                ? "green"
+                : "red",
+            fontWeight: "bold",
+          }}
+        >
+          {r.payment?.status || "Pending"}
+        </td>
 
-                    <td style={tdStyle}>
-                      {r.labTechnician?.userId?.name || "N/A"}
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td
-                    colSpan="7"
-                    style={{
-                      textAlign: "center",
-                      padding: "20px",
-                      border: "1px solid #ddd",
-                    }}
-                  >
-                    No Reports Found
-                  </td>
-                </tr>
-              )}
-            </tbody>
+        {/* PRIORITY */}
+        <td style={tdStyle}>
+          {r.priority || "N/A"}
+        </td>
+
+        {/* STATUS */}
+        <td style={tdStyle}>
+          {r.status || "N/A"}
+        </td>
+
+        {/* TECHNICIAN */}
+        <td style={tdStyle}>
+          {r.labTechnician?.userId?.name || "N/A"}
+        </td>
+      </tr>
+    ))
+  ) : (
+    <tr>
+      <td
+        colSpan="9"
+        style={{
+          textAlign: "center",
+          padding: "20px",
+          border: "1px solid #ddd",
+        }}
+      >
+        No Reports Found
+      </td>
+    </tr>
+  )}
+</tbody>
           </table>
         </div>
       </div>
