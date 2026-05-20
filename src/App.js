@@ -75,6 +75,10 @@ import CompleteScan from './components/Dashboard/CompleteScan';
 
 import SonographyDashboard from "./components/Dashboard/SonographyDashboard";
 import MonthlyLabReport from './Admin/components/MonthlyLabReport.js';
+import LabDashboard from './components/Dashboard/LabDashboard.js';
+import AddTest from './components/Dashboard/AddTests.js';
+import { Payments } from '@mui/icons-material';
+import AllTests from './components/Dashboard/AllTests.js';
 
 const App = () => {
   const ReceptionistRoutes = () => (
@@ -171,7 +175,19 @@ const InventoryRoutes =()=>(
       </Route>
       </Route>
       <Route>
-       
+      <Route element={<ProtectedRoute role="STAFF" />}>
+  <Route path="/lab-dashboard" element={<LabDashboard/>}>
+
+    <Route index element={<AllTests />} />
+
+    <Route path="tests" element={<AllTests/>} />
+
+    <Route path="add-test" element={<AddTest/>} />
+
+    <Route path="payments" element={<Payments/>} />
+
+  </Route>
+</Route> 
  <Route
   path="/receptionist-dashboard"element={<ReceptionistDashboard />}
 >
