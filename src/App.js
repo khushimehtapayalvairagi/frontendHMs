@@ -123,10 +123,7 @@ const InventoryRoutes =()=>(
        <Route path="reports">
     <Route path="opd-register" element={<OPDReportPage />} />
     <Route path="ipd-register" element={<IPDReportPage />} />
-    <Route
-  path="monthly-lab-report"
-  element={<MonthlyLabReport/>}
-/>
+    <Route path="monthly-lab-report" element={<MonthlyLabReport/>}/>
   </Route>   
   <Route index element={<AdminHome />} /> {/* Default dashboard home */}
         <Route path="add-user" element={<AddUser />} />

@@ -70,7 +70,7 @@ const closeDoctorMenu = () => setDoctorAnchor(null);
 
   // ✅ Auto open Reports dropdown if inside reports section
   useEffect(() => {
-    if (location.pathname.startsWith('/reports')) {
+  if (location.pathname.startsWith('/admin-dashboard/reports')){
       setActiveModuleLabel('Reports');
       setReportDropdownOpen(true);
     }
@@ -167,7 +167,7 @@ const closeDoctorMenu = () => setDoctorAnchor(null);
         to="reports/monthly-lab-report"
         style={dropdownLinkStyle}
       >
-        🧪 Monthly Lab Report
+         Monthly Lab Report
       </Link>
     </>
   )
