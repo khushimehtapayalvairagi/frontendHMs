@@ -8,12 +8,13 @@ const MonthlyLabReport = () => {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
+  const BASE_URL = process.env.REACT_APP_BASE_URL;
   const fetchReport = async () => {
     try {
       const token = localStorage.getItem("jwt");
 
       const res = await axios.get(
-        `${process.env.REACT_APP_API_URL}/reports/monthly-lab-report`,
+        `${BASE_URL}/api/reports/monthly-lab-report`,
         {
           params: {
             startDate,
