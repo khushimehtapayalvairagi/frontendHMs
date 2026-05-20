@@ -25,7 +25,7 @@ const MonthlyLabReport = () => {
           },
         }
       );
-setReports(res.data?.tests || []);
+setReports(res.data?.reports || []);
 setTotalTests(res.data?.totalTests || 0);
 
     } catch (err) {
