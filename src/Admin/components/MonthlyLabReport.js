@@ -364,6 +364,7 @@ th{
       color: "#fff",
     }}
   >
+    <th style={thStyle}>Sr No</th>
     <th style={thStyle}>Date</th>
     <th style={thStyle}>Patient ID</th>
     <th style={thStyle}>Patient Name</th>
@@ -386,6 +387,10 @@ th{
             index % 2 === 0 ? "#fff" : "#f8fafc",
         }}
       >
+                <td style={tdStyle}>
+          {index + 1}
+        </td>
+
         {/* DATE */}
         <td style={tdStyle}>
           {r.date
