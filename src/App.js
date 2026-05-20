@@ -64,7 +64,6 @@ import BillPaymentHistory from './components/Dashboard/BillPaymentHistory.js';
 import IPDReportPage from './Admin/components/IPDReportPage.js';
 import OPDReportPage from './Admin/components/OPDReportPage.js';
 
-import OPDReportPage from './Admin/components/MonthlyLabReport.js';
 import SocketContext from "./context/SocketContext"; // ✅ same instance
 
 
@@ -75,6 +74,7 @@ import CompleteScan from './components/Dashboard/CompleteScan';
 
 
 import SonographyDashboard from "./components/Dashboard/SonographyDashboard";
+import MonthlyLabReport from './Admin/components/MonthlyLabReport.js';
 
 const App = () => {
   const ReceptionistRoutes = () => (
