@@ -98,7 +98,9 @@ if (requiredRole === "STAFF") {
     "Metron",
     "O.T. Attendant",
     "Sonography Assist",
-    "Pharmacists"
+    "Pharmacists",
+    "Pathologist"
+
   ];
 
   if (
