@@ -77,8 +77,10 @@ import SonographyDashboard from "./components/Dashboard/SonographyDashboard";
 import MonthlyLabReport from './Admin/components/MonthlyLabReport.js';
 import LabDashboard from './components/Dashboard/LabDashboard.js';
 import AddTest from './components/Dashboard/AddTests.js';
-import { Payments } from '@mui/icons-material';
+
+
 import AllTests from './components/Dashboard/AllTests.js';
+import LabPayment from './components/Dashboard/LabPayment.js';
 
 const App = () => {
   const ReceptionistRoutes = () => (
@@ -184,7 +186,7 @@ const InventoryRoutes =()=>(
 
     <Route path="add-test" element={<AddTest/>} />
 
-    <Route path="payments" element={<Payments/>} />
+    <Route path="payments" element={<LabPayment/>} />
 
   </Route>
 </Route> 
