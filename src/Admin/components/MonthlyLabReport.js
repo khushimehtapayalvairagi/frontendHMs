@@ -7,42 +7,58 @@ const MonthlyLabReport = () => {
 
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-
+  const [totalPayment, setTotalPayment] = useState(0);
   const BASE_URL = process.env.REACT_APP_BASE_URL;
 
   const printRef = useRef();
 
   const fetchReport = async () => {
-    try {
-      const token = localStorage.getItem("jwt");
 
-      const res = await axios.get(
-        `${BASE_URL}/api/reports/monthly-lab-report`,
-        {
-          params: {
-            startDate,
-            endDate,
-          },
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+  // ✅ VALIDATION
+  if (!startDate || !endDate) {
+    alert("Please select Start Date and End Date");
+    return;
+  }
 
-      setReports(res.data?.reports || []);
-      setTotalTests(res.data?.totalTests || 0);
+  try {
+    const token = localStorage.getItem("jwt");
 
-    } catch (err) {
-      console.error("Monthly Lab Report Error:", err);
-      setReports([]);
-      setTotalTests(0);
-    }
-  };
+    const res = await axios.get(
+      `${BASE_URL}/api/reports/monthly-lab-report`,
+      {
+        params: {
+          startDate,
+          endDate,
+        },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
 
-  useEffect(() => {
-    fetchReport();
-  }, []);
+    const reportData = res.data?.reports || [];
 
+    setReports(reportData);
+
+    setTotalTests(res.data?.totalTests || 0);
+
+    // ✅ TOTAL PAYMENT CALCULATION
+    const total = reportData.reduce((sum, item) => {
+      return sum + (Number(item.payment?.amount) || 0);
+    }, 0);
+
+    setTotalPayment(total);
+
+  } catch (err) {
+    console.error("Monthly Lab Report Error:", err);
+
+    setReports([]);
+    setTotalTests(0);
+    setTotalPayment(0);
+  }
+};
+
+ 
   const handlePrint = () => {
     const printContents = printRef.current.innerHTML;
 
@@ -308,16 +324,25 @@ th{
           </button>
         </div>
 
-        <div
-          style={{
-            marginBottom: "15px",
-            fontSize: "18px",
-            fontWeight: "bold",
-            color: "#0f172a",
-          }}
-        >
-          Total Tests: {totalTests}
-        </div>
+      <div
+  style={{
+    marginBottom: "15px",
+    display: "flex",
+    gap: "30px",
+    flexWrap: "wrap",
+    fontSize: "18px",
+    fontWeight: "bold",
+    color: "#0f172a",
+  }}
+>
+  <div>
+    Total Tests: {totalTests}
+  </div>
+
+  <div>
+    Total Payment: ₹ {totalPayment}
+  </div>
+</div>
 
         <div
           ref={printRef}
