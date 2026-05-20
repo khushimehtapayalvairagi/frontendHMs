@@ -148,18 +148,30 @@ const closeDoctorMenu = () => setDoctorAnchor(null);
 
 
 
-    {
-      label: 'Reports',
-      icon: '📊',
-      dropdownOpen: reportDropdownOpen,
-      setDropdownOpen: setReportDropdownOpen,
-      content: (
-        <>
-          <Link to="reports/opd-register" style={dropdownLinkStyle}>Central OPD Register</Link>
-          <Link to="reports/ipd-register" style={dropdownLinkStyle}>Central IPD Register</Link>
-        </>
-      )
-    },
+  {
+  label: 'Reports',
+  icon: '📊',
+  dropdownOpen: reportDropdownOpen,
+  setDropdownOpen: setReportDropdownOpen,
+  content: (
+    <>
+      <Link to="reports/opd-register" style={dropdownLinkStyle}>
+        Central OPD Register
+      </Link>
+
+      <Link to="reports/ipd-register" style={dropdownLinkStyle}>
+        Central IPD Register
+      </Link>
+
+      <Link
+        to="reports/monthly-lab-report"
+        style={dropdownLinkStyle}
+      >
+        🧪 Monthly Lab Report
+      </Link>
+    </>
+  )
+},
     {
       label: 'User Management',
       icon: '👥',

@@ -64,7 +64,7 @@ import BillPaymentHistory from './components/Dashboard/BillPaymentHistory.js';
 import IPDReportPage from './Admin/components/IPDReportPage.js';
 import OPDReportPage from './Admin/components/OPDReportPage.js';
 
-
+import OPDReportPage from './Admin/components/MonthlyLabReport.js';
 import SocketContext from "./context/SocketContext"; // ✅ same instance
 
 
@@ -123,6 +123,10 @@ const InventoryRoutes =()=>(
        <Route path="reports">
     <Route path="opd-register" element={<OPDReportPage />} />
     <Route path="ipd-register" element={<IPDReportPage />} />
+    <Route
+  path="monthly-lab-report"
+  element={<MonthlyLabReport/>}
+/>
   </Route>   
   <Route index element={<AdminHome />} /> {/* Default dashboard home */}
         <Route path="add-user" element={<AddUser />} />
