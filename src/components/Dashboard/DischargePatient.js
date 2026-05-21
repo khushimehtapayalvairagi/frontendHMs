@@ -75,7 +75,7 @@ const BASE_URL = process.env.REACT_APP_BASE_URL;
             <th>Ward</th>
             <th>Bed</th>
             <th>Admitted On</th>
-            <th>Expected Discharge</th>
+            {/* <th>Expected Discharge</th> */}
             <th>Action</th>
           </tr>
         </thead>
@@ -89,7 +89,7 @@ const BASE_URL = process.env.REACT_APP_BASE_URL;
                 <td>{adm.wardId?.name || 'N/A'}</td>
                 <td>{adm.bedNumber}</td>
                 <td>{new Date(adm.createdAt).toLocaleString()}</td>
-                <td>{new Date(adm.expectedDischargeDate).toLocaleDateString()}</td>
+                {/* <td>{new Date(adm.expectedDischargeDate).toLocaleDateString()}</td> */}
                 <td>
                   <IconButton onClick={() => handleOpenDialog(adm._id)} color="primary">
                     <ExitToAppIcon />
