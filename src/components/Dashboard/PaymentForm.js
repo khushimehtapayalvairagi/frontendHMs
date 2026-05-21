@@ -1253,5 +1253,6 @@ tfoot: {
     color: '#555',
     fontStyle: 'italic',
     marginTop: '1rem'
+    
   }
 };
