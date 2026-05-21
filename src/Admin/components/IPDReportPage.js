@@ -746,7 +746,7 @@ const handlePrint = () => {
 
               <td>{item.anesthetist?.name || 'N/A'}</td>
 
-              <td>{item.procedure?.name || 'N/A'}</td>
+              <td>{item.procedureType|| 'N/A'}</td>
 
               <td>{item.anesthesiaType || 'N/A'}</td>
 
