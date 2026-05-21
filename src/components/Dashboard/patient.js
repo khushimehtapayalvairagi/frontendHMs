@@ -122,13 +122,67 @@ localStorage.setItem("currentPatientId", res.data.patient.patientId);
   };
 
   // 🖨️ PRINT
-  const handlePrint = () => {
-    const content = printRef.current.innerHTML;
-    const w = window.open("", "", "width=800,height=600");
-    w.document.write(`<html><body>${content}</body></html>`);
-    w.document.close();
-    w.print();
-  };
+const handlePrint = () => {
+  const printContents = printRef.current.innerHTML;
+
+  const win = window.open("", "", "width=1000,height=700");
+
+  win.document.write(`
+    <html>
+      <head>
+        <title>Patient Receipt</title>
+
+        <style>
+
+          body{
+            font-family: Arial;
+            padding:20px;
+            color:#000;
+          }
+
+          table{
+            width:100%;
+            border-collapse: collapse;
+          }
+
+          td,th{
+            border:1px solid #000;
+            padding:10px;
+            font-size:14px;
+          }
+
+          h1,h2,h3{
+            margin:5px 0;
+          }
+
+          @media print{
+            body{
+              margin:0;
+            }
+          }
+
+        </style>
+
+      </head>
+
+      <body>
+
+        ${printContents}
+
+      </body>
+
+      <script>
+        window.onload = function(){
+          window.print();
+          window.close();
+        }
+      </script>
+
+    </html>
+  `);
+
+  win.document.close();
+};
 
   return (
     <div style={{ padding: "20px", maxWidth: "800px", margin: "auto" }}>
@@ -138,13 +192,14 @@ localStorage.setItem("currentPatientId", res.data.patient.patientId);
 
         {/* PATIENT */}
         <input name="fullName" placeholder="Full Name" value={form.fullName} onChange={handleChange} />
-        <input name="age" placeholder="Age" value={form.age} onChange={handleChange} />
         <input
   type="date"
   name="dob"
   value={form.dob}
   onChange={handleChange}
 />
+        <input name="age" placeholder="Age" value={form.age} onChange={handleChange} />
+
         <select name="gender" value={form.gender} onChange={handleChange}>
           <option value="">Gender</option>
           <option>Male</option>
@@ -198,21 +253,181 @@ localStorage.setItem("currentPatientId", res.data.patient.patientId);
       </form>
 
       {/* PRINT */}
-      {submittedData && (
-        <div>
-          <button onClick={handlePrint}>🖨️ Print</button>
+    {submittedData && (
+  <div>
 
-          <div ref={printRef} style={{ display: "none" }}>
-            <h2>Patient Receipt</h2>
+    <button onClick={handlePrint}>
+      🖨️ Print Receipt
+    </button>
 
-            <p>Name: {submittedData.patient.fullName}</p>
-            <p>Patient ID: {submittedData.patient.patientId}</p>
-            <p>Visit: {submittedData.visit.visitType}</p>
-            <p>Amount: {submittedData.visit.payment?.amount || "-"}</p>
+    <div ref={printRef} style={{ display: "none" }}>
+
+      <div className="print-container">
+
+        {/* HEADER */}
+
+  <div
+  style={{
+    textAlign: "center",
+    borderBottom: "2px solid black",
+    marginBottom: "20px",
+    paddingBottom: "10px"
+  }}
+>
+
+  <h1 style={{ margin: 0 }}>
+    Dr. M.I. Jamkhanawala Tibbia Medical College
+  </h1>
+
+  <p style={{ margin: "5px 0" }}>
+    Haji Abdul Razzak Kalsekar Tibbia Hospital
+  </p>
+
+  <p style={{ margin: "5px 0" }}>
+    Anjuman-I-Islam Complex, Versova, Mumbai
+  </p>
+
+  <p style={{ margin: "5px 0" }}>
+    Contact: +91 9876543210
+  </p>
+
+  <h2 style={{ marginTop: "10px" }}>
+    Patient Registration Receipt
+  </h2>
+
+</div>
+
+        {/* PATIENT DETAILS */}
+
+        <table
+          style={{
+            width: "100%",
+            borderCollapse: "collapse",
+            marginBottom: "20px"
+          }}
+        >
+
+          <tbody>
+
+            <tr>
+              <td><b>Patient ID</b></td>
+              <td>{submittedData.patient.patientId}</td>
+
+              <td><b>Name</b></td>
+              <td>{submittedData.patient.fullName}</td>
+            </tr>
+
+            <tr>
+              <td><b>Gender</b></td>
+              <td>{submittedData.patient.gender}</td>
+
+              <td><b>Age</b></td>
+              <td>{submittedData.patient.age}</td>
+            </tr>
+
+            <tr>
+              <td><b>DOB</b></td>
+              <td>
+                {submittedData.patient.dob
+                  ? new Date(submittedData.patient.dob).toLocaleDateString()
+                  : "-"
+                }
+              </td>
+
+              <td><b>Contact</b></td>
+              <td>{submittedData.patient.contactNumber || "-"}</td>
+            </tr>
+
+            <tr>
+              <td><b>Email</b></td>
+              <td>{submittedData.patient.email || "-"}</td>
+
+              <td><b>Aadhaar</b></td>
+              <td>{submittedData.patient.aadhaarNumber || "-"}</td>
+            </tr>
+
+            <tr>
+              <td><b>Address</b></td>
+              <td colSpan="3">
+                {submittedData.patient.address}
+              </td>
+            </tr>
+
+          </tbody>
+        </table>
+
+        {/* VISIT DETAILS */}
+
+        <h3>Visit Details</h3>
+
+        <table
+          style={{
+            width: "100%",
+            borderCollapse: "collapse",
+            marginBottom: "20px"
+          }}
+        >
+          <tbody>
+
+            <tr>
+              <td><b>Visit Type</b></td>
+              <td>{submittedData.visit.visitType}</td>
+
+              <td><b>Status</b></td>
+              <td>{submittedData.visit.status}</td>
+            </tr>
+
+            <tr>
+              <td><b>Payment Amount</b></td>
+              <td>
+                ₹ {submittedData.visit.payment?.amount || 0}
+              </td>
+
+              <td><b>Payment Status</b></td>
+              <td>
+                {submittedData.visit.payment?.isPaid
+                  ? "Paid"
+                  : "Pending"
+                }
+              </td>
+            </tr>
+
+            <tr>
+              <td><b>Visit Date</b></td>
+              <td colSpan="3">
+                {new Date().toLocaleString()}
+              </td>
+            </tr>
+
+          </tbody>
+        </table>
+
+        {/* FOOTER */}
+
+        <div
+          style={{
+            marginTop: "50px",
+            display: "flex",
+            justifyContent: "space-between"
+          }}
+        >
+
+          <div>
+            Generated By Hospital System
           </div>
-        </div>
-      )}
 
+          <div>
+            Authorized Signature
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+)}
       <ToastContainer />
     </div>
   );
