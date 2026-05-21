@@ -785,6 +785,10 @@ export default function PaymentForm({ onPaymentSuccess }) {
   const [form, setForm] = useState({ amount: '', method: 'Cash', externalRef: '' });
   const [payments, setPayments] = useState([]);
   const [error, setError] = useState('');
+
+  const [ipdAdmission, setIpdAdmission] = useState(null);
+
+
   const printRef = useRef(null);
 const BASE_URL = process.env.REACT_APP_BASE_URL;
   const token = localStorage.getItem('jwt');
@@ -846,6 +850,41 @@ useEffect(() => {
         // const pending = res.data.bills.filter(b => b.payment_status === 'Pending');
         const first = pending[0] ?? null;
         setBill(first);
+
+
+if (first?.ipd_admission_id_ref) {
+  axios
+    .get(
+      `${BASE_URL}/api/ipd/admissions/${selectedPatient}`,
+      { headers }
+    )
+    .then(ipdRes => {
+      const admissions = ipdRes.data.admissions || [];
+
+      // const matchedAdmission = admissions.find(
+      //   adm => adm._id === first.ipd_admission_id_ref
+      // );
+const admissionId =
+  typeof first.ipd_admission_id_ref === "object"
+    ? first.ipd_admission_id_ref._id
+    : first.ipd_admission_id_ref;
+
+const matchedAdmission = admissions.find(
+  adm => adm._id?.toString() === admissionId?.toString()
+);
+
+
+      setIpdAdmission(matchedAdmission || null);
+    })
+    .catch(() => setIpdAdmission(null));
+} else {
+  setIpdAdmission(null);
+}
+
+
+
+
+
         if (!first) {
           setForm({ amount: '', method: 'Cash', externalRef: '' });
           setPayments([]);
@@ -980,6 +1019,25 @@ received_by_user_id_ref: user.userId
     ? "🏥 IPD Patient"
     : "🩺 OPD Patient"}
 </p>
+
+{bill.ipd_admission_id_ref && ipdAdmission && (
+  <p style={{ marginBottom: "12px" }}>
+    <strong>Discharge Date:</strong>{" "}
+    {(
+      ipdAdmission.actualDischargeDate ||
+      ipdAdmission.dischargeDate ||
+      ipdAdmission.expectedDischargeDate
+    )
+      ? new Date(
+          ipdAdmission.actualDischargeDate ||
+          ipdAdmission.dischargeDate ||
+          ipdAdmission.expectedDischargeDate
+        ).toLocaleDateString()
+      : "N/A"}
+  </p>
+)}
+
+
 
 
           <h4 style={{ marginTop: '1.5rem' }}>Charges Summary</h4>

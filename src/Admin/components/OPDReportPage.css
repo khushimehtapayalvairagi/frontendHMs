@@ -1,4 +1,4 @@
-/* OPDReportPage.css */
+/* OPDReportPage.css
 
 .opd-report-container{
   padding:20px;
@@ -94,5 +94,213 @@
 
   .opd-report-container{
     padding:0;
+  }
+} */
+
+.opd-report-container{
+  padding:20px;
+  background:#f4f7fb;
+  min-height:auto;
+  overflow-x:auto;
+  overflow-y:visible !important;
+  padding-bottom:80px;
+}
+
+.main-heading{
+  font-size:30px;
+  margin-bottom:20px;
+  color:#2c3e50;
+}
+
+.opd-form-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:20px;
+  margin-bottom:20px;
+}
+
+.opd-form-label{
+  display:flex;
+  flex-direction:column;
+  font-weight:600;
+  color:#333;
+}
+
+.opd-form-input{
+  margin-top:8px;
+  padding:10px;
+  border-radius:8px;
+  border:1px solid #ccc;
+  width:100%;
+  box-sizing:border-box;
+}
+
+.button-row{
+  display:flex;
+  gap:15px;
+  margin-bottom:25px;
+  flex-wrap:wrap;
+}
+
+.fetch-btn,
+.print-btn{
+  padding:12px 18px;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  color:white;
+  font-weight:bold;
+}
+
+.fetch-btn{
+  background:#2196f3;
+}
+
+.print-btn{
+  background:#4caf50;
+}
+
+/* TABLE FIX */
+
+/* .table-wrapper{
+  width:100%;
+  overflow-x:auto;
+  overflow-y:visible;
+  margin-bottom:35px;
+  border-radius:10px;
+} */
+
+
+.table-wrapper{
+  width:100%;
+  overflow-x:auto;
+  overflow-y:visible;
+  margin-bottom:35px;
+  border:1px solid #ddd;
+  background:#fff;
+}
+
+/* .opd-table{
+  width:100%;
+  min-width:1000px;
+  border-collapse:collapse;
+  background:white;
+  margin-top:15px;
+  border-radius:10px;
+  overflow:hidden;
+} */
+
+
+.opd-table{
+  width:100%;
+  min-width:1000px;
+  border-collapse:collapse;
+  background:white;
+  margin-top:15px;
+  margin-bottom:10px;
+  border-radius:0;
+  overflow:visible;
+  border:1px solid #ddd;
+}
+
+.opd-table th{
+  background:#1976d2;
+  color:white;
+  padding:12px;
+  border:1px solid #ddd;
+  white-space:nowrap;
+}
+
+.opd-table td{
+  padding:10px;
+  border:1px solid #ddd;
+  white-space:nowrap;
+}
+
+.opd-table tr:nth-child(even){
+  background:#f9f9f9;
+}
+
+.opd-table tr:hover{
+  background:#eef5ff;
+}
+
+.opd-table tr:last-child td{
+  border-bottom:1px solid #ddd !important;
+}
+
+/* MOBILE */
+
+@media(max-width:768px){
+
+  .button-row{
+    flex-direction:column;
+  }
+
+  .fetch-btn,
+  .print-btn{
+    width:100%;
+  }
+
+  .main-heading{
+    font-size:24px;
+  }
+}
+
+/* PRINT FIX */
+
+@media print{
+
+  .button-row,
+  .opd-form-grid{
+    display:none !important;
+  }
+
+  body{
+    background:white;
+    margin:0;
+    padding:0;
+    overflow:visible !important;
+  }
+
+  html{
+    overflow:visible !important;
+  }
+
+  .opd-report-container{
+    padding:0;
+    overflow:visible !important;
+  }
+
+  .table-wrapper{
+    overflow:visible !important;
+  }
+
+  .opd-table{
+    width:100%;
+    min-width:unset;
+    page-break-inside:auto;
+  }
+
+  .opd-table tr{
+    page-break-inside:avoid;
+    page-break-after:auto;
+  }
+
+  .opd-table td,
+  .opd-table th{
+    font-size:11px;
+    padding:6px;
+    white-space:normal;
+  }
+
+  h2,
+  h3{
+    page-break-after:avoid;
+  }
+
+  @page{
+    size:A4;
+    margin:12mm;
   }
 }

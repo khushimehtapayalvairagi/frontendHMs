@@ -928,6 +928,8 @@
 
 // OPDReportPage.js
 
+// OPDReportPage.js
+
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import './OPDReportPage.css';
@@ -1022,7 +1024,7 @@ const [paymentRecon, setPaymentRecon] =
         );
 
         setDepartmentWiseData(
-          res.data.specialtyWiseRegister || {}
+       res.data.specialtyWiseRegister || {}
         );
       }
 
@@ -1469,6 +1471,7 @@ if (
               <h3>
                 Central OPD Register
               </h3>
+<div className="table-wrapper">
 
               <table className="opd-table">
                 <thead>
@@ -1508,7 +1511,8 @@ if (
                         </td>
 
                         <td>
-                        {c.doctorId?.specialty?.name}
+                          {c.doctorId?.specialty
+                            ?.name || 'N/A'}
                         </td>
 
                         <td>
@@ -1519,6 +1523,8 @@ if (
                   )}
                 </tbody>
               </table>
+
+              </div>
             </>
           )}
 
@@ -1624,7 +1630,6 @@ if (
                         (c, i) => (
                           <tr key={i}>
                             <td>
-          
                               {new Date(
                                 c.consultationDateTime
                               ).toLocaleString()}
@@ -1772,7 +1777,7 @@ if (
                         </td>
 
                         <td>
-                          {s.procedureType || s.manualChargeId?.itemName || 'N/A'}
+                            {s.procedureType || s.manualChargeId?.itemName || 'N/A'}  
                         </td>
 
                         <td>
@@ -1973,7 +1978,7 @@ if (
 
 
 
-  
+
 
       </div>
 
