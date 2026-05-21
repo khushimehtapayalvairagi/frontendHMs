@@ -646,6 +646,7 @@
 
 
 // 👇 Full version of CreateBillForm with clear details for receptionist
+// 👇 Full version of CreateBillForm with clear details for receptionist
 import React, { useEffect, useState, useRef } from 'react';
 
 import axios from 'axios';
@@ -675,43 +676,6 @@ const CreateBillForm = () => {
 const [anesthesiaRecords, setAnesthesiaRecords] = useState([]);
 
 const [sonographyRecords, setSonographyRecords] = useState([]);
-
-// useEffect(() => { 
-//   if (!patientId) return;
-
-//   const token = localStorage.getItem("jwt");
-
-//   const fetchSonography = async () => {
-//     try {
-//       const res = await axios.get(
-//         `${BASE_URL}/api/sonography/patient/${patientId}`,
-//         { headers: { Authorization: `Bearer ${token}` } }
-//       );
-
-//       setSonographyRecords(res.data || []);
-//     } catch (err) {
-//       console.error(err);
-//       toast.error("Failed to load sonography records");
-//     }
-//   };
-
-//   fetchSonography();
-// }, [patientId]);
-// useEffect(() => {
-//   if (!patientId) return;
-
-//   const token = localStorage.getItem("jwt");
-
-//   axios.get(`${BASE_URL}/api/sonography/patient/${patientId}`, {
-//     headers: { Authorization: `Bearer ${token}` }
-//   })
-//   .then(res => {
-//     setSonographyRecords(res.data || []);
-//   })
-//   .catch(() => toast.error("Failed to load sonography records"));
-
-// }, [patientId, BASE_URL]);
-
 
 
 const BASE_URL = process.env.REACT_APP_BASE_URL;
@@ -743,43 +707,6 @@ const [dailyReports, setDailyReports] = useState([]);
   const [ipdAdmissionId, setIpdAdmissionId] = useState(passedAdmissionId || '');
   const [userId, setUserId] = useState('');
 
-
-// useEffect(() => {
-//   if (!patientId) return;
-
-//   const token = localStorage.getItem("jwt");
-
-//   const fetchSonography = async () => {
-//     try {
-//       const res = await axios.get(
-//         `${BASE_URL}/api/sonography/patient/${patientId}`,
-//         { headers: { Authorization: `Bearer ${token}` } }
-//       );
-
-//       setSonographyRecords(res.data || []);
-//     } catch (err) {
-//       console.error(err);
-//       toast.error("Failed to load sonography records");
-//     }
-//   };
-
-//   fetchSonography();
-// }, [patientId]);
-
-//   useEffect(() => {
-//   const storedVisitId = localStorage.getItem("currentVisitId");
-
-//   if (storedVisitId) {
-//     setVisitId(storedVisitId);
-//   } else {
-//     console.log("❌ visitId not found in localStorage");
-//   }
-// }, []);
-
-
-
-
-
   useEffect(() => {
   const fetchAnesthesiaRecords = async () => {
     if (!patientId) return;
@@ -793,39 +720,6 @@ const [dailyReports, setDailyReports] = useState([]);
       );
 
       const procedures = procRes.data.procedures || [];
-
-//       const [sonographyRecords, setSonographyRecords] = useState([]);
-
-// useEffect(() => {
-//   if (!patientId) return;
-
-//   const token = localStorage.getItem("jwt");
-
-//   axios.get(`${BASE_URL}/api/sonography/patient/${patientId}`, {
-//     headers: { Authorization: `Bearer ${token}` }
-//   })
-//   .then(res => {
-//     setSonographyRecords(res.data || []);
-//   })
-//   .catch(() => toast.error("Failed to load sonography records"));
-
-// }, [patientId]);
-
-// useEffect(() => {
-//   if (!patientId) return;
-
-//   const token = localStorage.getItem("jwt");
-
-//   axios.get(`${BASE_URL}/api/sonography/patient/${patientId}`, {
-//     headers: { Authorization: `Bearer ${token}` }
-//   })
-//   .then(res => {
-//     setSonographyRecords(res.data || []);
-//   })
-//   .catch(() => toast.error("Failed to load sonography records"));
-
-// }, [patientId]);
-
 
       // ✅ Step 2: Get ALL anesthesia records ONCE
       const anaRes = await axios.get(
@@ -920,51 +814,6 @@ useEffect(() => {
   });
 
 }, [sonographyRecords]);
-
-// useEffect(() => {
-//   if (sonographyRecords.length === 0) return;
-
-//   setItems(prev => {
-//     const existingIds = prev.map(i => i.item_source_id);
-
-//     const newItems = sonographyRecords
-//       .filter(rec => !existingIds.includes(rec._id))
-//       .map(rec => ({
-//         item_type: "Sonography",
-//         item_source_id: rec._id,
-//         description: `Sonography - ${rec.scanType}`,
-//         quantity: 1,
-//         unit_price: rec.cost || 0
-//       }));
-
-//     return [...prev, ...newItems];
-//   });
-
-// }, [sonographyRecords]);
-// useEffect(() => {
-//   if (!patientId) return;
-
-//   const token = localStorage.getItem("jwt");
-
-//   axios.get(`${BASE_URL}/api/sonography/patient/${patientId}`, {
-//     headers: { Authorization: `Bearer ${token}` }
-//   })
-//   .then(res => {
-//     setSonographyRecords(res.data || []);
-//   })
-//   .catch(() => toast.error("Failed to load sonography records"));
-
-// }, [patientId]);
-
-
-
-
-
-
-
-
-
-
 
 useEffect(() => {
   if (!ipdAdmissionId) return;
@@ -1079,13 +928,22 @@ useEffect(() => {
 
             const admissions = admRes.data.admissions || [];
 
-            const hasIPD = admissions.some(
-              adm => adm.status === "Admitted"
-            );
 
-            if (hasIPD) {
-              patientType = "IPD";
-            }
+const activeAdmission = admissions.find(
+  adm =>
+    adm.status?.toLowerCase() === "admitted"
+);
+
+patientType = activeAdmission
+  ? "IPD"
+  : "OPD";
+            // const hasIPD = admissions.some(
+            //   adm => adm.status === "Admitted"
+            // );
+
+            // if (hasIPD) {
+            //   patientType = "IPD";
+            // }
 
           } catch (err) {
             console.log("Admission check failed");
@@ -1111,67 +969,38 @@ useEffect(() => {
 
 
 
+// ✅ FETCH OPD VISITS
+useEffect(() => {
+  if (!patientId) return;
 
+  const token = localStorage.getItem('jwt');
 
+  axios.get(
+    `${BASE_URL}/api/visits/patient/${patientId}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    }
+  )
+  .then(res => {
 
+    const visitsData = res.data.visits || res.data || [];
 
-  // useEffect(() => {
-  //   const token = localStorage.getItem('jwt');
+    setVisits(visitsData);
 
-  //   const fetchAdmittedPatients = async () => {
-  //     try {
-  //       const patientRes = await axios.get(`${BASE_URL}/api/receptionist/patients`, {
-  //         headers: { Authorization: `Bearer ${token}` }
-  //       });
+    // ✅ Auto select latest OPD visit if patient is OPD
+    if (visitsData.length > 0 && !ipdAdmissionId) {
+      setVisitId(visitsData[0]._id);
+    }
 
-  //       const allPatients = patientRes.data.patients;
-  //       const admittedPatients = [];
+  })
+  .catch(err => {
+    console.error(err);
+    toast.error("Failed to load OPD visits");
+  });
 
-  //       for (const patient of allPatients) {
-  //         const res = await axios.get(`${BASE_URL}/api/ipd/admissions/${patient._id}`, {
-  //           headers: { Authorization: `Bearer ${token}` }
-  //         });
-
-  //         const admissions = res.data.admissions || [];
-  //         if (admissions.some(adm => adm.status === 'Admitted')) {
-  //           admittedPatients.push(patient);
-  //         }
-  //       }
-
-  //       setPatients(admittedPatients);
-  //     } catch (error) {
-  //       toast.error('Failed to load admitted patients');
-  //     }
-  //   };
-
-  //   fetchAdmittedPatients();
-  // }, []);
-
-
-
-// useEffect(() => {
-//   if (!patientId) return;
-
-//   const token = localStorage.getItem('jwt');
-
-//   axios.get(
-//     `${BASE_URL}/api/visits/patient/${patientId}`,
-//     {
-//       headers: { Authorization: `Bearer ${token}` }
-//     }
-//   )
-//   .then(res => {
-//     setVisits(res.data.visits || []);
-//   })
-//   .catch(err => {
-//     console.error(err);
-//     toast.error("Failed to load OPD visits");
-//   });
-
-// }, [patientId, BASE_URL]);
-
-
-
+}, [patientId, ipdAdmissionId, BASE_URL]);
 
 useEffect(() => {
   if (!visitId) return;
@@ -1195,26 +1024,6 @@ useEffect(() => {
   });
 
 }, [visitId]);
-
-
-
-  // useEffect(() => {
-  //   if (!patientId) return;
-  //   const token = localStorage.getItem('jwt');
-  //   axios.get(`${BASE_URL}/api/ipd/admissions/${patientId}`, {
-
-  //     headers: { Authorization: `Bearer ${token}` }
-  //   })
-
-
-  // //  .then(res => setVisits(res.data || []))
-  // .then(res => setVisits(res.data.visits || []))
-  // .catch(() => toast.error("Failed to load visits"));
-  //   // .then(res => {
-  //   //   const admitted = res.data.admissions.filter(a => a.status === 'Admitted');
-  //   //   setAdmissions(admitted);
-  //   // }).catch(() => toast.error('Failed to load admissions'));
-  // }, [patientId]);
 
 
   // 🔽 EXISTING CODE (is ke baad)
@@ -1253,21 +1062,26 @@ useEffect(() => {
       }
 
 
-      
+      if (type === 'OPDConsultation') {
+
+  const selected = consultations.find(
+    c => c._id === value
+  );
+
+  updated[index].unit_price = 300;
+
+  updated[index].description =
+    `OPD Consultation - ${
+      selected?.doctorId?.userId?.name || 'Doctor'
+    }`;
+}
+
       // ✅ SONOGRAPHY ADD (IMPORTANT)
 if (type === 'Sonography') {
   const selected = sonographyRecords.find(s => s._id === value);
   updated[index].unit_price = selected?.cost || '';
   updated[index].description = `Sonography - ${selected?.scanType}` || '';
 }
-
-  // ✅ 👉 YAHAN ADD KARO
-  // if (type === 'Sonography') {
-  //   const selected = sonographyRecords.find(s => s._id === value);
-  //   updated[index].unit_price = selected?.cost || '';
-  //   updated[index].description = `Sonography - ${selected?.scanType}` || '';
-  // }
-
 
     }
 
@@ -1336,9 +1150,6 @@ if (!ipdAdmissionId && !visitId) {
   // //     ipd_admission_id_ref: selectedIPD || null,
 
   //      items: cleanedItems
-
-
-  
   //   };
 
    try {
@@ -1360,379 +1171,162 @@ if (errorMessage === 'This procedure has already been billed.') {
 
   };
 
-
-
-
-
-
-
   
 const handlePrint = () => {
+  const patientName = patients.find(p => p._id === patientId)?.fullName || "N/A";
+  const doctorName = admissions.find(a => a._id === ipdAdmissionId)?.admittingDoctorId?.userId?.name || "N/A";
+  const admitDate = admissions.find(a => a._id === ipdAdmissionId)?.admitDate || "N/A";
+  const billDate = new Date().toLocaleDateString();
+  const total = items.reduce((sum, it) => sum + (it.quantity * (it.unit_price || 0)), 0);
 
-  const patient =
-    patients.find(
-      p => p._id === patientId
-    );
+  
+  const billLayout = `
+<div style="padding:30px;font-family:Arial;background:#fff;color:#000;">
 
-  const admission =
-    admissions.find(
-      a => a._id === ipdAdmissionId
-    );
+  <div style="text-align:center;border-bottom:3px solid #1976d2;padding-bottom:15px;margin-bottom:20px;">
+    
+    <h1 style="margin:0;color:#1976d2;">
+      🏥 Hospital Billing Receipt
+    </h1>
 
-  const visit =
-    visits.find(
-      v => v._id === visitId
-    );
-
-  const isIPD = !!ipdAdmissionId;
-  const billType =
-    isIPD ? "IPD BILL" : "OPD BILL";
-
-  const patientName =
-    patient?.fullName || "N/A";
-
-  const doctorName =
-    isIPD
-      ? admission?.admittingDoctorId?.userId?.name
-      : visit?.doctorId?.userId?.name;
-
-  const admitDate =
-    admission?.admitDate
-      ? new Date(
-          admission.admitDate
-        ).toLocaleString()
-      : "N/A";
-
-  const visitDate =
-    visit?.visitDate
-      ? new Date(
-          visit.visitDate
-        ).toLocaleString()
-      : "N/A";
-
-  const billDate =
-    new Date().toLocaleDateString();
-
-  const total =
-    items.reduce(
-      (sum, it) =>
-        sum +
-        (
-          Number(it.quantity || 0) *
-          Number(it.unit_price || 0)
-        ),
-      0
-    );
-
-  const rows =
-    items.map((it) => `
-      <tr>
-        <td style="padding:8px;border-bottom:1px solid #ddd;">
-          ${it.description || "-"}
-        </td>
-
-        <td style="text-align:center;border-bottom:1px solid #ddd;">
-          ${it.quantity}
-        </td>
-
-        <td style="text-align:center;border-bottom:1px solid #ddd;">
-          ₹${it.unit_price || 0}
-        </td>
-
-        <td style="text-align:right;border-bottom:1px solid #ddd;">
-          ₹${
-            (
-              Number(it.quantity || 0) *
-              Number(it.unit_price || 0)
-            ).toFixed(2)
-          }
-        </td>
-      </tr>
-    `).join("");
-
-  const html = `
-  <html>
-
-  <head>
-
-  <title>${billType}</title>
-
-  <style>
-
-  @page{
-    size:A4;
-    margin:15mm;
-  }
-
-  body{
-    font-family:Arial;
-    color:#000;
-    padding:20px;
-  }
-
-  .header{
-    text-align:center;
-    border-bottom:2px solid #000;
-    padding-bottom:10px;
-    margin-bottom:15px;
-  }
-
-  .hospital{
-    font-size:28px;
-    font-weight:bold;
-  }
-
-  .sub{
-    font-size:15px;
-    margin-top:3px;
-  }
-
-  .billtype{
-    float:right;
-    font-size:34px;
-    font-weight:bold;
-    color:#666;
-  }
-
-  .info{
-    width:100%;
-    margin-top:10px;
-    margin-bottom:20px;
-    font-size:14px;
-  }
-
-  .info td{
-    padding:4px;
-  }
-
-  table.bill{
-    width:100%;
-    border-collapse:collapse;
-    margin-top:10px;
-  }
-
-  .bill th{
-    border-top:2px solid #000;
-    border-bottom:2px solid #000;
-    text-align:left;
-    padding:8px;
-    font-size:14px;
-  }
-
-  .total{
-    margin-top:20px;
-    text-align:right;
-    font-size:22px;
-    font-weight:bold;
-  }
-
-  .sign{
-    margin-top:70px;
-    text-align:right;
-  }
-
-  .section{
-    margin-top:25px;
-  }
-
-  </style>
-  </head>
-
-  <body>
-
-  <div class="header">
-
-    <div class="billtype">
-      ${billType}
-    </div>
-
-    <div class="hospital">
+    <h2 style="margin:10px 0 5px;">
       Dr. M.I. Jamkhanawala Tibbia Unani Medical College
-    </div>
+    </h2>
 
-    <div class="sub">
+    <p style="margin:0;">
       & Haji Abdul Razzak Kalsekar Tibbia Hospital
-    </div>
+    </p>
 
-    <div class="sub">
-      Anjuman-I-Islam Complex, Yari Road,
-      Versova, Andheri(W), Mumbai 400061
-    </div>
-
-    <div class="sub">
-      Telephone:
-      26321032 /
-      25361199 /
-      26351188
-    </div>
+    <p style="margin-top:8px;font-size:13px;">
+      Mumbai, Maharashtra
+    </p>
 
   </div>
 
-  <table class="info">
+  <!-- PATIENT INFO -->
 
-    <tr>
-      <td><b>Patient :</b> ${patientName}</td>
-      <td><b>Bill Date :</b> ${billDate}</td>
-    </tr>
+  <div style="margin-bottom:20px;">
 
-    <tr>
-      <td><b>Doctor :</b> ${doctorName || "N/A"}</td>
-
-      <td>
-        <b>
-          ${
-            isIPD
-              ? "Admit On"
-              : "Visit On"
-          } :
-        </b>
-
-        ${
-          isIPD
-            ? admitDate
-            : visitDate
-        }
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        <b>Patient Type :</b>
-        ${isIPD ? "IPD" : "OPD"}
-      </td>
-
-      <td>
-        <b>Status :</b>
-        ${
-          isIPD
-            ? admission?.status || "-"
-            : visit?.paymentStatus || "-"
-        }
-      </td>
-    </tr>
-
-  </table>
-
-  <table class="bill">
-
-    <thead>
+    <table style="width:100%;line-height:1.8;">
       <tr>
-        <th>Particular</th>
-        <th>Qty</th>
-        <th>Rate</th>
-        <th>Amount</th>
+        <td><strong>Patient:</strong> ${patientName}</td>
+        <td><strong>Bill Date:</strong> ${billDate}</td>
       </tr>
-    </thead>
 
-    <tbody>
-      ${rows}
-    </tbody>
+      <tr>
+        <td><strong>Doctor:</strong> ${doctorName}</td>
+        <td><strong>Admission Date:</strong> ${admitDate}</td>
+      </tr>
+    </table>
 
-  </table>
+  </div>
+
+  <!-- PRESCRIPTION -->
 
   ${
     latestConsultation
       ? `
-      <div class="section">
+      <div style="margin-bottom:25px;border:1px solid #ccc;padding:15px;border-radius:10px;">
+        
+        <h3 style="margin-top:0;color:#1976d2;">
+          🧾 Prescription Details
+        </h3>
 
-      <h3>
-        Consultation Details
-      </h3>
+        <p><strong>Chief Complaint:</strong> ${latestConsultation.chiefComplaint || "N/A"}</p>
 
-      <p>
-        <b>Chief Complaint:</b>
-        ${
-          latestConsultation.chiefComplaint ||
-          "N/A"
-        }
-      </p>
+        <p><strong>Diagnosis:</strong> ${latestConsultation.diagnosis || "N/A"}</p>
 
-      <p>
-        <b>Diagnosis:</b>
-        ${
-          latestConsultation.diagnosis ||
-          "N/A"
-        }
-      </p>
+        <p><strong>Doctor Notes:</strong> ${latestConsultation.doctorNotes || "N/A"}</p>
 
-      <p>
-        <b>Doctor Notes:</b>
-        ${
-          latestConsultation.doctorNotes ||
-          "N/A"
-        }
-      </p>
+        <p><strong>Medicines:</strong> ${latestConsultation.medicinesPrescribedText || "N/A"}</p>
+
+        <p><strong>Lab Tests:</strong> ${
+          latestConsultation.labInvestigationsSuggested?.join(", ") || "N/A"
+        }</p>
 
       </div>
       `
       : ""
   }
 
-  <div class="total">
-    Grand Total :
-    ₹${total.toFixed(2)}
+  <!-- BILL TABLE -->
+
+  <table
+    border="1"
+    style="
+      width:100%;
+      border-collapse:collapse;
+      margin-top:20px;
+    "
+  >
+
+    <thead style="background:#1976d2;color:white;">
+
+      <tr>
+        <th style="padding:10px;">Description</th>
+        <th>Qty</th>
+        <th>Rate</th>
+        <th>Total</th>
+      </tr>
+
+    </thead>
+
+    <tbody>
+
+      ${items.map(it => `
+        <tr>
+          <td style="padding:10px;">${it.description}</td>
+          <td style="text-align:center;">${it.quantity}</td>
+          <td style="text-align:center;">₹${it.unit_price}</td>
+          <td style="text-align:center;">
+            ₹${(it.quantity * it.unit_price) || 0}
+          </td>
+        </tr>
+      `).join("")}
+
+    </tbody>
+
+  </table>
+
+  <div
+    style="
+      margin-top:25px;
+      text-align:right;
+      font-size:22px;
+      font-weight:bold;
+      color:#1976d2;
+    "
+  >
+    Grand Total: ₹${total}
   </div>
 
-  <div class="sign">
-    ___________________<br/>
+  <div
+    style="
+      margin-top:50px;
+      text-align:right;
+    "
+  >
     Authorized Signature
   </div>
 
-  </body>
-  </html>
-  `;
+</div>
+`;
 
-  const win =
-    window.open(
-      "",
-      "",
-      "width=900,height=700"
-    );
-
-  win.document.write(html);
-  win.document.close();
-  win.print();
+  const newWindow = window.open('', '', 'width=900,height=700');
+  newWindow.document.write(`
+    <html>
+      <head>
+        <title>Patient Bill</title>
+        <style>${styles}</style>
+      </head>
+      <body>
+        ${billLayout}
+      </body>
+    </html>
+  `);
+  newWindow.document.close();
+  newWindow.print();
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-// const handlePatientChange = async (e) => {
-//   const selectedPatientId = e.target.value;
-
-//   setForm({ ...form, patientId: selectedPatientId });
-
-//   try {
-//     const res = await axios.get(
-//       `${BASE_URL}/api/visits/patient/${selectedPatientId}`,
-//       {
-//         headers: { Authorization: `Bearer ${token}` }
-//       }
-//     );
-
-//     const visit = res.data[0]; // latest visit
-
-//     setForm(prev => ({
-//       ...prev,
-//       patientId: selectedPatientId,
-//       visitId: visit?._id || ""
-//     }));
-
-//   } catch {
-//     toast.error("Visit fetch failed");
-//   }
-// };
-
-
 
 
  return (
@@ -1777,7 +1371,7 @@ const handlePrint = () => {
 
 
 {/* ✅ OPD VISIT SELECT (YAHAN ADD KARO) */}
-{/* <div style={{ marginBottom: '1rem' }}>
+<div style={{ marginBottom: '1rem' }}>
   <label>Select OPD Visit</label>
 
 
@@ -1795,42 +1389,23 @@ const handlePrint = () => {
 
   {visits.map(v => (
     <option key={v._id} value={v._id}>
-      Dr. {v.doctorId?.userId?.name || "N/A"} |
-      {v.visitDate
-        ? new Date(v.visitDate).toLocaleDateString()
-        : "N/A"} |
-      {v.paymentStatus || "Unpaid"}
+       Dr. {v.assignedDoctorId?.userId?.name || "N/A"} |
+  {v.visitDate
+    ? new Date(v.visitDate).toLocaleDateString()
+    : "N/A"} |
+  Paid: ₹{v.payment?.paidAmount || 0} /
+  ₹{v.payment?.amount || 0} |
+  Balance: ₹{
+    (v.payment?.amount || 0) -
+    (v.payment?.paidAmount || 0)
+  }
     </option>
   ))}
 </select>
-  {/* <select
-    value={visitId}
-    onChange={(e) => setVisitId(e.target.value)}
-    style={{ width: '100%', padding: '8px' }}
-  >
-    <option value="">-- Select OPD Visit --</option>
-    {visits.map(v => (
 
-      <option key={v._id} value={v._id}>
-  Dr. {v.doctorId?.userId?.name || "N/A"} |
-  {
-    v.visitDate
-      ? new Date(v.visitDate).toLocaleDateString()
-      : "N/A"
-  } |
-  {v.paymentStatus || "Unpaid"}
-</option>
-      // <option key={v._id} value={v._id}>
-      //   {new Date(v.visitDate).toLocaleString()}
-      // </option>
-    ))}
-  </select> */}
-{/* </div> */} 
+</div> 
 
 
-
-
-        {/* Admission Select */}
       {/* Admission Select */}
 {admissions.length > 0 && (
   <div style={{ marginBottom: '1.2rem' }}>
@@ -1861,12 +1436,6 @@ const handlePrint = () => {
     </p>
   </div>
 )}
-
-
-        {/* Doctor + Room */}
-
-        
-        {/* {ipdAdmissionId && ( */}
 
 
         {/* Doctor + Room + OPD Details */}
@@ -1919,7 +1488,7 @@ const handlePrint = () => {
             <>
               <p>
                 <strong>OPD Doctor:</strong>{" "}
-                {visit.doctorId?.userId?.name || 'N/A'}
+                {visit.assignedDoctorId?.userId?.name || 'N/A'}
               </p>
 
               <p>
@@ -1936,25 +1505,7 @@ const handlePrint = () => {
     })()}
   </div>
 )}
-{/* 
-        {(ipdAdmissionId || visitId) && (
-          <div style={{ background: '#f2f2f2', padding: '10px 15px', borderRadius: '6px', marginBottom: '1rem', lineHeight: '1.6' }}>
-            {(() => {
-              // const adm = admissions.find(a => a._id === ipdAdmissionId);
 
-              const adm = admissions.find(a => a._id === ipdAdmissionId);
-              const visit = visits.find(v => v._id === visitId);
-
-              return adm && (
-                <>
-                  <p><strong>Doctor:</strong> {adm.admittingDoctorId?.userId?.name || 'N/A'}
-                  </p>
-                  <p><strong>Room Category:</strong> {adm.roomCategoryId?.name || 'N/A'}</p>
-                </>
-              );
-            })()}
-          </div>
-        )} */}
 
 
 
@@ -2074,7 +1625,21 @@ const handlePrint = () => {
             <div>
               <strong>Visit Status:</strong><br />
 
-              <span
+
+  <span
+    style={{
+      color: visit.payment?.isPaid ? "green" : "red",
+      fontWeight: "bold"
+    }}
+  >
+    {visit.payment?.isPaid
+      ? `Paid ₹${visit.payment?.paidAmount || visit.payment?.amount || 0}`
+      : `Unpaid ₹${
+          (visit.payment?.amount || 0) -
+          (visit.payment?.paidAmount || 0)
+        }`}
+  </span>
+              {/* <span
                 style={{
                   color:
                     visit.paymentStatus === "Paid"
@@ -2084,7 +1649,7 @@ const handlePrint = () => {
                 }}
               >
                 {visit.paymentStatus || "Unpaid"}
-              </span>
+              </span> */}
             </div>
 
             <div>
@@ -2412,6 +1977,8 @@ const handlePrint = () => {
     <option value="Manual">Manual Charge</option>
     <option value="Open">Open Charge</option>
     <option value="Sonography">Sonography</option>
+
+    <option value="OPDConsultation">OPD Consultation</option>
   </select>
 
   {/* Print-only fallback (shows selected value in PDF/print) */}
@@ -2454,6 +2021,41 @@ const handlePrint = () => {
       </>
     ) : (
       <p style={{ color: "red" }}>⚠ No manual charge items available</p>
+    )}
+  </div>
+)}
+
+{/* OPD Consultation */}
+{item.item_type === 'OPDConsultation' && (
+  <div style={{ marginBottom: '0.8rem' }}>
+    <label>Select Consultation</label>
+
+    {consultations.length > 0 ? (
+      <select
+        className="screen-only"
+        value={item.item_source_id}
+        onChange={e =>
+          handleChange(index, 'item_source_id', e.target.value)
+        }
+        required
+        style={{ width: '100%', padding: '8px' }}
+      >
+        <option value="">
+          Select Consultation
+        </option>
+
+        {consultations.map(c => (
+          <option key={c._id} value={c._id}>
+            {c.doctorId?.userId?.name || "Doctor"} |
+            {c.diagnosis || "Consultation"} |
+            ₹300
+          </option>
+        ))}
+      </select>
+    ) : (
+      <p style={{ color: 'red' }}>
+        ⚠ No consultation found
+      </p>
     )}
   </div>
 )}
