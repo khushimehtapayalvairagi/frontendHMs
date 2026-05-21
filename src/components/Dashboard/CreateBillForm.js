@@ -976,7 +976,7 @@ useEffect(() => {
   const token = localStorage.getItem('jwt');
 
   axios.get(
-    `${BASE_URL}/api/visits/patient/${patientId}`,
+    `${BASE_URL}/api/visits/${patientId}`,
     {
       headers: {
         Authorization: `Bearer ${token}`
@@ -989,7 +989,6 @@ useEffect(() => {
 
     setVisits(visitsData);
 
-    // ✅ Auto select latest OPD visit if patient is OPD
     if (visitsData.length > 0 && !ipdAdmissionId) {
       setVisitId(visitsData[0]._id);
     }
