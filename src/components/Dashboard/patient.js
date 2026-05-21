@@ -135,11 +135,43 @@ localStorage.setItem("currentPatientId", res.data.patient.patientId);
       <h2>👩‍⚕️ Patient + Visit Registration</h2>
 
       <form onSubmit={handleSubmit}>
+<input
+  type="date"
+  name="dob"
+  value={form.dob}
+  onChange={(e) => {
+    const dob = e.target.value;
 
+    const birthDate = new Date(dob);
+    const today = new Date();
+
+    let age = today.getFullYear() - birthDate.getFullYear();
+
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+
+    if (
+      monthDiff < 0 ||
+      (monthDiff === 0 && today.getDate() < birthDate.getDate())
+    ) {
+      age--;
+    }
+
+    setForm((prev) => ({
+      ...prev,
+      dob,
+      age
+    }));
+  }}
+/>
         {/* PATIENT */}
         <input name="fullName" placeholder="Full Name" value={form.fullName} onChange={handleChange} />
         <input name="age" placeholder="Age" value={form.age} onChange={handleChange} />
-        
+        <input
+  type="date"
+  name="dob"
+  value={form.dob}
+  onChange={handleChange}
+/>
         <select name="gender" value={form.gender} onChange={handleChange}>
           <option value="">Gender</option>
           <option>Male</option>

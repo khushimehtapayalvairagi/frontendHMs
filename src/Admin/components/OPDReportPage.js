@@ -1113,57 +1113,52 @@ if (
     }
   };
 
-  // PRINT ALL REPORTS
-  // const handlePrint = () => {
-  //   const printContents = printRef.current.innerHTML;
-  //   const win = window.open('', '', 'width=1200,height=800');
 
-  //   win.document.write(`
-  //     <html>
-  //       <head>
-  //         <title>OPD Reports</title>
 
-  //         <style>
-  //           body{
-  //             font-family: Arial;
-  //             padding:20px;
-  //           }
+// DELETE
 
-  //           h2,h3,h4{
-  //             margin-top:25px;
-  //           }
+const handleDelete = async (id, api) => {
+  try {
 
-  //           table{
-  //             width:100%;
-  //             border-collapse: collapse;
-  //             margin-top:10px;
-  //             margin-bottom:30px;
-  //           }
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete?"
+    );
 
-  //           th,td{
-  //             border:1px solid #000;
-  //             padding:8px;
-  //             font-size:12px;
-  //             text-align:left;
-  //           }
+    if (!confirmDelete) return;
 
-  //           th{
-  //             background:#f2f2f2;
-  //           }
-  //         </style>
-  //       </head>
+    await axios.delete(
+      `${BASE_URL}${api}/${id}`,
+      { headers }
+    );
 
-  //       <body>
-  //         ${printContents}
-  //       </body>
-  //     </html>
-  //   `);
+    toast.success("Deleted Successfully");
 
-  //   win.document.close();
-  //   win.focus();
-  //   win.print();
-  //   win.close();
-  // };
+    handleFetchReports();
+
+  } catch (error) {
+    console.log(error);
+
+    toast.error("Delete Failed");
+  }
+};
+
+
+
+// EDIT
+
+const handleEdit = (id, route) => {
+
+  window.open(
+    `${route}/${id}`,
+    "_blank"
+  );
+
+};
+
+ 
+ 
+
+
 
 
 
@@ -1481,6 +1476,7 @@ if (
                     <th>Doctor</th>
                     <th>Department</th>
                     <th>Diagnosis</th>
+                    <th>Action</th>
                   </tr>
                 </thead>
 
@@ -1518,6 +1514,33 @@ if (
                         <td>
                           {c.diagnosis || 'N/A'}
                         </td>
+                           <td>
+
+      <button
+        onClick={() =>
+          handleEdit(
+            c._id,
+            "/edit-opd"
+          )
+        }
+        className="edit-btn"
+      >
+        Edit
+      </button>
+
+      <button
+        onClick={() =>
+          handleDelete(
+            c._id,
+            "/api/opd"
+          )
+        }
+        className="delete-btn"
+      >
+        Delete
+      </button>
+
+    </td>
                       </tr>
                     ))
                   )}
@@ -1553,6 +1576,7 @@ if (
                         <th>Patient</th>
                         <th>Doctor</th>
                         <th>Diagnosis</th>
+                        <th>Action</th>
                       </tr>
                     </thead>
 
@@ -1581,6 +1605,33 @@ if (
                             {c.diagnosis ||
                               'N/A'}
                           </td>
+                            <td>
+
+    <button
+      onClick={() =>
+        handleEdit(
+          c._id,
+          "/edit-opd"
+        )
+      }
+      className="edit-btn"
+    >
+      Edit
+    </button>
+
+    <button
+      onClick={() =>
+        handleDelete(
+          c._id,
+          "/api/opd"
+        )
+      }
+      className="delete-btn"
+    >
+      Delete
+    </button>
+
+  </td>
                         </tr>
                       ))}
                     </tbody>
@@ -1622,6 +1673,7 @@ if (
                         <th>Patient</th>
                         <th>Complaint</th>
                         <th>Diagnosis</th>
+                        <th>Action</th>
                       </tr>
                     </thead>
 
@@ -1650,6 +1702,33 @@ if (
                               {c.diagnosis ||
                                 'N/A'}
                             </td>
+                             <td>
+
+    <button
+      onClick={() =>
+        handleEdit(
+          c._id,
+          "/edit-opd"
+        )
+      }
+      className="edit-btn"
+    >
+      Edit
+    </button>
+
+    <button
+      onClick={() =>
+        handleDelete(
+          c._id,
+          "/api/opd"
+        )
+      }
+      className="delete-btn"
+    >
+      Delete
+    </button>
+
+  </td>
                           </tr>
                         )
                       )}
@@ -1742,6 +1821,7 @@ if (
                     <th>Report</th>
                     <th>Cost</th>
                     <th>Status</th>
+                    <th>Action</th>
                   </tr>
                 </thead>
 
@@ -1792,6 +1872,34 @@ if (
                           {s.status ||
                             'Pending'}
                         </td>
+
+                         <td>
+
+    <button
+      onClick={() =>
+        handleEdit(
+          s._id,
+          "/edit-sonography"
+        )
+      }
+      className="edit-btn"
+    >
+      Edit
+    </button>
+
+    <button
+      onClick={() =>
+        handleDelete(
+          s._id,
+          "/api/sonography"
+        )
+      }
+      className="delete-btn"
+    >
+      Delete
+    </button>
+
+  </td>
 
                       </tr>
                     ))
@@ -1935,6 +2043,7 @@ if (
             <th>Method</th>
             <th>Amount</th>
             <th>Received By</th>
+            <th>Action</th>
           </tr>
         </thead>
 
@@ -1968,6 +2077,33 @@ if (
                     .received_by_user_id_ref
                     ?.name || 'N/A'}
                 </td>
+                 <td>
+
+    <button
+      onClick={() =>
+        handleEdit(
+          p._id,
+          "/edit-payment"
+        )
+      }
+      className="edit-btn"
+    >
+      Edit
+    </button>
+
+    <button
+      onClick={() =>
+        handleDelete(
+          p._id,
+          "/api/payments"
+        )
+      }
+      className="delete-btn"
+    >
+      Delete
+    </button>
+
+  </td>
               </tr>
             )
           )}
