@@ -976,7 +976,7 @@ useEffect(() => {
   const token = localStorage.getItem('jwt');
 
   axios.get(
-    `${BASE_URL}/api/visits/${patientId}`,
+    `${BASE_URL}/api/receptionist/visits/${patientId}`,
     {
       headers: {
         Authorization: `Bearer ${token}`
