@@ -135,7 +135,10 @@ localStorage.setItem("currentPatientId", res.data.patient.patientId);
       <h2>👩‍⚕️ Patient + Visit Registration</h2>
 
       <form onSubmit={handleSubmit}>
-<input
+
+        {/* PATIENT */}
+        <input name="fullName" placeholder="Full Name" value={form.fullName} onChange={handleChange} />
+   <input
   type="date"
   name="dob"
   value={form.dob}
@@ -162,15 +165,6 @@ localStorage.setItem("currentPatientId", res.data.patient.patientId);
       age
     }));
   }}
-/>
-        {/* PATIENT */}
-        <input name="fullName" placeholder="Full Name" value={form.fullName} onChange={handleChange} />
-        <input name="age" placeholder="Age" value={form.age} onChange={handleChange} />
-        <input
-  type="date"
-  name="dob"
-  value={form.dob}
-  onChange={handleChange}
 />
         <select name="gender" value={form.gender} onChange={handleChange}>
           <option value="">Gender</option>
