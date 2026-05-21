@@ -742,11 +742,11 @@ const handlePrint = () => {
 
             <tr key={item._id || index}>
 
-              <td>{item.patient?.fullName || 'N/A'}</td>
+              <td>{item.patient?.name || 'N/A'}</td>
 
               <td>{item.anesthetist?.name || 'N/A'}</td>
 
-              <td>{item.procedureType?.name || 'N/A'}</td>
+              <td>{item.procedure?.name || 'N/A'}</td>
 
               <td>{item.anesthesiaType || 'N/A'}</td>
 
@@ -1263,7 +1263,7 @@ const handlePrint = () => {
                       </td>
 
                       <td>
-                        {entry.doctor?.department}
+                        {entry.doctor?.specialty}
                       </td>
 
                       <td>
@@ -1422,7 +1422,7 @@ const handlePrint = () => {
                       <td>
                         {
                           item.patient
-                            ?.fullName
+                            ?.name
                         }
                       </td>
 
