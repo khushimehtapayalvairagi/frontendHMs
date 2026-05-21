@@ -111,11 +111,16 @@ const PatientForm = () => {
       toast.success("✅ Patient + Visit Created");
 localStorage.setItem("currentPatientId", res.data.patient.patientId);
 
-      setSubmittedData({
-        patient: res.data.patient,
-        visit: res.data.visit
-      });
+    const selectedDoctor = doctors.find(
+  (doc) => doc._id === assignedDoctorId
+);
 
+setSubmittedData({
+  patient: res.data.patient,
+  visit: res.data.visit,
+  doctorName: selectedDoctor?.userId?.name || "N/A",
+  specialty: selectedDoctor?.specialty?.name || "N/A"
+});
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed");
     }
