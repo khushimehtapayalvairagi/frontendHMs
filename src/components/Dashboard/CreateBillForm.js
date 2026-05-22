@@ -1296,12 +1296,22 @@ const submitPayment = async (e) => {
       }
     );
 
+    // ✅ UPDATE BILL
     setBillData(data.updatedBill);
 
-    fetchPayments(billData._id);
+    // ✅ REFRESH PAYMENT HISTORY
+    await fetchPayments(billData._id);
 
+    // ✅ RESET FORM
+    setPaymentForm({
+      amount: data.updatedBill.balance_due || '',
+      method: 'Cash',
+      externalRef: ''
+    });
+
+    // ✅ SUCCESS TOAST
     toast.success(
-      'Payment recorded successfully ✅'
+      `₹${amt} Payment Recorded Successfully ✅`
     );
 
   } catch (err) {
@@ -1310,163 +1320,374 @@ const submitPayment = async (e) => {
       err.response?.data?.message ||
       'Payment error'
     );
+
+    toast.error(
+      err.response?.data?.message ||
+      'Payment Failed'
+    );
   }
 };
 
 const handlePrint = () => {
-  const patientName = patients.find(p => p._id === patientId)?.fullName || "N/A";
-  const doctorName = admissions.find(a => a._id === ipdAdmissionId)?.admittingDoctorId?.userId?.name || "N/A";
-  const admitDate = admissions.find(a => a._id === ipdAdmissionId)?.admitDate || "N/A";
-  const billDate = new Date().toLocaleDateString();
-  const total = items.reduce((sum, it) => sum + (it.quantity * (it.unit_price || 0)), 0);
 
-  
-  const billLayout = `
-<div style="padding:30px;font-family:Arial;background:#fff;color:#000;">
+  const patient =
+    patients.find(p => p._id === patientId);
 
-  <div style="text-align:center;border-bottom:3px solid #1976d2;padding-bottom:15px;margin-bottom:20px;">
-    
-    <h1 style="margin:0;color:#1976d2;">
-      🏥 Hospital Billing Receipt
-    </h1>
+  const admission =
+    admissions.find(a => a._id === ipdAdmissionId);
 
-    <h2 style="margin:10px 0 5px;">
-      Dr. M.I. Jamkhanawala Tibbia Unani Medical College
-    </h2>
+  const visit =
+    visits.find(v => v._id === visitId);
 
-    <p style="margin:0;">
-      & Haji Abdul Razzak Kalsekar Tibbia Hospital
-    </p>
+  const patientName =
+    patient?.fullName || "N/A";
 
-    <p style="margin-top:8px;font-size:13px;">
-      Mumbai, Maharashtra
-    </p>
+  const doctorName =
+    admission?.admittingDoctorId?.userId?.name ||
+    visit?.assignedDoctorId?.userId?.name ||
+    "N/A";
 
-  </div>
+  const admitDate =
+    admission?.admitDate
+      ? new Date(admission.admitDate).toLocaleString()
+      : "N/A";
 
-  <!-- PATIENT INFO -->
+  const billDate =
+    billData?.bill_date
+      ? new Date(billData.bill_date).toLocaleString()
+      : new Date().toLocaleString();
 
-  <div style="margin-bottom:20px;">
+  const total =
+    billData?.total_amount || 0;
 
-    <table style="width:100%;line-height:1.8;">
-      <tr>
-        <td><strong>Patient:</strong> ${patientName}</td>
-        <td><strong>Bill Date:</strong> ${billDate}</td>
-      </tr>
+  const paid =
+    billData?.total_paid || 0;
 
-      <tr>
-        <td><strong>Doctor:</strong> ${doctorName}</td>
-        <td><strong>Admission Date:</strong> ${admitDate}</td>
-      </tr>
-    </table>
+  const balance =
+    billData?.balance_due || 0;
 
-  </div>
+  const paymentRows = payments.map((p, index) => `
+    <tr>
+      <td style="padding:8px;">${index + 1}</td>
+      <td style="padding:8px;">
+        ${new Date(p.payment_date).toLocaleString()}
+      </td>
+      <td style="padding:8px;">
+        ₹${p.amount_paid}
+      </td>
+      <td style="padding:8px;">
+        ${p.payment_method}
+      </td>
+    </tr>
+  `).join("");
 
-  <!-- PRESCRIPTION -->
+  const billRows = items.map(it => `
+    <tr>
+      <td style="padding:8px;">
+        ${it.description}
+      </td>
 
-  ${
-    latestConsultation
-      ? `
-      <div style="margin-bottom:25px;border:1px solid #ccc;padding:15px;border-radius:10px;">
-        
-        <h3 style="margin-top:0;color:#1976d2;">
-          🧾 Prescription Details
-        </h3>
+      <td style="padding:8px;text-align:center;">
+        ${it.quantity}
+      </td>
 
-        <p><strong>Chief Complaint:</strong> ${latestConsultation.chiefComplaint || "N/A"}</p>
+      <td style="padding:8px;text-align:center;">
+        ₹${it.unit_price}
+      </td>
 
-        <p><strong>Diagnosis:</strong> ${latestConsultation.diagnosis || "N/A"}</p>
+      <td style="padding:8px;text-align:center;">
+        ₹${(it.quantity * it.unit_price)}
+      </td>
+    </tr>
+  `).join("");
 
-        <p><strong>Doctor Notes:</strong> ${latestConsultation.doctorNotes || "N/A"}</p>
+  const printContent = `
+  <html>
 
-        <p><strong>Medicines:</strong> ${latestConsultation.medicinesPrescribedText || "N/A"}</p>
+    <head>
 
-        <p><strong>Lab Tests:</strong> ${
-          latestConsultation.labInvestigationsSuggested?.join(", ") || "N/A"
-        }</p>
+      <title>Bill Receipt</title>
+
+      <style>
+
+        body{
+          font-family: Arial;
+          padding:30px;
+          color:#000;
+        }
+
+        h1,h2,h3,h4{
+          margin:0;
+        }
+
+        table{
+          width:100%;
+          border-collapse:collapse;
+          margin-top:15px;
+        }
+
+        th,td{
+          border:1px solid #ccc;
+          padding:10px;
+          font-size:14px;
+        }
+
+        th{
+          background:#1976d2;
+          color:#fff;
+        }
+
+        .header{
+          text-align:center;
+          border-bottom:3px solid #1976d2;
+          padding-bottom:15px;
+          margin-bottom:20px;
+        }
+
+        .section{
+          margin-top:25px;
+        }
+
+        .summary-box{
+          background:#f5f5f5;
+          padding:15px;
+          border-radius:8px;
+          margin-top:20px;
+        }
+
+        .right{
+          text-align:right;
+        }
+
+      </style>
+
+    </head>
+
+    <body>
+
+      <div class="header">
+
+        <h1>
+          🏥 Hospital Bill & Payment Receipt
+        </h1>
+
+        <h2>
+          Dr. M.I. Jamkhanawala Tibbia Unani Medical College
+        </h2>
+
+        <p>
+          Haji Abdul Razzak Kalsekar Tibbia Hospital
+        </p>
 
       </div>
-      `
-      : ""
-  }
 
-  <!-- BILL TABLE -->
+      <div class="section">
 
-  <table
-    border="1"
-    style="
-      width:100%;
-      border-collapse:collapse;
-      margin-top:20px;
-    "
-  >
+        <table>
 
-    <thead style="background:#1976d2;color:white;">
+          <tr>
+            <td>
+              <strong>Patient:</strong>
+              ${patientName}
+            </td>
 
-      <tr>
-        <th style="padding:10px;">Description</th>
-        <th>Qty</th>
-        <th>Rate</th>
-        <th>Total</th>
-      </tr>
+            <td>
+              <strong>Bill Date:</strong>
+              ${billDate}
+            </td>
+          </tr>
 
-    </thead>
+          <tr>
+            <td>
+              <strong>Doctor:</strong>
+              ${doctorName}
+            </td>
 
-    <tbody>
+            <td>
+              <strong>Admission Date:</strong>
+              ${admitDate}
+            </td>
+          </tr>
 
-      ${items.map(it => `
-        <tr>
-          <td style="padding:10px;">${it.description}</td>
-          <td style="text-align:center;">${it.quantity}</td>
-          <td style="text-align:center;">₹${it.unit_price}</td>
-          <td style="text-align:center;">
-            ₹${(it.quantity * it.unit_price) || 0}
-          </td>
-        </tr>
-      `).join("")}
+        </table>
 
-    </tbody>
+      </div>
 
-  </table>
+      ${
+        latestConsultation
+        ? `
+        <div class="section">
 
-  <div
-    style="
-      margin-top:25px;
-      text-align:right;
-      font-size:22px;
-      font-weight:bold;
-      color:#1976d2;
-    "
-  >
-    Grand Total: ₹${total}
-  </div>
+          <h3>
+            Consultation Details
+          </h3>
 
-  <div
-    style="
-      margin-top:50px;
-      text-align:right;
-    "
-  >
-    Authorized Signature
-  </div>
+          <table>
 
-</div>
-`;
+            <tr>
+              <td>
+                <strong>Chief Complaint</strong>
+              </td>
 
-  const newWindow = window.open('', '', 'width=900,height=700');
-  newWindow.document.write(`
-    <html>
-      <head>
-        <title>Patient Bill</title>
-        <style>${styles}</style>
-      </head>
-      <body>
-        ${billLayout}
-      </body>
-    </html>
-  `);
-  newWindow.document.close();
-  newWindow.print();
+              <td>
+                ${latestConsultation.chiefComplaint || 'N/A'}
+              </td>
+            </tr>
+
+            <tr>
+              <td>
+                <strong>Diagnosis</strong>
+              </td>
+
+              <td>
+                ${latestConsultation.diagnosis || 'N/A'}
+              </td>
+            </tr>
+
+            <tr>
+              <td>
+                <strong>Doctor Notes</strong>
+              </td>
+
+              <td>
+                ${latestConsultation.doctorNotes || 'N/A'}
+              </td>
+            </tr>
+
+          </table>
+
+        </div>
+        `
+        : ''
+      }
+
+      <div class="section">
+
+        <h3>
+          Billing Items
+        </h3>
+
+        <table>
+
+          <thead>
+
+            <tr>
+              <th>Description</th>
+              <th>Qty</th>
+              <th>Rate</th>
+              <th>Total</th>
+            </tr>
+
+          </thead>
+
+          <tbody>
+
+            ${billRows}
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+      <div class="summary-box">
+
+        <h3>Bill Summary</h3>
+
+        <p>
+          <strong>Total Amount:</strong>
+          ₹${total}
+        </p>
+
+        <p>
+          <strong>Total Paid:</strong>
+          ₹${paid}
+        </p>
+
+        <p>
+          <strong>Balance Due:</strong>
+          ₹${balance}
+        </p>
+
+      </div>
+
+      <div class="section">
+
+        <h3>
+          Payment History
+        </h3>
+
+        ${
+          payments.length > 0
+          ? `
+            <table>
+
+              <thead>
+
+                <tr>
+                  <th>#</th>
+                  <th>Date</th>
+                  <th>Amount</th>
+                  <th>Method</th>
+                </tr>
+
+              </thead>
+
+              <tbody>
+
+                ${paymentRows}
+
+              </tbody>
+
+            </table>
+          `
+          : `
+            <p>
+              No payments recorded
+            </p>
+          `
+        }
+
+      </div>
+
+      <div
+        style="
+          margin-top:60px;
+          display:flex;
+          justify-content:space-between;
+        "
+      >
+
+        <div>
+          Patient Signature
+        </div>
+
+        <div>
+          Authorized Signature
+        </div>
+
+      </div>
+
+    </body>
+
+  </html>
+  `;
+
+  const win = window.open(
+    '',
+    '',
+    'width=1000,height=800'
+  );
+
+  win.document.write(printContent);
+
+  win.document.close();
+
+  win.focus();
+
+  setTimeout(() => {
+    win.print();
+  }, 500);
 };
 
 
@@ -2583,7 +2804,7 @@ const handlePrint = () => {
     marginLeft: "10px",
   }}
 >
-  🖨 Print Bill
+  🖨 🖨 Print Bill & Payment
 </button>
 
       </form>
