@@ -2678,7 +2678,15 @@ ${sonographyRecords.length > 0 ? `
         </button>
              {/* ================= PAYMENT DETAILS ================= */}
 
-{ipdAdmissionId && (
+
+        <button type="submit" style={{ padding: '10px 15px', background: 'green', color: '#fff', border: 'none', borderRadius: '6px' }}>
+       Submit Bill & Payment
+        </button>
+        
+        {/* ================= PAYMENT SECTION ================= */}
+     {/* ================= DISCHARGE OPTION ================= */}
+
+ {ipdAdmissionId && (
   <div
     style={{
       marginTop: '1rem',
@@ -2754,45 +2762,6 @@ ${sonographyRecords.length > 0 ? `
         />
       </div>
     )}
-  </div>
-)}
-        <button type="submit" style={{ padding: '10px 15px', background: 'green', color: '#fff', border: 'none', borderRadius: '6px' }}>
-       Submit Bill & Payment
-        </button>
-        
-        {/* ================= PAYMENT SECTION ================= */}
-     {/* ================= DISCHARGE OPTION ================= */}
-
-{ipdAdmissionId && (
-  <div
-    style={{
-      marginTop: '1rem',
-      padding: '1rem',
-      background: '#fff3cd',
-      borderRadius: '8px',
-      border: '1px solid #ffeeba'
-    }}
-  >
-    <label
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '10px',
-        fontWeight: 'bold',
-        cursor: 'pointer'
-      }}
-    >
-      <input
-        type="checkbox"
-        checked={dischargePatient}
-          className="screen-only"
-        onChange={(e) =>
-          setDischargePatient(e.target.checked)
-        }
-      />
-
-      Discharge patient after billing
-    </label>
   </div>
 )}
      <button
