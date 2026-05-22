@@ -696,7 +696,7 @@ const [dailyReports, setDailyReports] = useState([]);
 
 
   const [visits, setVisits] = useState([]); // 👈 YAHAN
-
+     const [dischargeDate, setDischargeDate] = useState('');
 
   const [consultations, setConsultations] = useState([]);
       const [billData, setBillData] = useState(null);
@@ -1517,240 +1517,7 @@ const selectedVisit = visits.find(
         </div>
 
         ${printContents}
-  ${ipdAdmissionId ? `
-  <div style="
-    margin-top:30px;
-    border:2px solid #1976d2;
-    padding:20px;
-    border-radius:12px;
-    background:#f9fbff;
-  ">
 
-    <h2 style="
-      color:#1976d2;
-      text-align:center;
-      margin-bottom:20px;
-      border-bottom:2px solid #1976d2;
-      padding-bottom:10px;
-    ">
-      IPD Admission Details
-    </h2>
-
-    <table style="
-      width:100%;
-      border-collapse:collapse;
-      font-size:15px;
-    ">
-      <tbody>
-
-        <tr>
-          <td style="padding:10px;font-weight:bold;width:35%;">
-            Patient Name
-          </td>
-
-          <td style="padding:10px;">
-            ${selectedPatient?.fullName || 'N/A'}
-          </td>
-        </tr>
-
-        <tr>
-          <td style="padding:10px;font-weight:bold;">
-            Doctor
-          </td>
-
-          <td style="padding:10px;">
-            ${selectedAdmission?.admittingDoctorId?.userId?.name || 'N/A'}
-          </td>
-        </tr>
-
-        <tr>
-          <td style="padding:10px;font-weight:bold;">
-            Ward
-          </td>
-
-          <td style="padding:10px;">
-            ${selectedAdmission?.wardId?.name || 'N/A'}
-          </td>
-        </tr>
-
-        <tr>
-          <td style="padding:10px;font-weight:bold;">
-            Room Category
-          </td>
-
-          <td style="padding:10px;">
-            ${selectedAdmission?.roomCategoryId?.name || 'N/A'}
-          </td>
-        </tr>
-
-        <tr>
-          <td style="padding:10px;font-weight:bold;">
-            Bed Number
-          </td>
-
-          <td style="padding:10px;">
-            ${selectedAdmission?.bedNumber || 'N/A'}
-          </td>
-        </tr>
-
-        <tr>
-          <td style="padding:10px;font-weight:bold;">
-            Status
-          </td>
-
-          <td style="
-            padding:10px;
-            font-weight:bold;
-            color:${
-              dischargePatient ||
-              selectedAdmission?.status === 'Discharged'
-                ? 'green'
-                : 'red'
-            };
-          ">
-            ${
-              dischargePatient ||
-              selectedAdmission?.status === 'Discharged'
-                ? 'Discharged'
-                : 'Admitted'
-            }
-          </td>
-        </tr>
-
-        <tr>
-          <td style="padding:10px;font-weight:bold;">
-            Admission Date
-          </td>
-
-          <td style="padding:10px;">
-            ${
-              selectedAdmission?.admissionDate
-                ? new Date(
-                    selectedAdmission.admissionDate
-                  ).toLocaleString()
-                : 'N/A'
-            }
-          </td>
-        </tr>
-
-        <tr>
-          <td style="padding:10px;font-weight:bold;">
-            Discharge Date
-          </td>
-
-          <td style="padding:10px;">
-            ${
-              selectedAdmission?.actualDischargeDate
-                ? new Date(
-                    selectedAdmission.actualDischargeDate
-                  ).toLocaleString()
-
-                : dischargePatient
-                  ? new Date().toLocaleString()
-
-                : 'N/A'
-            }
-          </td>
-        </tr>
-
-      </tbody>
-    </table>
-
-  </div>
-` : ''}
-${dailyReports.length > 0 ? `
-  <div style="margin-top:20px;">
-    <h2>Daily Progress Reports</h2>
-
-    ${dailyReports.map(r => `
-      <div style="border:1px solid #ddd;padding:10px;margin-bottom:10px;">
-        <p><strong>Date:</strong>
-          ${new Date(r.reportDateTime).toLocaleString()}
-        </p>
-
-        <p><strong>Temperature:</strong>
-          ${r.vitals?.temperature || 'N/A'}
-        </p>
-
-        <p><strong>Pulse:</strong>
-          ${r.vitals?.pulse || 'N/A'}
-        </p>
-
-        <p><strong>BP:</strong>
-          ${r.vitals?.bp || 'N/A'}
-        </p>
-
-        <p><strong>Respiratory Rate:</strong>
-          ${r.vitals?.respiratoryRate || 'N/A'}
-        </p>
-      </div>
-    `).join('')}
-  </div>
-` : ''}
-
-${anesthesiaRecords.length > 0 ? `
-  <div style="margin-top:20px;">
-    <h2>Anesthesia Records</h2>
-
-    ${anesthesiaRecords.map(a => `
-      <div style="border:1px solid #ddd;padding:10px;margin-bottom:10px;">
-        <p><strong>Procedure:</strong>
-          ${a.procedureName || 'N/A'}
-        </p>
-
-        <p><strong>Anesthetist:</strong>
-          ${a.anestheticId?.userId?.name || 'N/A'}
-        </p>
-
-        <p><strong>Anesthesia:</strong>
-          ${a.anesthesiaName || 'N/A'}
-        </p>
-
-        <p><strong>Type:</strong>
-          ${a.anesthesiaType || 'N/A'}
-        </p>
-
-        <p><strong>Medicines:</strong>
-          ${a.medicinesUsedText || 'N/A'}
-        </p>
-      </div>
-    `).join('')}
-  </div>
-` : ''}
-
-${sonographyRecords.length > 0 ? `
-  <div style="margin-top:20px;">
-    <h2>Sonography Records</h2>
-
-    ${sonographyRecords.map(s => `
-      <div style="border:1px solid #ddd;padding:10px;margin-bottom:10px;">
-        <p><strong>Scan:</strong>
-          ${s.scanType || 'N/A'}
-        </p>
-
-        <p><strong>Status:</strong>
-          ${s.status || 'N/A'}
-        </p>
-
-        <p><strong>Cost:</strong>
-          ₹${s.cost || 0}
-        </p>
-
-        <p><strong>Report:</strong>
-          ${s.report || 'N/A'}
-        </p>
-
-        <p><strong>Date:</strong>
-          ${
-            s.performedDate
-              ? new Date(s.performedDate).toLocaleString()
-              : 'N/A'
-          }
-        </p>
-      </div>
-    `).join('')}
-  </div>
-` : ''}
 
 
       </body>
@@ -1779,7 +1546,7 @@ ${sonographyRecords.length > 0 ? `
 
   {/* On screen */}
   <select
-    className="screen-only"
+    className="print-only"
     value={patientId}
     onChange={e => setPatientId(e.target.value)}
     required
@@ -1833,6 +1600,20 @@ ${sonographyRecords.length > 0 ? `
     </option>
   ))}
 </select>
+<p className="print-only">
+  {visits.find(v => v._id === visitId)
+    ? `Dr. ${
+        visits.find(v => v._id === visitId)
+          ?.assignedDoctorId?.userId?.name || "N/A"
+      } | ${
+        visits.find(v => v._id === visitId)?.visitDate
+          ? new Date(
+              visits.find(v => v._id === visitId).visitDate
+            ).toLocaleDateString()
+          : "N/A"
+      }`
+    : "N/A"}
+</p>
 
 </div> 
 
@@ -2130,9 +1911,9 @@ ${sonographyRecords.length > 0 ? `
             <div>
               <strong>Admission Date:</strong><br />
               {
-                adm.admitDate
+                adm.admissionDate
                   ? new Date(
-                      adm.admitDate
+                      adm.admissionDate
                     ).toLocaleString()
                   : "N/A"
               }
@@ -2397,7 +2178,7 @@ ${sonographyRecords.length > 0 ? `
     <option value="Open">Open Charge</option>
     <option value="Sonography">Sonography</option>
 
-    <option value="OPDConsultation">OPD Consultation</option>
+    {/* <option value="OPDConsultation">OPD Consultation</option> */}
   </select>
 
   {/* Print-only fallback (shows selected value in PDF/print) */}
@@ -2445,7 +2226,7 @@ ${sonographyRecords.length > 0 ? `
 )}
 
 {/* OPD Consultation */}
-{item.item_type === 'OPDConsultation' && (
+{/* {item.item_type === 'OPDConsultation' && (
   <div style={{ marginBottom: '0.8rem' }}>
     <label>Select Consultation</label>
 
@@ -2477,7 +2258,7 @@ ${sonographyRecords.length > 0 ? `
       </p>
     )}
   </div>
-)}
+)} */}
 
 
 
@@ -2660,107 +2441,84 @@ ${sonographyRecords.length > 0 ? `
         </button>
              {/* ================= PAYMENT DETAILS ================= */}
 
-<div
-  style={{
-    marginTop: '2rem',
-    background: '#fff',
-    padding: '1.5rem',
-    borderRadius: '10px',
-    border: '1px solid #ddd'
-  }}
->
-  <h3
+{ipdAdmissionId && (
+  <div
     style={{
-      marginBottom: '1rem',
-      color: '#1976d2'
+      marginTop: '1rem',
+      padding: '1rem',
+      background: '#fff3cd',
+      borderRadius: '10px',
+      border: '1px solid #ffeeba'
     }}
   >
-    Payment Details
-  </h3>
+    <h3 style={{ marginBottom: '1rem', color: '#c62828' }}>
+      Discharge Settings
+    </h3>
 
-  {/* Amount */}
-
-  <div style={{ marginBottom: '1rem' }}>
-    <label>Amount</label>
-
-    <input
-      type="number"
-      name="amount"
-      value={
-        paymentForm.amount ||
-        items.reduce(
-          (sum, item) =>
-            sum +
-            (Number(item.quantity || 0) *
-              Number(item.unit_price || 0)),
-          0
-        )
-      }
-      onChange={handlePaymentChange}
-      required
-      style={{
-        width: '100%',
-        padding: '10px'
-      }}
-    />
-  </div>
-
-  {/* Payment Method */}
-
-  <div style={{ marginBottom: '1rem' }}>
-    <label>Payment Method</label>
-
-    <select
-      name="method"
-      value={paymentForm.method}
-      onChange={handlePaymentChange}
-      style={{
-        width: '100%',
-        padding: '10px'
-      }}
-    >
-      <option value="Cash">
-        Cash
-      </option>
-
-      <option value="Card">
-        Card
-      </option>
-
-      <option value="UPI">
-        UPI
-      </option>
-
-      <option value="External_Reference">
-        External Reference
-      </option>
-    </select>
-  </div>
-
-  {/* External Reference */}
-
-  {paymentForm.method ===
-    'External_Reference' && (
-
+    {/* Status */}
     <div style={{ marginBottom: '1rem' }}>
-      <label>
-        External Reference
+      <label
+        style={{
+          display: 'block',
+          marginBottom: '6px',
+          fontWeight: 'bold'
+        }}
+      >
+        Patient Status
       </label>
 
-      <input
-        type="text"
-        name="externalRef"
-        value={paymentForm.externalRef}
-        onChange={handlePaymentChange}
-        placeholder="Enter reference number"
+      <select
+        value={dischargePatient ? 'Discharged' : 'Admitted'}
+        onChange={(e) =>
+          setDischargePatient(
+            e.target.value === 'Discharged'
+          )
+        }
         style={{
           width: '100%',
-          padding: '10px'
+          padding: '10px',
+          borderRadius: '6px',
+          border: '1px solid #ccc'
         }}
-      />
+      >
+   
+
+        <option value="Discharged">
+          Discharged
+        </option>
+      </select>
     </div>
-  )}
-</div>
+
+    {/* Date */}
+    {dischargePatient && (
+      <div>
+        <label
+          style={{
+            display: 'block',
+            marginBottom: '6px',
+            fontWeight: 'bold'
+          }}
+        >
+          Discharge Date
+        </label>
+
+        <input
+          type="datetime-local"
+          value={dischargeDate}
+          onChange={(e) =>
+            setDischargeDate(e.target.value)
+          }
+          style={{
+            width: '100%',
+            padding: '10px',
+            borderRadius: '6px',
+            border: '1px solid #ccc'
+          }}
+        />
+      </div>
+    )}
+  </div>
+)}
         <button type="submit" style={{ padding: '10px 15px', background: 'green', color: '#fff', border: 'none', borderRadius: '6px' }}>
        Submit Bill & Payment
         </button>
@@ -2790,6 +2548,7 @@ ${sonographyRecords.length > 0 ? `
       <input
         type="checkbox"
         checked={dischargePatient}
+          className="screen-only"
         onChange={(e) =>
           setDischargePatient(e.target.checked)
         }
