@@ -983,17 +983,30 @@ useEffect(() => {
       }
     }
   )
-  .then(res => {
+ .then(res => {
 
-    const visitsData = res.data.visits || res.data || [];
+  const allVisits = res.data.visits || res.data || [];
 
-    setVisits(visitsData);
+  // ✅ ONLY COMPLETED CONSULTATION VISITS
+  const completedVisits = allVisits.filter(
+    v => v.status?.toLowerCase() === "completed"
+  );
 
-    if (visitsData.length > 0 && !ipdAdmissionId) {
-      setVisitId(visitsData[0]._id);
-    }
+  setVisits(completedVisits);
 
-  })
+  // ✅ AUTO SELECT FIRST COMPLETED VISIT
+  if (completedVisits.length > 0 && !ipdAdmissionId) {
+    setVisitId(completedVisits[0]._id);
+  }
+
+  // ✅ AGAR KOI COMPLETED VISIT NAHI
+  if (completedVisits.length === 0) {
+    toast.warning(
+      "No completed consultation visits found"
+    );
+  }
+
+})
   .catch(err => {
     console.error(err);
     toast.error("Failed to load OPD visits");
@@ -1391,13 +1404,7 @@ const handlePrint = () => {
        Dr. {v.assignedDoctorId?.userId?.name || "N/A"} |
   {v.visitDate
     ? new Date(v.visitDate).toLocaleDateString()
-    : "N/A"} |
-  Paid: ₹{v.payment?.paidAmount || 0} /
-  ₹{v.payment?.amount || 0} |
-  Balance: ₹{
-    (v.payment?.amount || 0) -
-    (v.payment?.paidAmount || 0)
-  }
+    : "N/A"} 
     </option>
   ))}
 </select>
@@ -1482,22 +1489,7 @@ const handlePrint = () => {
             </>
           )}
 
-          {/* OPD DETAILS */}
-          {visit && (
-            <>
-              <p>
-                <strong>OPD Doctor:</strong>{" "}
-                {visit.assignedDoctorId?.userId?.name || 'N/A'}
-              </p>
-
-              <p>
-                <strong>Visit Date:</strong>{" "}
-                {visit.visitDate
-                  ? new Date(visit.visitDate).toLocaleString()
-                  : 'N/A'}
-              </p>
-            </>
-          )}
+     
 
         </>
       );
@@ -1606,8 +1598,11 @@ const handlePrint = () => {
           >
 
             <div>
-              <strong>Doctor:</strong><br />
-              {visit.doctorId?.userId?.name || "N/A"}
+          
+                <strong>OPD Doctor:</strong>{" "}
+                {visit.assignedDoctorId?.userId?.name || 'N/A'}
+            
+
             </div>
 
             <div>
