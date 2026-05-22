@@ -1779,7 +1779,7 @@ ${sonographyRecords.length > 0 ? `
 
   {/* On screen */}
   <select
-    className="print-only"
+    className="screen-only"
     value={patientId}
     onChange={e => setPatientId(e.target.value)}
     required
