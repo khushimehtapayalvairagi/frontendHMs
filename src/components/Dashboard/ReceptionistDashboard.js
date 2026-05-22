@@ -85,7 +85,7 @@ const drawerContent = (
   
         { label: "Billing", path: "/receptionist-dashboard/Billing", icon: <BillingIcon /> },
         { label: "ViewBill", path: "/receptionist-dashboard/ViewBill", icon: <ViewBillIcon /> },
-        { label: "PaymentForm", path: "/receptionist-dashboard/PaymentForm", icon: <PaymentIcon /> },
+        // { label: "PaymentForm", path: "/receptionist-dashboard/PaymentForm", icon: <PaymentIcon /> },
               { label: "DischargePatient", path: "/receptionist-dashboard/DischargePatient", icon: <LabIcon /> },
         { label: "BillPaymentHistory", path: "/receptionist-dashboard/BillPaymentHistory", icon: <HistoryIcon /> },
       ].map(({ label, path, icon }) => (

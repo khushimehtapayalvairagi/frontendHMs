@@ -684,7 +684,7 @@ const printRef = useRef(null);
 
 const prescriptionRef = useRef(null);
 
-
+const [dischargePatient, setDischargePatient] = useState(false);
 const [dailyReports, setDailyReports] = useState([]);
   const [patients, setPatients] = useState([]);
   const [admissions, setAdmissions] = useState([]);
@@ -1207,7 +1207,7 @@ useEffect(() => {
       ipdAdmissionId || null,
 
     items: cleanedItems,
-
+   dischargePatient,
     // ================= PAYMENT =================
 
     amount_paid:
@@ -1221,6 +1221,7 @@ useEffect(() => {
 
     received_by_user_id_ref:
       userId
+    
 
   };
 
@@ -2781,7 +2782,39 @@ const balance = total - paid;
         </button>
         
         {/* ================= PAYMENT SECTION ================= */}
+     {/* ================= DISCHARGE OPTION ================= */}
 
+{ipdAdmissionId && (
+  <div
+    style={{
+      marginTop: '1rem',
+      padding: '1rem',
+      background: '#fff3cd',
+      borderRadius: '8px',
+      border: '1px solid #ffeeba'
+    }}
+  >
+    <label
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '10px',
+        fontWeight: 'bold',
+        cursor: 'pointer'
+      }}
+    >
+      <input
+        type="checkbox"
+        checked={dischargePatient}
+        onChange={(e) =>
+          setDischargePatient(e.target.checked)
+        }
+      />
+
+      Discharge patient after billing
+    </label>
+  </div>
+)}
      <button
   type="button"
   onClick={handlePrint}
