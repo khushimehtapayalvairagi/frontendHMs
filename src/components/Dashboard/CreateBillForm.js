@@ -1119,12 +1119,105 @@ if (type === 'Sonography') {
 
 // ================= FETCH PAYMENTS =================
 
-const fetchPayments = async (billId) => {
-  const token = localStorage.getItem('jwt');
+// const fetchPayments = async (billId) => {
+//   const token = localStorage.getItem('jwt');
+
+//   try {
+//     const res = await axios.get(
+//       `${BASE_URL}/api/billing/payments/${billId}`,
+//       {
+//         headers: {
+//           Authorization: `Bearer ${token}`
+//         }
+//       }
+//     );
+
+//     setPayments(res.data.payments || []);
+
+//   } catch (err) {
+//     console.error(err);
+//   }
+// };
+
+
+ const handleSubmit = async (e) => {
+
+  e.preventDefault();
+
+  if (!patientId || !userId) {
+    toast.error('Required info missing');
+    return;
+  }
+
+  if (!ipdAdmissionId && !visitId) {
+    toast.error('Select IPD Admission OR OPD Visit');
+    return;
+  }
+
+  // ✅ PAYMENT VALIDATION
+  if (!paymentForm.amount) {
+    toast.error('Enter payment amount');
+    return;
+  }
+
+  const cleanedItems = items.map(it => {
+
+    const copy = { ...it };
+
+    if (!copy.item_source_id)
+      delete copy.item_source_id;
+
+    copy.quantity = Number(copy.quantity);
+
+    if (copy.unit_price)
+      copy.unit_price = Number(copy.unit_price);
+
+    return copy;
+
+  });
+
+  // ✅ NEW COMBINED PAYLOAD
+  const payload = {
+
+    patient_id_ref: patientId,
+
+    generated_by_user_id: userId,
+
+    visit_id_ref: visitId || null,
+
+    ipd_admission_id_ref:
+      ipdAdmissionId || null,
+
+    items: cleanedItems,
+
+    // ================= PAYMENT =================
+
+    amount_paid:
+      Number(paymentForm.amount),
+
+    payment_method:
+      paymentForm.method,
+
+    external_reference_number:
+      paymentForm.externalRef || "",
+
+    received_by_user_id_ref:
+      userId
+
+  };
 
   try {
-    const res = await axios.get(
-      `${BASE_URL}/api/billing/payments/${billId}`,
+
+    const token =
+      localStorage.getItem('jwt');
+
+    // ✅ NEW API
+    const res = await axios.post(
+
+      `${BASE_URL}/api/billing/bill-with-payment`,
+
+      payload,
+
       {
         headers: {
           Authorization: `Bearer ${token}`
@@ -1132,104 +1225,81 @@ const fetchPayments = async (billId) => {
       }
     );
 
-    setPayments(res.data.payments || []);
+    // ✅ SET BILL
+    setBillData(res.data.bill);
 
-  } catch (err) {
-    console.error(err);
-  }
-};
+    // ✅ SET PAYMENT HISTORY
+    setPayments([
+      res.data.payment
+    ]);
 
+    // ✅ UPDATE PAYMENT FORM
+    setPaymentForm({
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+      amount:
+        res.data.bill.balance_due || '',
 
+      method: 'Cash',
 
-    if (!patientId || !userId) {
-  toast.error('Required info missing');
-  return;
-}
+      externalRef: ''
 
-if (!ipdAdmissionId && !visitId) {
-  toast.error('Select IPD Admission OR OPD Visit');
-  return;
-}
-
-    // if (!patientId || !ipdAdmissionId || !userId) {
-    //   toast.error('Required patient/admission/visit/user info missing');
-    //   return;
-    // }
-
-
-    const cleanedItems = items.map(it => {
-      const copy = { ...it };
-      if (!copy.item_source_id) delete copy.item_source_id;
-      copy.quantity = Number(copy.quantity);
-      if (copy.unit_price) copy.unit_price = Number(copy.unit_price);
-      return copy;
     });
 
+    // ✅ SUCCESS TOAST
+    toast.success(
+      'Bill + Payment created successfully ✅'
+    );
 
+  } catch (err) {
 
-    const payload = {
-  patient_id_ref: patientId,
-  generated_by_user_id: userId,
+    console.error(err);
 
-  visit_id_ref: visitId || null, // ✅ OPD
-  ipd_admission_id_ref: ipdAdmissionId || null, // ✅ IPD
+    const errorMessage =
+      err.response?.data?.message;
 
-  items: cleanedItems
-};
+    if (
+      errorMessage ===
+      'This procedure has already been billed.'
+    ) {
 
-  //   const payload = {
-  //     patient_id_ref: patientId,
-  //     // visit_id_ref: visitId,
-  //     ipd_admission_id_ref: ipdAdmissionId,
-  //     generated_by_user_id: userId,
-     
-  // //       // 👇 ADD THIS
-  // //     visit_id_ref: selectedVisitId || null,
+      toast.error(
+        '⚠️ This procedure has already been billed.'
+      );
 
-  // // // 👇 OPTIONAL
-  // //     ipd_admission_id_ref: selectedIPD || null,
+    }
 
-  //      items: cleanedItems
-  //   };
+    else if (
+      errorMessage ===
+      'This consultation already billed.'
+    ) {
 
-   try {
-  const token = localStorage.getItem('jwt');
- const res = await axios.post(
-  `${BASE_URL}/api/billing/bills`,
-  payload,
-  {
-    headers: {
-      Authorization: `Bearer ${token}`
+      toast.error(
+        '⚠️ Consultation already billed.'
+      );
+
+    }
+
+    else if (
+      errorMessage ===
+      'This scan already billed.'
+    ) {
+
+      toast.error(
+        '⚠️ Sonography already billed.'
+      );
+
+    }
+
+    else {
+
+      toast.error(
+        errorMessage ||
+        'Error creating bill'
+      );
+
     }
   }
-);
-
-setBillData(res.data.bill);
-
-setPaymentForm(prev => ({
-  ...prev,
-  amount: res.data.bill.balance_due || 0
-}));
-
-fetchPayments(res.data.bill._id);
-
-toast.success('Bill created successfully!');
-} catch (err) {
- const errorMessage = err.response?.data?.message;
-if (errorMessage === 'This procedure has already been billed.') {
-  toast.error('⚠️ This procedure has already been billed.');
-} else if (errorMessage === 'No daily report record found.') {
-  toast.error('📋 No daily report record found.');
-} else {
-  toast.error(errorMessage || 'Error creating bill');
-}
-}
-
-  };
-
+};
       // ================= PAYMENT HANDLE =================
 
 const handlePaymentChange = (e) => {
@@ -1242,91 +1312,91 @@ const handlePaymentChange = (e) => {
 };
 // ================= SUBMIT PAYMENT =================
 
-const submitPayment = async (e) => {
+// const submitPayment = async (e) => {
 
-  e.preventDefault();
+//   e.preventDefault();
 
-  setPaymentError('');
+//   setPaymentError('');
 
-  if (!billData) {
-    toast.error("Create bill first");
-    return;
-  }
+//   if (!billData) {
+//     toast.error("Create bill first");
+//     return;
+//   }
 
-  const amt = Number(paymentForm.amount);
+//   const amt = Number(paymentForm.amount);
 
-  if (amt > billData.balance_due) {
-    setPaymentError(
-      `Cannot exceed balance due ₹${billData.balance_due}`
-    );
-    return;
-  }
+//   if (amt > billData.balance_due) {
+//     setPaymentError(
+//       `Cannot exceed balance due ₹${billData.balance_due}`
+//     );
+//     return;
+//   }
 
-  try {
+//   try {
 
-    const token = localStorage.getItem('jwt');
+//     const token = localStorage.getItem('jwt');
 
-    const user = JSON.parse(
-      localStorage.getItem('user')
-    );
+//     const user = JSON.parse(
+//       localStorage.getItem('user')
+//     );
 
-    const payload = {
+//     const payload = {
 
-      bill_id_ref: billData._id,
+//       bill_id_ref: billData._id,
 
-      amount_paid: amt,
+//       amount_paid: amt,
 
-      payment_method: paymentForm.method,
+//       payment_method: paymentForm.method,
 
-      external_reference_number:
-        paymentForm.externalRef || undefined,
+//       external_reference_number:
+//         paymentForm.externalRef || undefined,
 
-      received_by_user_id_ref:
-        user.userId
+//       received_by_user_id_ref:
+//         user.userId
 
-    };
+//     };
 
-    const { data } = await axios.post(
-      `${BASE_URL}/api/billing/payments`,
-      payload,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      }
-    );
+//     const { data } = await axios.post(
+//       `${BASE_URL}/api/billing/payments`,
+//       payload,
+//       {
+//         headers: {
+//           Authorization: `Bearer ${token}`
+//         }
+//       }
+//     );
 
-    // ✅ UPDATE BILL
-    setBillData(data.updatedBill);
+//     // ✅ UPDATE BILL
+//     setBillData(data.updatedBill);
 
-    // ✅ REFRESH PAYMENT HISTORY
-    await fetchPayments(billData._id);
+//     // ✅ REFRESH PAYMENT HISTORY
+//     await fetchPayments(billData._id);
 
-    // ✅ RESET FORM
-    setPaymentForm({
-      amount: data.updatedBill.balance_due || '',
-      method: 'Cash',
-      externalRef: ''
-    });
+//     // ✅ RESET FORM
+//     setPaymentForm({
+//       amount: data.updatedBill.balance_due || '',
+//       method: 'Cash',
+//       externalRef: ''
+//     });
 
-    // ✅ SUCCESS TOAST
-    toast.success(
-      `₹${amt} Payment Recorded Successfully ✅`
-    );
+//     // ✅ SUCCESS TOAST
+//     toast.success(
+//       `₹${amt} Payment Recorded Successfully ✅`
+//     );
 
-  } catch (err) {
+//   } catch (err) {
 
-    setPaymentError(
-      err.response?.data?.message ||
-      'Payment error'
-    );
+//     setPaymentError(
+//       err.response?.data?.message ||
+//       'Payment error'
+//     );
 
-    toast.error(
-      err.response?.data?.message ||
-      'Payment Failed'
-    );
-  }
-};
+//     toast.error(
+//       err.response?.data?.message ||
+//       'Payment Failed'
+//     );
+//   }
+// };
 
 const handlePrint = () => {
 
@@ -2626,7 +2696,7 @@ const handlePrint = () => {
       {billData.balance_due}
     </p>
 
-    <form onSubmit={submitPayment}>
+    <form>
 
       {/* Amount */}
 
