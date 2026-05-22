@@ -1611,7 +1611,97 @@ const balance = total - paid;
         </table>
 
       </div>
+          ${
+  admission
+  ? `
+    <div class="section">
 
+      <h3>
+        IPD Admission Details
+      </h3>
+
+      <table>
+
+        <tr>
+          <td>
+            <strong>Admitting Doctor</strong>
+          </td>
+
+          <td>
+            ${
+              admission?.admittingDoctorId?.userId?.name || 'N/A'
+            }
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <strong>Ward</strong>
+          </td>
+
+          <td>
+            ${
+              admission?.wardId?.name || 'N/A'
+            }
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <strong>Room Category</strong>
+          </td>
+
+          <td>
+            ${
+              admission?.roomCategoryId?.name || 'N/A'
+            }
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <strong>Bed Number</strong>
+          </td>
+
+          <td>
+            ${
+              admission?.bedNumber || 'N/A'
+            }
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <strong>Admission Date</strong>
+          </td>
+
+          <td>
+            ${
+              admission?.admitDate
+                ? new Date(admission.admitDate).toLocaleString()
+                : 'N/A'
+            }
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <strong>Status</strong>
+          </td>
+
+          <td>
+            ${
+              admission?.status || 'N/A'
+            }
+          </td>
+        </tr>
+
+      </table>
+
+    </div>
+  `
+  : ''
+}
       ${
         latestConsultation
         ? `
