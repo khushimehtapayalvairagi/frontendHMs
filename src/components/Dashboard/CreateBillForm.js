@@ -1155,10 +1155,10 @@ if (type === 'Sonography') {
   }
 
   // ✅ PAYMENT VALIDATION
-  if (!paymentForm.amount) {
-    toast.error('Enter payment amount');
-    return;
-  }
+  // if (!paymentForm.amount) {
+  //   toast.error('Enter payment amount');
+  //   return;
+  // }
 
   const cleanedItems = items.map(it => {
 
@@ -1234,16 +1234,11 @@ if (type === 'Sonography') {
     ]);
 
     // ✅ UPDATE PAYMENT FORM
-    setPaymentForm({
-
-      amount:
-        res.data.bill.balance_due || '',
-
-      method: 'Cash',
-
-      externalRef: ''
-
-    });
+   setPaymentForm({
+  amount: res.data.bill.total_amount || '',
+  method: 'Cash',
+  externalRef: ''
+});
 
     // ✅ SUCCESS TOAST
     toast.success(
@@ -1427,14 +1422,21 @@ const handlePrint = () => {
       ? new Date(billData.bill_date).toLocaleString()
       : new Date().toLocaleString();
 
-  const total =
-    billData?.total_amount || 0;
+const total = items.reduce(
+  (sum, item) =>
+    sum +
+    (Number(item.quantity || 0) *
+      Number(item.unit_price || 0)),
+  0
+);
 
-  const paid =
-    billData?.total_paid || 0;
+const paid = payments.reduce(
+  (sum, p) =>
+    sum + Number(p.amount_paid || 0),
+  0
+);
 
-  const balance =
-    billData?.balance_due || 0;
+const balance = total - paid;
 
   const paymentRows = payments.map((p, index) => `
     <tr>
