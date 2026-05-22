@@ -378,8 +378,6 @@ const handlePrint = () => {
               <td><b>Visit Type</b></td>
               <td>{submittedData.visit.visitType}</td>
 
-              <td><b>Status</b></td>
-              <td>{submittedData.visit.status}</td>
             </tr>
 
             <tr>

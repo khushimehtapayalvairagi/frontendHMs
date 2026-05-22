@@ -225,7 +225,49 @@ const rowsToRender = filteredPatient && filteredPatient.length > 0 ? filteredPat
        <Typography><strong>Aadhaar Number:</strong> {selectedPatient.aadhaarNumber}</Typography>
 
         <Typography><strong>Address:</strong> {selectedPatient.address}</Typography>
-      
+      <Typography mt={2}>
+  <strong>Visit Details:</strong>
+</Typography>
+
+{selectedPatient.visit ? (
+  <>
+    <Typography>
+      <strong>Visit Type:</strong>{" "}
+      {selectedPatient.visit.visitType}
+    </Typography>
+
+    <Typography>
+  <strong>Doctor:</strong>{" "}
+  {selectedPatient.visit.assignedDoctorId?.userId?.name || "N/A"}
+</Typography>
+
+    <Typography>
+      <strong>Billing Type:</strong>{" "}
+      {selectedPatient.visit.billingType}
+    </Typography>
+
+    <Typography>
+      <strong>Payment:</strong>{" "}
+      ₹ {selectedPatient.visit.payment?.amount || 0}
+    </Typography>
+
+    <Typography>
+      <strong>Payment Status:</strong>{" "}
+      {selectedPatient.visit.payment?.isPaid
+        ? "Paid"
+        : "Pending"}
+    </Typography>
+
+    <Typography>
+      <strong>Visit Date:</strong>{" "}
+      {new Date(
+        selectedPatient.visit.createdAt
+      ).toLocaleString()}
+    </Typography>
+  </>
+) : (
+  <Typography>No visit found</Typography>
+)}
         <Typography mt={2}><strong>Relatives:</strong></Typography>
         {selectedPatient.relatives?.length ? (
           <ul>
