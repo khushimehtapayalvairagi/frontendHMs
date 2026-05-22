@@ -1054,10 +1054,18 @@ useEffect(() => {
   axios.get(`${BASE_URL}/api/ipd/admissions/${patientId}`, {
     headers: { Authorization: `Bearer ${token}` }
   })
-  .then(res => {
-    const admitted = res.data.admissions.filter(a => a.status === 'Admitted');
-    setAdmissions(admitted);
-  })
+ .then(res => {
+
+  const allAdmissions = res.data.admissions || [];
+
+  // ✅ admitted + discharged dono
+  const filteredAdmissions = allAdmissions.filter(a =>
+    ["Admitted", "Discharged"].includes(a.status)
+  );
+
+  setAdmissions(filteredAdmissions);
+
+})
   .catch(() => toast.error('Failed to load admissions'));
 
 }, [patientId]);
