@@ -1421,7 +1421,17 @@ const handlePaymentChange = (e) => {
 // };
 
 const handlePrint = () => {
+const selectedAdmission = admissions.find(
+  a => a._id === ipdAdmissionId
+);
 
+const selectedPatient = patients.find(
+  p => p._id === patientId
+);
+
+const selectedVisit = visits.find(
+  v => v._id === visitId
+);
   const printContents = printRef.current.innerHTML;
 
   const win = window.open('', '', 'width=1200,height=800');
@@ -1507,6 +1517,135 @@ const handlePrint = () => {
         </div>
 
         ${printContents}
+        ${ipdAdmissionId ? `
+  <div style="margin-top:30px;border:1px solid #ccc;padding:15px;border-radius:8px;">
+    <h2 style="color:#c62828;">IPD Admission Details</h2>
+
+    <p><strong>Patient:</strong> ${selectedPatient?.fullName || 'N/A'}</p>
+
+    <p><strong>Doctor:</strong>
+      ${selectedAdmission?.admittingDoctorId?.userId?.name || 'N/A'}
+    </p>
+
+    <p><strong>Ward:</strong>
+      ${selectedAdmission?.wardId?.name || 'N/A'}
+    </p>
+
+    <p><strong>Room Category:</strong>
+      ${selectedAdmission?.roomCategoryId?.name || 'N/A'}
+    </p>
+
+    <p><strong>Bed Number:</strong>
+      ${selectedAdmission?.bedNumber || 'N/A'}
+    </p>
+
+    <p><strong>Status:</strong>
+      ${selectedAdmission?.status || 'N/A'}
+    </p>
+
+    <p><strong>Admission Date:</strong>
+      ${
+        selectedAdmission?.admitDate
+          ? new Date(selectedAdmission.admitDate).toLocaleString()
+          : 'N/A'
+      }
+    </p>
+  </div>
+` : ''}
+${dailyReports.length > 0 ? `
+  <div style="margin-top:20px;">
+    <h2>Daily Progress Reports</h2>
+
+    ${dailyReports.map(r => `
+      <div style="border:1px solid #ddd;padding:10px;margin-bottom:10px;">
+        <p><strong>Date:</strong>
+          ${new Date(r.reportDateTime).toLocaleString()}
+        </p>
+
+        <p><strong>Temperature:</strong>
+          ${r.vitals?.temperature || 'N/A'}
+        </p>
+
+        <p><strong>Pulse:</strong>
+          ${r.vitals?.pulse || 'N/A'}
+        </p>
+
+        <p><strong>BP:</strong>
+          ${r.vitals?.bp || 'N/A'}
+        </p>
+
+        <p><strong>Respiratory Rate:</strong>
+          ${r.vitals?.respiratoryRate || 'N/A'}
+        </p>
+      </div>
+    `).join('')}
+  </div>
+` : ''}
+
+${anesthesiaRecords.length > 0 ? `
+  <div style="margin-top:20px;">
+    <h2>Anesthesia Records</h2>
+
+    ${anesthesiaRecords.map(a => `
+      <div style="border:1px solid #ddd;padding:10px;margin-bottom:10px;">
+        <p><strong>Procedure:</strong>
+          ${a.procedureName || 'N/A'}
+        </p>
+
+        <p><strong>Anesthetist:</strong>
+          ${a.anestheticId?.userId?.name || 'N/A'}
+        </p>
+
+        <p><strong>Anesthesia:</strong>
+          ${a.anesthesiaName || 'N/A'}
+        </p>
+
+        <p><strong>Type:</strong>
+          ${a.anesthesiaType || 'N/A'}
+        </p>
+
+        <p><strong>Medicines:</strong>
+          ${a.medicinesUsedText || 'N/A'}
+        </p>
+      </div>
+    `).join('')}
+  </div>
+` : ''}
+
+${sonographyRecords.length > 0 ? `
+  <div style="margin-top:20px;">
+    <h2>Sonography Records</h2>
+
+    ${sonographyRecords.map(s => `
+      <div style="border:1px solid #ddd;padding:10px;margin-bottom:10px;">
+        <p><strong>Scan:</strong>
+          ${s.scanType || 'N/A'}
+        </p>
+
+        <p><strong>Status:</strong>
+          ${s.status || 'N/A'}
+        </p>
+
+        <p><strong>Cost:</strong>
+          ₹${s.cost || 0}
+        </p>
+
+        <p><strong>Report:</strong>
+          ${s.report || 'N/A'}
+        </p>
+
+        <p><strong>Date:</strong>
+          ${
+            s.performedDate
+              ? new Date(s.performedDate).toLocaleString()
+              : 'N/A'
+          }
+        </p>
+      </div>
+    `).join('')}
+  </div>
+` : ''}
+
 
       </body>
     </html>
