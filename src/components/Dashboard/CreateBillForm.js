@@ -647,85 +647,617 @@
 
 // 👇 Full version of CreateBillForm with clear details for receptionist
 // 👇 Full version of CreateBillForm with clear details for receptionist
-import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+// ✅ CREATE BILL + PAYMENT MERGED COMPONENT
+// ✅ Kuch bhi remove nahi kiya
+// ✅ Payment form same component me add kiya
+// ✅ Bill + Payment dono ek sath print honge
 
-export default function BillingAndPayment() {
+import React, { useEffect, useState, useRef } from 'react';
+import axios from 'axios';
+import { toast, ToastContainer } from 'react-toastify';
+import { useLocation } from 'react-router-dom';
+import 'react-toastify/dist/ReactToastify.css';
+
+const CreateBillForm = () => {
+
+  const location = useLocation();
+
+  const {
+    patientId: passedPatientId,
+    ipdAdmissionId: passedAdmissionId
+  } = location.state || {};
+
   const BASE_URL = process.env.REACT_APP_BASE_URL;
+
+  const printRef = useRef(null);
+
   const token = localStorage.getItem("jwt");
+
+  const headers = {
+    Authorization: `Bearer ${token}`
+  };
+
   const user = JSON.parse(localStorage.getItem("user"));
 
-  const [patients, setPatients] = useState([]);
-  const [patientId, setPatientId] = useState("");
+  const stylesPrint = `
+    .print-only{
+      display:none;
+    }
 
-  const [bill, setBill] = useState(null);
+    @media print{
+
+      .screen-only{
+        display:none !important;
+      }
+
+      .print-only{
+        display:block !important;
+      }
+
+      body{
+        background:#fff;
+      }
+    }
+  `;
+
+  const [patients, setPatients] = useState([]);
+  const [admissions, setAdmissions] = useState([]);
+  const [visits, setVisits] = useState([]);
+  const [consultations, setConsultations] = useState([]);
+  const [manualItems, setManualItems] = useState([]);
+  const [schedules, setSchedules] = useState([]);
+  const [dailyReports, setDailyReports] = useState([]);
+  const [anesthesiaRecords, setAnesthesiaRecords] = useState([]);
+  const [sonographyRecords, setSonographyRecords] = useState([]);
+
+  const [patientId, setPatientId] = useState(
+    passedPatientId || ""
+  );
+
+  const [ipdAdmissionId, setIpdAdmissionId] = useState(
+    passedAdmissionId || ""
+  );
+
+  const [visitId, setVisitId] = useState("");
+
+  const [userId, setUserId] = useState("");
+
+  const [createdBill, setCreatedBill] = useState(null);
+
   const [payments, setPayments] = useState([]);
 
-  const [form, setForm] = useState({
+  const [paymentForm, setPaymentForm] = useState({
     amount: "",
     method: "Cash",
     externalRef: ""
   });
 
-  const headers = { Authorization: `Bearer ${token}` };
+  const [paymentError, setPaymentError] = useState("");
 
-  // ================= PATIENTS =================
+  const [items, setItems] = useState([
+    {
+      item_type: '',
+      item_source_id: '',
+      description: '',
+      quantity: 1,
+      unit_price: ''
+    }
+  ]);
+
+  const latestConsultation = consultations[0];
+
+  // =========================
+  // FETCH MANUAL ITEMS
+  // =========================
+
   useEffect(() => {
-    axios
-      .get(`${BASE_URL}/api/receptionist/patients`, { headers })
-      .then((res) => setPatients(res.data.patients || []))
-      .catch(() => toast.error("Failed to load patients"));
+
+    const user = JSON.parse(localStorage.getItem("user"));
+
+    setUserId(user?.id);
+
+    axios.get(
+      `${BASE_URL}/api/billing/manual-charge-items`,
+      { headers }
+    )
+      .then(res => {
+        setManualItems(res.data.items || []);
+      })
+      .catch(() => {
+        toast.error("Failed to load manual items");
+      });
+
   }, []);
 
-  // ================= FETCH BILL =================
-  useEffect(() => {
-    if (!patientId) return;
+  // =========================
+  // FETCH PATIENTS
+  // =========================
 
-    axios
-      .get(`${BASE_URL}/api/billing/bills/patient/${patientId}`, { headers })
-      .then((res) => {
-        const pending = (res.data.bills || []).filter(
-          (b) => b.payment_status === "Pending"
+  useEffect(() => {
+
+    const fetchPatients = async () => {
+
+      try {
+
+        const res = await axios.get(
+          `${BASE_URL}/api/receptionist/patients`,
+          { headers }
         );
 
-        const first = pending[0] || null;
-        setBill(first);
+        const allPatients = res.data.patients || [];
 
-        if (!first) {
-          setPayments([]);
-        }
+        const updatedPatients = await Promise.all(
+          allPatients.map(async patient => {
+
+            let patientType = "OPD";
+
+            try {
+
+              const admRes = await axios.get(
+                `${BASE_URL}/api/ipd/admissions/${patient._id}`,
+                { headers }
+              );
+
+              const admissions =
+                admRes.data.admissions || [];
+
+              const activeAdmission =
+                admissions.find(
+                  adm =>
+                    adm.status?.toLowerCase() ===
+                    "admitted"
+                );
+
+              patientType =
+                activeAdmission ? "IPD" : "OPD";
+
+            } catch (err) {}
+
+            return {
+              ...patient,
+              patientType
+            };
+
+          })
+        );
+
+        setPatients(updatedPatients);
+
+      } catch (err) {
+
+        toast.error("Failed to load patients");
+
+      }
+
+    };
+
+    fetchPatients();
+
+  }, []);
+
+  // =========================
+  // FETCH VISITS
+  // =========================
+
+  useEffect(() => {
+
+    if (!patientId) return;
+
+    axios.get(
+      `${BASE_URL}/api/receptionist/visits/${patientId}`,
+      { headers }
+    )
+      .then(res => {
+
+        const allVisits =
+          res.data.visits || [];
+
+        const completedVisits =
+          allVisits.filter(
+            v =>
+              v.status?.toLowerCase() ===
+              "completed"
+          );
+
+        setVisits(completedVisits);
+
       })
-      .catch(() => toast.error("Failed to fetch bill"));
+      .catch(() => {
+
+        toast.error("Failed to load visits");
+
+      });
+
   }, [patientId]);
 
-  // ================= FETCH PAYMENTS =================
-  useEffect(() => {
-    if (!bill?._id) return;
+  // =========================
+  // FETCH CONSULTATIONS
+  // =========================
 
-    axios
-      .get(`${BASE_URL}/api/billing/payments/${bill._id}`, { headers })
-      .then((res) => setPayments(res.data.payments || []))
-      .catch(() => console.error("Payment fetch error"));
-  }, [bill]);
-
-  // auto fill balance
   useEffect(() => {
-    if (bill?.balance_due != null) {
-      setForm((p) => ({ ...p, amount: bill.balance_due }));
+
+    if (!visitId) return;
+
+    axios.get(
+      `${BASE_URL}/api/doctor/opd-consultations/visit/${visitId}`,
+      { headers }
+    )
+      .then(res => {
+
+        setConsultations(
+          res.data.consultations || []
+        );
+
+      })
+      .catch(() => {
+
+        toast.error(
+          "Failed to load consultation"
+        );
+
+      });
+
+  }, [visitId]);
+
+  // =========================
+  // FETCH ADMISSIONS
+  // =========================
+
+  useEffect(() => {
+
+    if (!patientId) return;
+
+    axios.get(
+      `${BASE_URL}/api/ipd/admissions/${patientId}`,
+      { headers }
+    )
+      .then(res => {
+
+        const admitted =
+          res.data.admissions.filter(
+            a => a.status === "Admitted"
+          );
+
+        setAdmissions(admitted);
+
+      })
+      .catch(() => {
+
+        toast.error("Failed to load admissions");
+
+      });
+
+  }, [patientId]);
+
+  // =========================
+  // FETCH PROCEDURES
+  // =========================
+
+  useEffect(() => {
+
+    if (!patientId) return;
+
+    axios.get(
+      `${BASE_URL}/api/procedures/schedules/${patientId}`,
+      { headers }
+    )
+      .then(res => {
+
+        const allProcedures =
+          res.data.procedures || [];
+
+        const completedNotBilled =
+          allProcedures.filter(p => {
+
+            const status =
+              p.status?.toLowerCase();
+
+            return (
+              status === "completed" &&
+              !p.isBilled
+            );
+
+          });
+
+        setSchedules(completedNotBilled);
+
+      })
+      .catch(() => {
+
+        toast.error(
+          "Failed to load procedures"
+        );
+
+      });
+
+  }, [patientId]);
+
+  // =========================
+  // FETCH DAILY REPORTS
+  // =========================
+
+  useEffect(() => {
+
+    if (!ipdAdmissionId) return;
+
+    axios.get(
+      `${BASE_URL}/api/ipd/reports/${ipdAdmissionId}`,
+      { headers }
+    )
+      .then(res => {
+
+        setDailyReports(
+          res.data.reports || []
+        );
+
+      })
+      .catch(() => {
+
+        toast.error(
+          "Failed to load reports"
+        );
+
+      });
+
+  }, [ipdAdmissionId]);
+
+  // =========================
+  // FETCH ANESTHESIA
+  // =========================
+
+  useEffect(() => {
+
+    if (!patientId) return;
+
+    const fetchAnesthesia = async () => {
+
+      try {
+
+        const procRes = await axios.get(
+          `${BASE_URL}/api/procedures/schedules/${patientId}`,
+          { headers }
+        );
+
+        const procedures =
+          procRes.data.procedures || [];
+
+        const anaRes = await axios.get(
+          `${BASE_URL}/api/procedures/anesthesia-records`,
+          { headers }
+        );
+
+        const allRecords =
+          anaRes.data.records || [];
+
+        const mapped =
+          allRecords
+            .filter(
+              r =>
+                r.patientId?._id ===
+                patientId
+            )
+            .map(r => {
+
+              const proc =
+                procedures.find(
+                  p =>
+                    p.ipdAdmissionId ===
+                    r.ipdAdmissionId
+                );
+
+              return {
+                ...r,
+                procedureName:
+                  proc?.procedureId?.name ||
+                  "N/A"
+              };
+
+            });
+
+        setAnesthesiaRecords(mapped);
+
+      } catch (err) {
+
+        toast.error(
+          "Failed to load anesthesia"
+        );
+
+      }
+
+    };
+
+    fetchAnesthesia();
+
+  }, [patientId]);
+
+  // =========================
+  // FETCH SONOGRAPHY
+  // =========================
+
+  useEffect(() => {
+
+    if (!patientId) return;
+
+    axios.get(
+      `${BASE_URL}/api/sonography/patient/${patientId}`,
+      { headers }
+    )
+      .then(res => {
+
+        setSonographyRecords(
+          res.data || []
+        );
+
+      })
+      .catch(() => {
+
+        toast.error(
+          "Failed to load sonography"
+        );
+
+      });
+
+  }, [patientId]);
+
+  // =========================
+  // HANDLE ITEM CHANGE
+  // =========================
+
+  const handleChange = (
+    index,
+    field,
+    value
+  ) => {
+
+    const updated = [...items];
+
+    updated[index][field] = value;
+
+    if (field === "item_source_id") {
+
+      const type =
+        updated[index].item_type;
+
+      if (type === "Manual") {
+
+        const selected =
+          manualItems.find(
+            m => m._id === value
+          );
+
+        updated[index].unit_price =
+          selected?.defaultPrice || "";
+
+        updated[index].description =
+          selected?.itemName || "";
+
+      }
+
+      if (type === "ProcedureSchedule") {
+
+        const selected =
+          schedules.find(
+            s => s._id === value
+          );
+
+        updated[index].unit_price =
+          selected?.procedureId?.cost ||
+          "";
+
+        updated[index].description =
+          selected?.procedureId?.name ||
+          "";
+
+      }
+
+      if (type === "OPDConsultation") {
+
+        const selected =
+          consultations.find(
+            c => c._id === value
+          );
+
+        updated[index].unit_price = 300;
+
+        updated[index].description =
+          `OPD Consultation - ${
+            selected?.doctorId?.userId
+              ?.name || ""
+          }`;
+
+      }
+
+      if (type === "Sonography") {
+
+        const selected =
+          sonographyRecords.find(
+            s => s._id === value
+          );
+
+        updated[index].unit_price =
+          selected?.cost || "";
+
+        updated[index].description =
+          `Sonography - ${
+            selected?.scanType || ""
+          }`;
+
+      }
+
     }
-  }, [bill]);
 
-  // ================= BILL CREATE =================
-  const createBill = async () => {
-    if (!patientId) return toast.error("Select patient first");
+    setItems(updated);
+
+  };
+
+  // =========================
+  // ADD ITEM
+  // =========================
+
+  const addItem = () => {
+
+    setItems([
+      ...items,
+      {
+        item_type: '',
+        item_source_id: '',
+        description: '',
+        quantity: 1,
+        unit_price: ''
+      }
+    ]);
+
+  };
+
+  // =========================
+  // REMOVE ITEM
+  // =========================
+
+  const removeItem = index => {
+
+    if (items.length === 1) return;
+
+    setItems(
+      items.filter((_, i) => i !== index)
+    );
+
+  };
+
+  // =========================
+  // CREATE BILL
+  // =========================
+
+  const handleSubmit = async e => {
+
+    e.preventDefault();
 
     try {
+
+      const cleanedItems = items.map(
+        it => ({
+          ...it,
+          quantity: Number(it.quantity),
+          unit_price: Number(
+            it.unit_price
+          )
+        })
+      );
+
       const payload = {
+
         patient_id_ref: patientId,
-        generated_by_user_id: user.userId,
-        items: []
+
+        generated_by_user_id:
+          userId,
+
+        visit_id_ref:
+          visitId || null,
+
+        ipd_admission_id_ref:
+          ipdAdmissionId || null,
+
+        items: cleanedItems
+
       };
 
       const res = await axios.post(
@@ -734,169 +1266,1063 @@ export default function BillingAndPayment() {
         { headers }
       );
 
-      setBill(res.data);
-      toast.success("Bill created");
+      toast.success(
+        "Bill created successfully"
+      );
+
+      setCreatedBill(res.data.bill);
+
     } catch (err) {
-      toast.error(err.response?.data?.message || "Error creating bill");
+
+      toast.error(
+        err.response?.data?.message ||
+          "Error creating bill"
+      );
+
     }
+
   };
 
-  // ================= PAYMENT =================
-  const submitPayment = async (e) => {
-    e.preventDefault();
+  // =========================
+  // FETCH PAYMENTS
+  // =========================
 
-    if (!bill) return toast.error("No bill found");
-
-    const amt = Number(form.amount);
-
-    if (amt > bill.balance_due)
-      return toast.error("Amount exceeds balance");
+  const fetchPayments = async billId => {
 
     try {
-      const payload = {
-        bill_id_ref: bill._id,
-        amount_paid: amt,
-        payment_method: form.method,
-        external_reference_number: form.externalRef || undefined,
-        received_by_user_id_ref: user.userId
-      };
 
-      const res = await axios.post(
-        `${BASE_URL}/api/billing/payments`,
-        payload,
+      const res = await axios.get(
+        `${BASE_URL}/api/billing/payments/${billId}`,
         { headers }
       );
 
-      setBill(res.data.updatedBill);
-      setPayments((p) => [res.data.payment, ...p]);
+      setPayments(
+        res.data.payments || []
+      );
 
-      toast.success("Payment successful");
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Payment failed");
-    }
+    } catch (err) {}
+
   };
 
-  // ================= UI =================
+  // =========================
+  // PAYMENT SUBMIT
+  // =========================
+
+  const submitPayment = async e => {
+
+    e.preventDefault();
+
+    setPaymentError("");
+
+    try {
+
+      const payload = {
+
+        bill_id_ref:
+          createdBill._id,
+
+        amount_paid: Number(
+          paymentForm.amount
+        ),
+
+        payment_method:
+          paymentForm.method,
+
+        external_reference_number:
+          paymentForm.externalRef ||
+          undefined,
+
+        received_by_user_id_ref:
+          user.userId
+
+      };
+
+      const { data } =
+        await axios.post(
+          `${BASE_URL}/api/billing/payments`,
+          payload,
+          { headers }
+        );
+
+      toast.success(
+        "Payment added successfully"
+      );
+
+      setCreatedBill(
+        data.updatedBill
+      );
+
+      fetchPayments(
+        data.updatedBill._id
+      );
+
+    } catch (err) {
+
+      setPaymentError(
+        err.response?.data?.message ||
+          "Payment failed"
+      );
+
+    }
+
+  };
+
+  // =========================
+  // PRINT
+  // =========================
+
+  const handlePrint = () => {
+
+    const printContents =
+      printRef.current.innerHTML;
+
+    const newWindow =
+      window.open(
+        '',
+        '',
+        'width=1000,height=700'
+      );
+
+    newWindow.document.write(`
+      <html>
+        <head>
+          <title>Bill & Payment</title>
+
+          <style>
+
+            body{
+              font-family:Arial;
+              padding:20px;
+            }
+
+            table{
+              width:100%;
+              border-collapse:collapse;
+              margin-top:15px;
+            }
+
+            th,td{
+              border:1px solid #ccc;
+              padding:10px;
+            }
+
+            th{
+              background:#1976d2;
+              color:#fff;
+            }
+
+          </style>
+
+        </head>
+
+        <body>
+          ${printContents}
+        </body>
+
+      </html>
+    `);
+
+    newWindow.document.close();
+
+    newWindow.print();
+
+  };
+
+  // =========================
+  // TOTAL
+  // =========================
+
+  const total =
+    items.reduce(
+      (sum, i) =>
+        sum +
+        i.quantity *
+          (i.unit_price || 0),
+      0
+    );
+
   return (
-    <div style={{ maxWidth: 900, margin: "auto", padding: 20 }}>
+
+    <div style={styles.container}>
+
+      <style>{stylesPrint}</style>
+
       <ToastContainer />
 
-      <h2>Billing + Payment System</h2>
+      <div ref={printRef}>
 
-      {/* PATIENT SELECT */}
-      <div>
-        <label>Patient</label>
-        <select
-          value={patientId}
-          onChange={(e) => setPatientId(e.target.value)}
-          style={{ width: "100%", padding: 10 }}
-        >
-          <option value="">Select Patient</option>
-          {patients.map((p) => (
-            <option key={p._id} value={p._id}>
-              {p.fullName}
-            </option>
-          ))}
-        </select>
-      </div>
+        <h2 style={styles.heading}>
+          Create Patient Bill
+        </h2>
 
-      {/* CREATE BILL */}
-      <button
-        onClick={createBill}
-        style={{
-          marginTop: 10,
-          padding: 10,
-          background: "blue",
-          color: "white"
-        }}
-      >
-        Create Bill
-      </button>
+        {/* ====================== */}
+        {/* BILL FORM */}
+        {/* ====================== */}
 
-      {/* BILL INFO */}
-      {bill && (
-        <div
-          style={{
-            marginTop: 20,
-            padding: 15,
-            background: "#f5f5f5"
-          }}
-        >
-          <h3>Bill Summary</h3>
+        <form onSubmit={handleSubmit}>
 
-          <p>Total: ₹{bill.total_amount}</p>
-          <p>Balance: ₹{bill.balance_due}</p>
+          {/* PATIENT */}
 
-          {/* PAYMENT FORM */}
-          <form onSubmit={submitPayment}>
-            <h4>Payment</h4>
+          <div style={styles.field}>
 
-            <input
-              type="number"
-              value={form.amount}
-              onChange={(e) =>
-                setForm({ ...form, amount: e.target.value })
-              }
-              placeholder="Amount"
-              style={{ width: "100%", padding: 10 }}
-            />
+            <label>Patient</label>
 
             <select
-              value={form.method}
-              onChange={(e) =>
-                setForm({ ...form, method: e.target.value })
+              style={styles.select}
+              value={patientId}
+              onChange={e =>
+                setPatientId(
+                  e.target.value
+                )
               }
-              style={{ width: "100%", padding: 10, marginTop: 10 }}
             >
-              <option>Cash</option>
-              <option>Card</option>
-              <option>UPI</option>
+
+              <option value="">
+                Select Patient
+              </option>
+
+              {patients.map(p => (
+
+                <option
+                  key={p._id}
+                  value={p._id}
+                >
+                  {p.fullName} |
+                  {p.gender} |
+                  {p.patientType}
+                </option>
+
+              ))}
+
             </select>
 
-            {form.method === "External_Reference" && (
-              <input
-                placeholder="Ref No"
-                value={form.externalRef}
-                onChange={(e) =>
-                  setForm({ ...form, externalRef: e.target.value })
-                }
-                style={{ width: "100%", padding: 10, marginTop: 10 }}
-              />
-            )}
+          </div>
 
-            <button
-              type="submit"
+          {/* VISITS */}
+
+          <div style={styles.field}>
+
+            <label>
+              OPD Visit
+            </label>
+
+            <select
+              style={styles.select}
+              value={visitId}
+              onChange={e =>
+                setVisitId(
+                  e.target.value
+                )
+              }
+            >
+
+              <option value="">
+                Select Visit
+              </option>
+
+              {visits.map(v => (
+
+                <option
+                  key={v._id}
+                  value={v._id}
+                >
+                  Dr.
+                  {
+                    v.assignedDoctorId
+                      ?.userId?.name
+                  }
+                </option>
+
+              ))}
+
+            </select>
+
+          </div>
+
+          {/* ADMISSION */}
+
+          {admissions.length > 0 && (
+
+            <div style={styles.field}>
+
+              <label>
+                IPD Admission
+              </label>
+
+              <select
+                style={styles.select}
+                value={
+                  ipdAdmissionId
+                }
+                onChange={e =>
+                  setIpdAdmissionId(
+                    e.target.value
+                  )
+                }
+              >
+
+                <option value="">
+                  Select Admission
+                </option>
+
+                {admissions.map(a => (
+
+                  <option
+                    key={a._id}
+                    value={a._id}
+                  >
+                    {a.wardId?.name} |
+                    Bed {a.bedNumber}
+                  </option>
+
+                ))}
+
+              </select>
+
+            </div>
+
+          )}
+
+          {/* ITEMS */}
+
+          <h3>
+            Billing Items
+          </h3>
+
+          {items.map(
+            (item, index) => (
+
+              <div
+                key={index}
+                style={styles.card}
+              >
+
+                <div
+                  style={styles.field}
+                >
+
+                  <label>
+                    Type
+                  </label>
+
+                  <select
+                    style={
+                      styles.select
+                    }
+                    value={
+                      item.item_type
+                    }
+                    onChange={e =>
+                      handleChange(
+                        index,
+                        "item_type",
+                        e.target.value
+                      )
+                    }
+                  >
+
+                    <option value="">
+                      Select Type
+                    </option>
+
+                    <option value="ProcedureSchedule">
+                      Procedure
+                    </option>
+
+                    <option value="Manual">
+                      Manual
+                    </option>
+
+                    <option value="Open">
+                      Open
+                    </option>
+
+                    <option value="Sonography">
+                      Sonography
+                    </option>
+
+                    <option value="OPDConsultation">
+                      Consultation
+                    </option>
+
+                  </select>
+
+                </div>
+
+                {/* MANUAL */}
+
+                {item.item_type ===
+                  "Manual" && (
+
+                  <select
+                    style={
+                      styles.select
+                    }
+                    value={
+                      item.item_source_id
+                    }
+                    onChange={e =>
+                      handleChange(
+                        index,
+                        "item_source_id",
+                        e.target.value
+                      )
+                    }
+                  >
+
+                    <option value="">
+                      Select Item
+                    </option>
+
+                    {manualItems.map(
+                      mi => (
+
+                        <option
+                          key={
+                            mi._id
+                          }
+                          value={
+                            mi._id
+                          }
+                        >
+                          {
+                            mi.itemName
+                          } |
+                          ₹
+                          {
+                            mi.defaultPrice
+                          }
+                        </option>
+
+                      )
+                    )}
+
+                  </select>
+
+                )}
+
+                {/* PROCEDURES */}
+
+                {item.item_type ===
+                  "ProcedureSchedule" && (
+
+                  <select
+                    style={
+                      styles.select
+                    }
+                    value={
+                      item.item_source_id
+                    }
+                    onChange={e =>
+                      handleChange(
+                        index,
+                        "item_source_id",
+                        e.target.value
+                      )
+                    }
+                  >
+
+                    <option value="">
+                      Select Procedure
+                    </option>
+
+                    {schedules.map(
+                      s => (
+
+                        <option
+                          key={
+                            s._id
+                          }
+                          value={
+                            s._id
+                          }
+                        >
+                          {
+                            s
+                              .procedureId
+                              ?.name
+                          } |
+                          ₹
+                          {
+                            s
+                              .procedureId
+                              ?.cost
+                          }
+                        </option>
+
+                      )
+                    )}
+
+                  </select>
+
+                )}
+
+                {/* SONOGRAPHY */}
+
+                {item.item_type ===
+                  "Sonography" && (
+
+                  <select
+                    style={
+                      styles.select
+                    }
+                    value={
+                      item.item_source_id
+                    }
+                    onChange={e =>
+                      handleChange(
+                        index,
+                        "item_source_id",
+                        e.target.value
+                      )
+                    }
+                  >
+
+                    <option value="">
+                      Select Sonography
+                    </option>
+
+                    {sonographyRecords.map(
+                      s => (
+
+                        <option
+                          key={
+                            s._id
+                          }
+                          value={
+                            s._id
+                          }
+                        >
+                          {
+                            s.scanType
+                          } |
+                          ₹
+                          {
+                            s.cost
+                          }
+                        </option>
+
+                      )
+                    )}
+
+                  </select>
+
+                )}
+
+                {/* OPEN */}
+
+                {item.item_type ===
+                  "Open" && (
+
+                  <>
+                    <input
+                      style={
+                        styles.input
+                      }
+                      placeholder="Description"
+                      value={
+                        item.description
+                      }
+                      onChange={e =>
+                        handleChange(
+                          index,
+                          "description",
+                          e.target.value
+                        )
+                      }
+                    />
+
+                    <input
+                      style={
+                        styles.input
+                      }
+                      placeholder="Unit Price"
+                      value={
+                        item.unit_price
+                      }
+                      onChange={e =>
+                        handleChange(
+                          index,
+                          "unit_price",
+                          e.target.value
+                        )
+                      }
+                    />
+                  </>
+
+                )}
+
+                {/* QTY */}
+
+                <input
+                  type="number"
+                  style={styles.input}
+                  placeholder="Quantity"
+                  value={item.quantity}
+                  onChange={e =>
+                    handleChange(
+                      index,
+                      "quantity",
+                      e.target.value
+                    )
+                  }
+                />
+
+                <button
+                  type="button"
+                  style={
+                    styles.removeBtn
+                  }
+                  onClick={() =>
+                    removeItem(
+                      index
+                    )
+                  }
+                >
+                  Remove
+                </button>
+
+              </div>
+
+            )
+          )}
+
+          <button
+            type="button"
+            style={styles.addBtn}
+            onClick={addItem}
+          >
+            + Add Item
+          </button>
+
+          <button
+            type="submit"
+            style={styles.submitBtn}
+          >
+            Create Bill
+          </button>
+
+        </form>
+
+        {/* ====================== */}
+        {/* BILL SUMMARY */}
+        {/* ====================== */}
+
+        {createdBill && (
+
+          <div
+            style={{
+              marginTop: "2rem"
+            }}
+          >
+
+            <h2>
+              Bill Summary
+            </h2>
+
+            <table>
+
+              <thead>
+
+                <tr>
+                  <th>
+                    Description
+                  </th>
+
+                  <th>
+                    Qty
+                  </th>
+
+                  <th>
+                    Price
+                  </th>
+
+                  <th>
+                    Total
+                  </th>
+                </tr>
+
+              </thead>
+
+              <tbody>
+
+                {items.map(
+                  (
+                    item,
+                    idx
+                  ) => (
+
+                    <tr key={idx}>
+
+                      <td>
+                        {
+                          item.description
+                        }
+                      </td>
+
+                      <td>
+                        {
+                          item.quantity
+                        }
+                      </td>
+
+                      <td>
+                        ₹
+                        {
+                          item.unit_price
+                        }
+                      </td>
+
+                      <td>
+                        ₹
+                        {(
+                          item.quantity *
+                          item.unit_price
+                        ).toFixed(
+                          2
+                        )}
+                      </td>
+
+                    </tr>
+
+                  )
+                )}
+
+              </tbody>
+
+            </table>
+
+            <h3
               style={{
-                marginTop: 10,
-                padding: 10,
-                background: "green",
-                color: "white"
+                marginTop:
+                  "1rem"
               }}
             >
-              Pay Now
-            </button>
-          </form>
+              Grand Total : ₹
+              {total}
+            </h3>
 
-          {/* PAYMENT HISTORY */}
-          <div style={{ marginTop: 20 }}>
-            <h4>Payments</h4>
-            {payments.map((p) => (
+            {/* ====================== */}
+            {/* PAYMENT FORM */}
+            {/* ====================== */}
+
+            <form
+              onSubmit={
+                submitPayment
+              }
+              style={
+                styles.paymentBox
+              }
+            >
+
+              <h3>
+                Record Payment
+              </h3>
+
               <div
-                key={p._id}
+                style={
+                  styles.field
+                }
+              >
+
+                <label>
+                  Amount
+                </label>
+
+                <input
+                  type="number"
+                  style={
+                    styles.input
+                  }
+                  value={
+                    paymentForm.amount
+                  }
+                  onChange={e =>
+                    setPaymentForm({
+                      ...paymentForm,
+                      amount:
+                        e.target
+                          .value
+                    })
+                  }
+                />
+
+              </div>
+
+              <div
+                style={
+                  styles.field
+                }
+              >
+
+                <label>
+                  Method
+                </label>
+
+                <select
+                  style={
+                    styles.select
+                  }
+                  value={
+                    paymentForm.method
+                  }
+                  onChange={e =>
+                    setPaymentForm({
+                      ...paymentForm,
+                      method:
+                        e.target
+                          .value
+                    })
+                  }
+                >
+
+                  <option value="Cash">
+                    Cash
+                  </option>
+
+                  <option value="Card">
+                    Card
+                  </option>
+
+                  <option value="UPI">
+                    UPI
+                  </option>
+
+                  <option value="External_Reference">
+                    External Reference
+                  </option>
+
+                </select>
+
+              </div>
+
+              {paymentForm.method ===
+                "External_Reference" && (
+
+                <input
+                  style={
+                    styles.input
+                  }
+                  placeholder="Reference Number"
+                  value={
+                    paymentForm.externalRef
+                  }
+                  onChange={e =>
+                    setPaymentForm({
+                      ...paymentForm,
+                      externalRef:
+                        e.target
+                          .value
+                    })
+                  }
+                />
+
+              )}
+
+              <button
+                type="submit"
+                style={
+                  styles.submitBtn
+                }
+              >
+                Submit Payment
+              </button>
+
+              {paymentError && (
+
+                <p
+                  style={{
+                    color:
+                      "red"
+                  }}
+                >
+                  {
+                    paymentError
+                  }
+                </p>
+
+              )}
+
+            </form>
+
+            {/* PAYMENT HISTORY */}
+
+            {payments.length >
+              0 && (
+
+              <div
                 style={{
-                  padding: 10,
-                  background: "#fff",
-                  marginTop: 10
+                  marginTop:
+                    "2rem"
                 }}
               >
-                <p>₹{p.amount_paid}</p>
-                <p>{p.payment_method}</p>
+
+                <h3>
+                  Payment History
+                </h3>
+
+                {payments.map(
+                  p => (
+
+                    <div
+                      key={
+                        p._id
+                      }
+                      style={
+                        styles.paymentCard
+                      }
+                    >
+
+                      <p>
+                        <strong>
+                          Amount:
+                        </strong>{" "}
+                        ₹
+                        {
+                          p.amount_paid
+                        }
+                      </p>
+
+                      <p>
+                        <strong>
+                          Method:
+                        </strong>{" "}
+                        {
+                          p.payment_method
+                        }
+                      </p>
+
+                      <p>
+                        <strong>
+                          Date:
+                        </strong>{" "}
+                        {new Date(
+                          p.payment_date
+                        ).toLocaleString()}
+                      </p>
+
+                    </div>
+
+                  )
+                )}
+
               </div>
-            ))}
+
+            )}
+
           </div>
-        </div>
-      )}
+
+        )}
+
+      </div>
+
+      {/* PRINT */}
+
+      <button
+        className="screen-only"
+        style={{
+          ...styles.submitBtn,
+          background:
+            "#673ab7",
+          marginTop:
+            "2rem"
+        }}
+        onClick={handlePrint}
+      >
+        🖨 Print Bill + Payment
+      </button>
+
     </div>
+
   );
-}
+
+};
+
+const styles = {
+
+  container: {
+    maxWidth: "1100px",
+    margin: "2rem auto",
+    padding: "2rem",
+    background: "#fafafa",
+    borderRadius: "10px",
+    fontFamily: "Arial"
+  },
+
+  heading: {
+    textAlign: "center",
+    marginBottom: "2rem"
+  },
+
+  field: {
+    marginBottom: "1rem",
+    display: "flex",
+    flexDirection: "column"
+  },
+
+  input: {
+    padding: "10px",
+    border: "1px solid #ccc",
+    borderRadius: "6px",
+    marginBottom: "10px"
+  },
+
+  select: {
+    padding: "10px",
+    border: "1px solid #ccc",
+    borderRadius: "6px"
+  },
+
+  card: {
+    background: "#fff",
+    padding: "1rem",
+    borderRadius: "8px",
+    border: "1px solid #ddd",
+    marginBottom: "1rem"
+  },
+
+  addBtn: {
+    padding: "10px 15px",
+    background: "#1976d2",
+    color: "#fff",
+    border: "none",
+    borderRadius: "6px",
+    marginRight: "10px"
+  },
+
+  submitBtn: {
+    padding: "10px 15px",
+    background: "green",
+    color: "#fff",
+    border: "none",
+    borderRadius: "6px"
+  },
+
+  removeBtn: {
+    padding: "8px 12px",
+    background: "red",
+    color: "#fff",
+    border: "none",
+    borderRadius: "6px"
+  },
+
+  paymentBox: {
+    marginTop: "2rem",
+    background: "#fff",
+    padding: "1rem",
+    borderRadius: "8px",
+    border: "1px solid #ddd"
+  },
+
+  paymentCard: {
+    background: "#fff",
+    padding: "1rem",
+    borderRadius: "6px",
+    border: "1px solid #ddd",
+    marginBottom: "1rem"
+  }
+
+};
+
+export default CreateBillForm;
 
