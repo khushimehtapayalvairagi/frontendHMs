@@ -1517,7 +1517,240 @@ const selectedVisit = visits.find(
         </div>
 
         ${printContents}
+  ${ipdAdmissionId ? `
+  <div style="
+    margin-top:30px;
+    border:2px solid #1976d2;
+    padding:20px;
+    border-radius:12px;
+    background:#f9fbff;
+  ">
 
+    <h2 style="
+      color:#1976d2;
+      text-align:center;
+      margin-bottom:20px;
+      border-bottom:2px solid #1976d2;
+      padding-bottom:10px;
+    ">
+      IPD Admission Details
+    </h2>
+
+    <table style="
+      width:100%;
+      border-collapse:collapse;
+      font-size:15px;
+    ">
+      <tbody>
+
+        <tr>
+          <td style="padding:10px;font-weight:bold;width:35%;">
+            Patient Name
+          </td>
+
+          <td style="padding:10px;">
+            ${selectedPatient?.fullName || 'N/A'}
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding:10px;font-weight:bold;">
+            Doctor
+          </td>
+
+          <td style="padding:10px;">
+            ${selectedAdmission?.admittingDoctorId?.userId?.name || 'N/A'}
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding:10px;font-weight:bold;">
+            Ward
+          </td>
+
+          <td style="padding:10px;">
+            ${selectedAdmission?.wardId?.name || 'N/A'}
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding:10px;font-weight:bold;">
+            Room Category
+          </td>
+
+          <td style="padding:10px;">
+            ${selectedAdmission?.roomCategoryId?.name || 'N/A'}
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding:10px;font-weight:bold;">
+            Bed Number
+          </td>
+
+          <td style="padding:10px;">
+            ${selectedAdmission?.bedNumber || 'N/A'}
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding:10px;font-weight:bold;">
+            Status
+          </td>
+
+          <td style="
+            padding:10px;
+            font-weight:bold;
+            color:${
+              dischargePatient ||
+              selectedAdmission?.status === 'Discharged'
+                ? 'green'
+                : 'red'
+            };
+          ">
+            ${
+              dischargePatient ||
+              selectedAdmission?.status === 'Discharged'
+                ? 'Discharged'
+                : 'Admitted'
+            }
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding:10px;font-weight:bold;">
+            Admission Date
+          </td>
+
+          <td style="padding:10px;">
+            ${
+              selectedAdmission?.admissionDate
+                ? new Date(
+                    selectedAdmission.admissionDate
+                  ).toLocaleString()
+                : 'N/A'
+            }
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding:10px;font-weight:bold;">
+            Discharge Date
+          </td>
+
+          <td style="padding:10px;">
+            ${
+              selectedAdmission?.actualDischargeDate
+                ? new Date(
+                    selectedAdmission.actualDischargeDate
+                  ).toLocaleString()
+
+                : dischargePatient
+                  ? new Date().toLocaleString()
+
+                : 'N/A'
+            }
+          </td>
+        </tr>
+
+      </tbody>
+    </table>
+
+  </div>
+` : ''}
+${dailyReports.length > 0 ? `
+  <div style="margin-top:20px;">
+    <h2>Daily Progress Reports</h2>
+
+    ${dailyReports.map(r => `
+      <div style="border:1px solid #ddd;padding:10px;margin-bottom:10px;">
+        <p><strong>Date:</strong>
+          ${new Date(r.reportDateTime).toLocaleString()}
+        </p>
+
+        <p><strong>Temperature:</strong>
+          ${r.vitals?.temperature || 'N/A'}
+        </p>
+
+        <p><strong>Pulse:</strong>
+          ${r.vitals?.pulse || 'N/A'}
+        </p>
+
+        <p><strong>BP:</strong>
+          ${r.vitals?.bp || 'N/A'}
+        </p>
+
+        <p><strong>Respiratory Rate:</strong>
+          ${r.vitals?.respiratoryRate || 'N/A'}
+        </p>
+      </div>
+    `).join('')}
+  </div>
+` : ''}
+
+${anesthesiaRecords.length > 0 ? `
+  <div style="margin-top:20px;">
+    <h2>Anesthesia Records</h2>
+
+    ${anesthesiaRecords.map(a => `
+      <div style="border:1px solid #ddd;padding:10px;margin-bottom:10px;">
+        <p><strong>Procedure:</strong>
+          ${a.procedureName || 'N/A'}
+        </p>
+
+        <p><strong>Anesthetist:</strong>
+          ${a.anestheticId?.userId?.name || 'N/A'}
+        </p>
+
+        <p><strong>Anesthesia:</strong>
+          ${a.anesthesiaName || 'N/A'}
+        </p>
+
+        <p><strong>Type:</strong>
+          ${a.anesthesiaType || 'N/A'}
+        </p>
+
+        <p><strong>Medicines:</strong>
+          ${a.medicinesUsedText || 'N/A'}
+        </p>
+      </div>
+    `).join('')}
+  </div>
+` : ''}
+
+${sonographyRecords.length > 0 ? `
+  <div style="margin-top:20px;">
+    <h2>Sonography Records</h2>
+
+    ${sonographyRecords.map(s => `
+      <div style="border:1px solid #ddd;padding:10px;margin-bottom:10px;">
+        <p><strong>Scan:</strong>
+          ${s.scanType || 'N/A'}
+        </p>
+
+        <p><strong>Status:</strong>
+          ${s.status || 'N/A'}
+        </p>
+
+        <p><strong>Cost:</strong>
+          ₹${s.cost || 0}
+        </p>
+
+        <p><strong>Report:</strong>
+          ${s.report || 'N/A'}
+        </p>
+
+        <p><strong>Date:</strong>
+          ${
+            s.performedDate
+              ? new Date(s.performedDate).toLocaleString()
+              : 'N/A'
+          }
+        </p>
+      </div>
+    `).join('')}
+  </div>
+` : ''}
 
 
       </body>
@@ -1908,21 +2141,25 @@ const selectedVisit = visits.find(
               {adm.bedNumber || "N/A"}
             </div>
 
-            <div>
-              <strong>Admission Date:</strong><br />
-              {
-                adm.admissionDate
-                  ? new Date(
-                      adm.admissionDate
-                    ).toLocaleString()
-                  : "N/A"
-              }
-            </div>
+          <div>
+  <strong>Admission Date:</strong><br />
+  {
+    adm?.admissionDate ||
+    adm?.createdAt ||
+    adm?.admittedAt
+      ? new Date(
+          adm?.admissionDate ||
+          adm?.createdAt ||
+          adm?.admittedAt
+        ).toLocaleString()
+      : "N/A"
+  }
+</div>
 
-            <div>
+            {/* <div>
               <strong>Status:</strong><br />
               {adm.status || "N/A"}
-            </div>
+            </div> */}
 
           </div>
 
