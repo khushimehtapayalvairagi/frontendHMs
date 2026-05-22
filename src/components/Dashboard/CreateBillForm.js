@@ -1140,6 +1140,24 @@ if (type === 'Sonography') {
 // };
 
 
+useEffect(() => {
+
+  const total =
+    items.reduce(
+      (sum, item) =>
+        sum +
+        (Number(item.quantity || 0) *
+          Number(item.unit_price || 0)),
+      0
+    );
+
+  setPaymentForm(prev => ({
+    ...prev,
+    amount: total
+  }));
+
+}, [items]);
+
  const handleSubmit = async (e) => {
 
   e.preventDefault();
@@ -2655,215 +2673,116 @@ const balance = total - paid;
         <button type="button" onClick={addItem} style={{ padding: '10px 15px', background: '#007bff', color: '#fff', border: 'none', borderRadius: '6px', marginRight: '10px' }}>
           + Add Item
         </button>
+             {/* ================= PAYMENT DETAILS ================= */}
 
+<div
+  style={{
+    marginTop: '2rem',
+    background: '#fff',
+    padding: '1.5rem',
+    borderRadius: '10px',
+    border: '1px solid #ddd'
+  }}
+>
+  <h3
+    style={{
+      marginBottom: '1rem',
+      color: '#1976d2'
+    }}
+  >
+    Payment Details
+  </h3>
+
+  {/* Amount */}
+
+  <div style={{ marginBottom: '1rem' }}>
+    <label>Amount</label>
+
+    <input
+      type="number"
+      name="amount"
+      value={
+        paymentForm.amount ||
+        items.reduce(
+          (sum, item) =>
+            sum +
+            (Number(item.quantity || 0) *
+              Number(item.unit_price || 0)),
+          0
+        )
+      }
+      onChange={handlePaymentChange}
+      required
+      style={{
+        width: '100%',
+        padding: '10px'
+      }}
+    />
+  </div>
+
+  {/* Payment Method */}
+
+  <div style={{ marginBottom: '1rem' }}>
+    <label>Payment Method</label>
+
+    <select
+      name="method"
+      value={paymentForm.method}
+      onChange={handlePaymentChange}
+      style={{
+        width: '100%',
+        padding: '10px'
+      }}
+    >
+      <option value="Cash">
+        Cash
+      </option>
+
+      <option value="Card">
+        Card
+      </option>
+
+      <option value="UPI">
+        UPI
+      </option>
+
+      <option value="External_Reference">
+        External Reference
+      </option>
+    </select>
+  </div>
+
+  {/* External Reference */}
+
+  {paymentForm.method ===
+    'External_Reference' && (
+
+    <div style={{ marginBottom: '1rem' }}>
+      <label>
+        External Reference
+      </label>
+
+      <input
+        type="text"
+        name="externalRef"
+        value={paymentForm.externalRef}
+        onChange={handlePaymentChange}
+        placeholder="Enter reference number"
+        style={{
+          width: '100%',
+          padding: '10px'
+        }}
+      />
+    </div>
+  )}
+</div>
         <button type="submit" style={{ padding: '10px 15px', background: 'green', color: '#fff', border: 'none', borderRadius: '6px' }}>
-          Create Bill
+       Submit Bill & Payment
         </button>
         
         {/* ================= PAYMENT SECTION ================= */}
 
-{billData && (
-
-  <div
-    style={{
-      marginTop: '2rem',
-      background: '#fff',
-      padding: '1.5rem',
-      borderRadius: '10px',
-      border: '1px solid #ddd'
-    }}
-  >
-
-    <h2
-      style={{
-        marginBottom: '1rem',
-        color: '#1976d2'
-      }}
-    >
-      Payment Section
-    </h2>
-
-    <p>
-      <strong>Total:</strong> ₹
-      {billData.total_amount}
-    </p>
-
-    <p>
-      <strong>Paid:</strong> ₹
-      {billData.total_paid}
-    </p>
-
-    <p>
-      <strong>Balance:</strong> ₹
-      {billData.balance_due}
-    </p>
-
-    <form>
-
-      {/* Amount */}
-
-      <div style={{ marginBottom: '1rem' }}>
-
-        <label>Amount</label>
-
-        <input
-          type="number"
-          name="amount"
-          value={paymentForm.amount}
-          onChange={handlePaymentChange}
-          required
-          style={{
-            width: '100%',
-            padding: '10px'
-          }}
-        />
-
-      </div>
-
-      {/* Method */}
-
-      <div style={{ marginBottom: '1rem' }}>
-
-        <label>Payment Method</label>
-
-        <select
-          name="method"
-          value={paymentForm.method}
-          onChange={handlePaymentChange}
-          style={{
-            width: '100%',
-            padding: '10px'
-          }}
-        >
-
-          <option value="Cash">
-            Cash
-          </option>
-
-          <option value="Card">
-            Card
-          </option>
-
-          <option value="UPI">
-            UPI
-          </option>
-
-          <option value="External_Reference">
-            External Reference
-          </option>
-
-        </select>
-
-      </div>
-
-      {/* External Ref */}
-
-      {paymentForm.method ===
-        'External_Reference' && (
-
-        <div
-          style={{
-            marginBottom: '1rem'
-          }}
-        >
-
-          <label>
-            External Reference
-          </label>
-
-          <input
-            type="text"
-            name="externalRef"
-            value={paymentForm.externalRef}
-            onChange={handlePaymentChange}
-            style={{
-              width: '100%',
-              padding: '10px'
-            }}
-          />
-
-        </div>
-      )}
-
-      <button
-        type="submit"
-        style={{
-          padding: '10px 20px',
-          background: 'green',
-          color: '#fff',
-          border: 'none',
-          borderRadius: '6px'
-        }}
-      >
-        Submit Payment
-      </button>
-
-      {paymentError && (
-        <p
-          style={{
-            color: 'red',
-            marginTop: '10px'
-          }}
-        >
-          {paymentError}
-        </p>
-      )}
-
-    </form>
-
-    {/* PAYMENT HISTORY */}
-
-    <div style={{ marginTop: '2rem' }}>
-
-      <h3>Payment History</h3>
-
-      {payments.length === 0 ? (
-
-        <p>No payments yet</p>
-
-      ) : (
-
-        payments.map((p) => (
-
-          <div
-            key={p._id}
-            style={{
-              padding: '10px',
-              marginBottom: '10px',
-              background: '#f5f5f5',
-              borderRadius: '6px'
-            }}
-          >
-
-            <p>
-              <strong>Date:</strong>{" "}
-              {
-                new Date(
-                  p.payment_date
-                ).toLocaleString()
-              }
-            </p>
-
-            <p>
-              <strong>Amount:</strong> ₹
-              {p.amount_paid}
-            </p>
-
-            <p>
-              <strong>Method:</strong>{" "}
-              {p.payment_method}
-            </p>
-
-          </div>
-
-        ))
-      )}
-
-    </div>
-
-  </div>
-)}
-        <button
+     <button
   type="button"
   onClick={handlePrint}
   className="screen-only"
