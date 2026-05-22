@@ -1422,453 +1422,95 @@ const handlePaymentChange = (e) => {
 
 const handlePrint = () => {
 
-  const patient =
-    patients.find(p => p._id === patientId);
+  const printContents = printRef.current.innerHTML;
 
-  const admission =
-    admissions.find(a => a._id === ipdAdmissionId);
+  const win = window.open('', '', 'width=1200,height=800');
 
-  const visit =
-    visits.find(v => v._id === visitId);
+  win.document.write(`
+    <html>
+      <head>
+        <title>Patient Bill & Payment</title>
 
-  const patientName =
-    patient?.fullName || "N/A";
+        <style>
+          body{
+            font-family: Arial, sans-serif;
+            padding:20px;
+            color:#000;
+          }
 
-  const doctorName =
-    admission?.admittingDoctorId?.userId?.name ||
-    visit?.assignedDoctorId?.userId?.name ||
-    "N/A";
+          h1,h2,h3,h4{
+            margin-bottom:10px;
+          }
 
-  const admitDate =
-    admission?.admitDate
-      ? new Date(admission.admitDate).toLocaleString()
-      : "N/A";
+          table{
+            width:100%;
+            border-collapse:collapse;
+            margin-top:10px;
+          }
 
-  const billDate =
-    billData?.bill_date
-      ? new Date(billData.bill_date).toLocaleString()
-      : new Date().toLocaleString();
+          th,td{
+            border:1px solid #ccc;
+            padding:8px;
+            text-align:left;
+          }
 
-const total = items.reduce(
-  (sum, item) =>
-    sum +
-    (Number(item.quantity || 0) *
-      Number(item.unit_price || 0)),
-  0
-);
+          th{
+            background:#1976d2;
+            color:white;
+          }
 
-const paid = payments.reduce(
-  (sum, p) =>
-    sum + Number(p.amount_paid || 0),
-  0
-);
+          input,
+          select,
+          button{
+            border:none !important;
+            outline:none !important;
+            background:none !important;
+          }
 
-const balance = total - paid;
+          .screen-only{
+            display:none !important;
+          }
 
-  const paymentRows = payments.map((p, index) => `
-    <tr>
-      <td style="padding:8px;">${index + 1}</td>
-      <td style="padding:8px;">
-        ${new Date(p.payment_date).toLocaleString()}
-      </td>
-      <td style="padding:8px;">
-        ₹${p.amount_paid}
-      </td>
-      <td style="padding:8px;">
-        ${p.payment_method}
-      </td>
-    </tr>
-  `).join("");
+          .print-only{
+            display:block !important;
+          }
 
-  const billRows = items.map(it => `
-    <tr>
-      <td style="padding:8px;">
-        ${it.description}
-      </td>
-
-      <td style="padding:8px;text-align:center;">
-        ${it.quantity}
-      </td>
-
-      <td style="padding:8px;text-align:center;">
-        ₹${it.unit_price}
-      </td>
-
-      <td style="padding:8px;text-align:center;">
-        ₹${(it.quantity * it.unit_price)}
-      </td>
-    </tr>
-  `).join("");
-
-  const printContent = `
-  <html>
-
-    <head>
-
-      <title>Bill Receipt</title>
-
-      <style>
-
-        body{
-          font-family: Arial;
-          padding:30px;
-          color:#000;
-        }
-
-        h1,h2,h3,h4{
-          margin:0;
-        }
-
-        table{
-          width:100%;
-          border-collapse:collapse;
-          margin-top:15px;
-        }
-
-        th,td{
-          border:1px solid #ccc;
-          padding:10px;
-          font-size:14px;
-        }
-
-        th{
-          background:#1976d2;
-          color:#fff;
-        }
-
-        .header{
-          text-align:center;
-          border-bottom:3px solid #1976d2;
-          padding-bottom:15px;
-          margin-bottom:20px;
-        }
-
-        .section{
-          margin-top:25px;
-        }
-
-        .summary-box{
-          background:#f5f5f5;
-          padding:15px;
-          border-radius:8px;
-          margin-top:20px;
-        }
-
-        .right{
-          text-align:right;
-        }
-
-      </style>
-
-    </head>
-
-    <body>
-
-      <div class="header">
-
-        <h1>
-          🏥 Hospital Bill & Payment Receipt
-        </h1>
-
-        <h2>
-          Dr. M.I. Jamkhanawala Tibbia Unani Medical College
-        </h2>
-
-        <p>
-          Haji Abdul Razzak Kalsekar Tibbia Hospital
-        </p>
-
-      </div>
-
-      <div class="section">
-
-        <table>
-
-          <tr>
-            <td>
-              <strong>Patient:</strong>
-              ${patientName}
-            </td>
-
-            <td>
-              <strong>Bill Date:</strong>
-              ${billDate}
-            </td>
-          </tr>
-
-          <tr>
-            <td>
-              <strong>Doctor:</strong>
-              ${doctorName}
-            </td>
-
-            <td>
-              <strong>Admission Date:</strong>
-              ${admitDate}
-            </td>
-          </tr>
-
-        </table>
-
-      </div>
-          ${
-  admission
-  ? `
-    <div class="section">
-
-      <h3>
-        IPD Admission Details
-      </h3>
-
-      <table>
-
-        <tr>
-          <td>
-            <strong>Admitting Doctor</strong>
-          </td>
-
-          <td>
-            ${
-              admission?.admittingDoctorId?.userId?.name || 'N/A'
+          @media print{
+            .screen-only{
+              display:none !important;
             }
-          </td>
-        </tr>
 
-        <tr>
-          <td>
-            <strong>Ward</strong>
-          </td>
-
-          <td>
-            ${
-              admission?.wardId?.name || 'N/A'
+            .print-only{
+              display:block !important;
             }
-          </td>
-        </tr>
 
-        <tr>
-          <td>
-            <strong>Room Category</strong>
-          </td>
-
-          <td>
-            ${
-              admission?.roomCategoryId?.name || 'N/A'
+            body{
+              -webkit-print-color-adjust: exact;
             }
-          </td>
-        </tr>
+          }
+        </style>
 
-        <tr>
-          <td>
-            <strong>Bed Number</strong>
-          </td>
+      </head>
 
-          <td>
-            ${
-              admission?.bedNumber || 'N/A'
-            }
-          </td>
-        </tr>
+      <body>
 
-        <tr>
-          <td>
-            <strong>Admission Date</strong>
-          </td>
+        <div style="text-align:center;margin-bottom:20px;">
+          <h1>🏥 Hospital Bill & Payment Receipt</h1>
 
-          <td>
-            ${
-              admission?.admitDate
-                ? new Date(admission.admitDate).toLocaleString()
-                : 'N/A'
-            }
-          </td>
-        </tr>
+          <h2>
+            Dr. M.I. Jamkhanawala Tibbia Unani Medical College
+          </h2>
 
-        <tr>
-          <td>
-            <strong>Status</strong>
-          </td>
-
-          <td>
-            ${
-              admission?.status || 'N/A'
-            }
-          </td>
-        </tr>
-
-      </table>
-
-    </div>
-  `
-  : ''
-}
-      ${
-        latestConsultation
-        ? `
-        <div class="section">
-
-          <h3>
-            Consultation Details
-          </h3>
-
-          <table>
-
-            <tr>
-              <td>
-                <strong>Chief Complaint</strong>
-              </td>
-
-              <td>
-                ${latestConsultation.chiefComplaint || 'N/A'}
-              </td>
-            </tr>
-
-            <tr>
-              <td>
-                <strong>Diagnosis</strong>
-              </td>
-
-              <td>
-                ${latestConsultation.diagnosis || 'N/A'}
-              </td>
-            </tr>
-
-            <tr>
-              <td>
-                <strong>Doctor Notes</strong>
-              </td>
-
-              <td>
-                ${latestConsultation.doctorNotes || 'N/A'}
-              </td>
-            </tr>
-
-          </table>
-
-        </div>
-        `
-        : ''
-      }
-
-      <div class="section">
-
-        <h3>
-          Billing Items
-        </h3>
-
-        <table>
-
-          <thead>
-
-            <tr>
-              <th>Description</th>
-              <th>Qty</th>
-              <th>Rate</th>
-              <th>Total</th>
-            </tr>
-
-          </thead>
-
-          <tbody>
-
-            ${billRows}
-
-          </tbody>
-
-        </table>
-
-      </div>
-
-      <div class="summary-box">
-
-        <h3>Bill Summary</h3>
-
-        <p>
-          <strong>Total Amount:</strong>
-          ₹${total}
-        </p>
-
-        <p>
-          <strong>Total Paid:</strong>
-          ₹${paid}
-        </p>
-
-        <p>
-          <strong>Balance Due:</strong>
-          ₹${balance}
-        </p>
-
-      </div>
-
-      <div class="section">
-
-        <h3>
-          Payment History
-        </h3>
-
-        ${
-          payments.length > 0
-          ? `
-            <table>
-
-              <thead>
-
-                <tr>
-                  <th>#</th>
-                  <th>Date</th>
-                  <th>Amount</th>
-                  <th>Method</th>
-                </tr>
-
-              </thead>
-
-              <tbody>
-
-                ${paymentRows}
-
-              </tbody>
-
-            </table>
-          `
-          : `
-            <p>
-              No payments recorded
-            </p>
-          `
-        }
-
-      </div>
-
-      <div
-        style="
-          margin-top:60px;
-          display:flex;
-          justify-content:space-between;
-        "
-      >
-
-        <div>
-          Patient Signature
+          <p>
+            Haji Abdul Razzak Kalsekar Tibbia Hospital
+          </p>
         </div>
 
-        <div>
-          Authorized Signature
-        </div>
+        ${printContents}
 
-      </div>
-
-    </body>
-
-  </html>
-  `;
-
-  const win = window.open(
-    '',
-    '',
-    'width=1000,height=800'
-  );
-
-  win.document.write(printContent);
+      </body>
+    </html>
+  `);
 
   win.document.close();
 
@@ -1878,7 +1520,6 @@ const balance = total - paid;
     win.print();
   }, 500);
 };
-
 
  return (
     <div style={{ maxWidth: '1000px', margin: '2rem auto', padding: '2rem', fontFamily: 'Arial, sans-serif', background: '#fafafa', borderRadius: '10px', boxShadow: '0 0 8px rgba(0,0,0,0.1)' }}>
