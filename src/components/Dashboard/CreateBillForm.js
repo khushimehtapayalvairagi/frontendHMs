@@ -647,2172 +647,995 @@
 
 // 👇 Full version of CreateBillForm with clear details for receptionist
 // 👇 Full version of CreateBillForm with clear details for receptionist
-import React, { useEffect, useState, useRef } from 'react';
-
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useLocation } from 'react-router-dom';
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+
 const CreateBillForm = () => {
-   const styles = `
-    /* Hide print-only stuff when not printing */
+
+  const styles = `
     .print-only {
       display: none !important;
     }
 
-    /* Hide screen-only stuff when printing */
     @media print {
       .screen-only {
         display: none !important;
       }
+
       .print-only {
         display: block !important;
       }
     }
   `;
+
   const location = useLocation();
-  const { patientId: passedPatientId, ipdAdmissionId: passedAdmissionId } = location.state || {};
-const [anesthesiaRecords, setAnesthesiaRecords] = useState([]);
 
-const [sonographyRecords, setSonographyRecords] = useState([]);
+  const {
+    patientId: passedPatientId,
+    ipdAdmissionId: passedAdmissionId
+  } = location.state || {};
 
+  const BASE_URL = process.env.REACT_APP_BASE_URL;
 
-const BASE_URL = process.env.REACT_APP_BASE_URL;
-const printRef = useRef(null);
+  const printRef = useRef(null);
 
-
-const prescriptionRef = useRef(null);
-
-
-const [dailyReports, setDailyReports] = useState([]);
   const [patients, setPatients] = useState([]);
   const [admissions, setAdmissions] = useState([]);
   const [manualItems, setManualItems] = useState([]);
   const [schedules, setSchedules] = useState([]);
-  const [items, setItems] = useState([{ item_type: '', item_source_id: '', description: '', quantity: 1, unit_price: '' }]);
+  const [consultations, setConsultations] = useState([]);
+  const [visits, setVisits] = useState([]);
+  const [payments, setPayments] = useState([]);
+  const [dailyReports, setDailyReports] = useState([]);
+  const [anesthesiaRecords, setAnesthesiaRecords] = useState([]);
+  const [sonographyRecords, setSonographyRecords] = useState([]);
 
   const [visitId, setVisitId] = useState('');
+  const [billData, setBillData] = useState(null);
 
+  const [patientId, setPatientId] = useState(
+    passedPatientId || ''
+  );
 
-  const [visits, setVisits] = useState([]); // 👈 YAHAN
+  const [ipdAdmissionId, setIpdAdmissionId] = useState(
+    passedAdmissionId || ''
+  );
 
-
-  const [consultations, setConsultations] = useState([]);
-      const [billData, setBillData] = useState(null);
-       const [paymentForm, setPaymentForm] = useState({
-  amount: '',
-  method: 'Cash',
-  externalRef: ''
-});
-
-const [payments, setPayments] = useState([]);
-
-const [paymentError, setPaymentError] = useState('');
-  const latestConsultation = consultations[0];
-
-  const [patientId, setPatientId] = useState(passedPatientId || '');
-  const [ipdAdmissionId, setIpdAdmissionId] = useState(passedAdmissionId || '');
   const [userId, setUserId] = useState('');
 
-  useEffect(() => {
-  const fetchAnesthesiaRecords = async () => {
-    if (!patientId) return;
-    const token = localStorage.getItem('jwt');
-
-    try {
-      // ✅ Step 1: Get procedures
-      const procRes = await axios.get(
-        `${BASE_URL}/api/procedures/schedules/${patientId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      const procedures = procRes.data.procedures || [];
-
-      // ✅ Step 2: Get ALL anesthesia records ONCE
-      const anaRes = await axios.get(
-        `${BASE_URL}/api/procedures/anesthesia-records`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      const allRecords = anaRes.data.records || [];
-
-      // ✅ Step 3: Filter by patient + map correctly
-      const mappedRecords = allRecords
-        .filter(r => r.patientId?._id === patientId) // ✅ correct filtering
-        .map(r => {
-          // find matching procedure
-          const proc = procedures.find(
-            p => p.ipdAdmissionId === r.ipdAdmissionId
-          );
-
-          return {
-            ...r,
-            procedureName: proc?.procedureId?.name || r.procedureType || 'N/A'
-          };
-        });
-
-      setAnesthesiaRecords(mappedRecords);
-
-    } catch (error) {
-      console.error(error);
-      toast.error('Failed to load anesthesia records');
+  const [items, setItems] = useState([
+    {
+      item_type: '',
+      item_source_id: '',
+      description: '',
+      quantity: 1,
+      unit_price: ''
     }
-  };
+  ]);
 
-  fetchAnesthesiaRecords();
-}, [patientId]);// 👈 anesthesia ka end
-
-
-
-
-// ✅ 👉 ISKE JUST NEECHHE YE DALNA HAI
-useEffect(() => {
-  const fetchSonographyRecords = async () => {
-    if (!patientId) return;
-
-    const token = localStorage.getItem("jwt");
-
-    try {
-      const res = await axios.get(
-        `${BASE_URL}/api/sonography/patient/${patientId}`,
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      );
-
-      const records = res.data || [];
-
-      const mapped = records.map(r => ({
-        ...r,
-        scanName: r.scanType || "N/A"
-      }));
-
-      setSonographyRecords(mapped);
-
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to load sonography records");
-    }
-  };
-
-  fetchSonographyRecords();
-}, [patientId]);
-
-
-
-// const [sonographyRecords, setSonographyRecords] = useState([]);
-useEffect(() => {
-  if (sonographyRecords.length === 0) return;
-
-  setItems(prev => {
-    const existingIds = prev.map(i => i.item_source_id);
-
-    const newItems = sonographyRecords
-      .filter(rec => !existingIds.includes(rec._id))
-      .map(rec => ({
-        item_type: "Sonography",
-        item_source_id: rec._id,
-        description: `Sonography - ${rec.scanType}`,
-        quantity: 1,
-        unit_price: rec.cost || 0
-      }));
-
-    return [...prev, ...newItems];
+  const [paymentForm, setPaymentForm] = useState({
+    amount: '',
+    method: 'Cash',
+    externalRef: ''
   });
 
-}, [sonographyRecords]);
+  const [paymentError, setPaymentError] = useState('');
 
-useEffect(() => {
-  if (!ipdAdmissionId) return;
-  const token = localStorage.getItem('jwt');
-console.log("Calling reports API for", ipdAdmissionId);
+  const latestConsultation = consultations[0];
 
-  axios.get(`${BASE_URL}/api/ipd/reports/${ipdAdmissionId}`, {
-    headers: { Authorization: `Bearer ${token}` }
-  })
-  .then(res => setDailyReports(res.data.reports || []))
-  .catch(() => toast.error('Failed to load daily reports'));
-}, [ipdAdmissionId]);
-
-
+  // ================= USER =================
 
   useEffect(() => {
-    const token = localStorage.getItem('jwt');
-    const user = JSON.parse(localStorage.getItem('user'));
-    setUserId(user?.id);
-
-    axios.get(`${BASE_URL}/api/billing/manual-charge-items`, {
-      headers: { Authorization: `Bearer ${token}` }
-    }).then(res => setManualItems(res.data.items))
-      .catch(() => toast.error('Failed to load manual charge items'));
-  }, []);
-
-useEffect(() => {
-  const token = localStorage.getItem('jwt');
-  if (!patientId) return;
-
-  axios.get(`${BASE_URL}/api/procedures/schedules/${patientId}`, {
-    headers: { Authorization: `Bearer ${token}` }
-  }).then(res => {
-
-    const allProcedures = res.data.procedures || [];
-
-    console.log("All Procedures 👉", allProcedures);
-
-    const completedNotBilled = allProcedures.filter(p => {
-      const status = p.status?.toLowerCase();
-      return status === 'completed' && !p.isBilled;
-    });
-
-    // ✅ SET DATA
-    setSchedules(completedNotBilled);
-
-    // ✅ 🎯 TOAST CONDITIONS
-
-    if (allProcedures.length === 0) {
-      toast.warning('⚠ No procedures found for this patient');
-    } 
-    else if (completedNotBilled.length === 0) {
-
-      const hasIncomplete = allProcedures.some(
-        p => p.status?.toLowerCase() !== 'completed'
-      );
-
-      const allBilled = allProcedures.every(
-        p => p.isBilled === true
-      );
-
-      if (hasIncomplete) {
-        toast.info('ℹ️ Procedure not completed yet. Only completed procedures can be billed.');
-      } 
-      else if (allBilled) {
-        toast.warning('⚠ All procedures are already billed');
-      } 
-      else {
-        toast.warning('⚠ No procedures available for billing');
-      }
-    }
-
-  }).catch((err) => {
-    console.error(err);
-    toast.error('Failed to load procedures');
-  });
-
-}, [patientId]);
-
-
-
-
-
-useEffect(() => {
-  const fetchPatients = async () => {
-    try {
-      const token = localStorage.getItem('jwt');
-
-      // ✅ ALL PATIENTS
-      const patientRes = await axios.get(
-        `${BASE_URL}/api/receptionist/patients`,
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      );
-
-      const allPatients = patientRes.data.patients || [];
-
-      const updatedPatients = await Promise.all(
-        allPatients.map(async (patient) => {
-
-          let patientType = "OPD";
-
-          try {
-            // ✅ CHECK IPD ADMISSION
-            const admRes = await axios.get(
-              `${BASE_URL}/api/ipd/admissions/${patient._id}`,
-              {
-                headers: { Authorization: `Bearer ${token}` }
-              }
-            );
-
-            const admissions = admRes.data.admissions || [];
-
-
-const activeAdmission = admissions.find(
-  adm =>
-    adm.status?.toLowerCase() === "admitted"
-);
-
-patientType = activeAdmission
-  ? "IPD"
-  : "OPD";
-            // const hasIPD = admissions.some(
-            //   adm => adm.status === "Admitted"
-            // );
-
-            // if (hasIPD) {
-            //   patientType = "IPD";
-            // }
-
-          } catch (err) {
-            console.log("Admission check failed");
-          }
-
-          return {
-            ...patient,
-            patientType
-          };
-        })
-      );
-
-      setPatients(updatedPatients);
-
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to load patients");
-    }
-  };
-
-  fetchPatients();
-}, [BASE_URL]);
-
-
-
-// ✅ FETCH OPD VISITS
-useEffect(() => {
-  if (!patientId) return;
-
-  const token = localStorage.getItem('jwt');
-
-  axios.get(
-    `${BASE_URL}/api/receptionist/visits/${patientId}`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    }
-  )
- .then(res => {
-
-  const allVisits = res.data.visits || res.data || [];
-
-  // ✅ ONLY COMPLETED CONSULTATION VISITS
-  const completedVisits = allVisits.filter(
-    v => v.status?.toLowerCase() === "completed"
-  );
-
-  setVisits(completedVisits);
-
-  // ✅ AUTO SELECT FIRST COMPLETED VISIT
-  if (completedVisits.length > 0 && !ipdAdmissionId) {
-    setVisitId(completedVisits[0]._id);
-  }
-
-  // ✅ AGAR KOI COMPLETED VISIT NAHI
-  if (completedVisits.length === 0) {
-    toast.warning(
-      "No completed consultation visits found"
-    );
-  }
-
-})
-  .catch(err => {
-    console.error(err);
-    toast.error("Failed to load OPD visits");
-  });
-
-}, [patientId, ipdAdmissionId, BASE_URL]);
-
-useEffect(() => {
-  if (!visitId) return;
-
-  const token = localStorage.getItem("jwt");
-
-  axios.get(
-    `${BASE_URL}/api/doctor/opd-consultations/visit/${visitId}`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    }
-  )
-  .then(res => {
-    setConsultations(res.data.consultations || []);
-  })
-  .catch(err => {
-    console.error(err);
-    toast.error("Failed to load consultation report");
-  });
-
-}, [visitId]);
-
-
-  // 🔽 EXISTING CODE (is ke baad)
-useEffect(() => {
-  if (!patientId) return;
-  const token = localStorage.getItem('jwt');
-
-  axios.get(`${BASE_URL}/api/ipd/admissions/${patientId}`, {
-    headers: { Authorization: `Bearer ${token}` }
-  })
-  .then(res => {
-    const admitted = res.data.admissions.filter(a => a.status === 'Admitted');
-    setAdmissions(admitted);
-  })
-  .catch(() => toast.error('Failed to load admissions'));
-
-}, [patientId]);
-
-  const handleChange = (index, field, value) => {
-    const updated = [...items];
-    updated[index][field] = value;
-
-    if (field === 'item_source_id') {
-      const type = updated[index].item_type;
-
-      if (type === 'Manual') {
-        const selected = manualItems.find(m => m._id === value);
-        updated[index].unit_price = selected?.defaultPrice || '';
-        updated[index].description = selected?.itemName || '';
-      }
-
-      if (type === 'ProcedureSchedule') {
-        const selected = schedules.find(s => s._id === value);
-        updated[index].unit_price = selected?.procedureId?.cost || '';
-        updated[index].description = `${selected?.procedureType} - ${selected?.procedureId?.name}` || '';
-      }
-
-
-      if (type === 'OPDConsultation') {
-
-  const selected = consultations.find(
-    c => c._id === value
-  );
-
-  updated[index].unit_price = 300;
-
-  updated[index].description =
-    `OPD Consultation - ${
-      selected?.doctorId?.userId?.name || 'Doctor'
-    }`;
-}
-
-      // ✅ SONOGRAPHY ADD (IMPORTANT)
-if (type === 'Sonography') {
-  const selected = sonographyRecords.find(s => s._id === value);
-  updated[index].unit_price = selected?.cost || '';
-  updated[index].description = `Sonography - ${selected?.scanType}` || '';
-}
-
-    }
-
-    setItems(updated);
-  };
-
-  const addItem = () => {
-    setItems([...items, { item_type: '', item_source_id: '', description: '', quantity: 1, unit_price: '' }]);
-  };
-
-  const removeItem = (index) => {
-    if (items.length === 1) return;
-    setItems(items.filter((_, i) => i !== index));
-  };
-
-// ================= FETCH PAYMENTS =================
-
-const fetchPayments = async (billId) => {
-  const token = localStorage.getItem('jwt');
-
-  try {
-    const res = await axios.get(
-      `${BASE_URL}/api/billing/payments/${billId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      }
-    );
-
-    setPayments(res.data.payments || []);
-
-  } catch (err) {
-    console.error(err);
-  }
-};
-
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-
-    if (!patientId || !userId) {
-  toast.error('Required info missing');
-  return;
-}
-
-if (!ipdAdmissionId && !visitId) {
-  toast.error('Select IPD Admission OR OPD Visit');
-  return;
-}
-
-    // if (!patientId || !ipdAdmissionId || !userId) {
-    //   toast.error('Required patient/admission/visit/user info missing');
-    //   return;
-    // }
-
-
-    const cleanedItems = items.map(it => {
-      const copy = { ...it };
-      if (!copy.item_source_id) delete copy.item_source_id;
-      copy.quantity = Number(copy.quantity);
-      if (copy.unit_price) copy.unit_price = Number(copy.unit_price);
-      return copy;
-    });
-
-
-
-    const payload = {
-  patient_id_ref: patientId,
-  generated_by_user_id: userId,
-
-  visit_id_ref: visitId || null, // ✅ OPD
-  ipd_admission_id_ref: ipdAdmissionId || null, // ✅ IPD
-
-  items: cleanedItems
-};
-
-  //   const payload = {
-  //     patient_id_ref: patientId,
-  //     // visit_id_ref: visitId,
-  //     ipd_admission_id_ref: ipdAdmissionId,
-  //     generated_by_user_id: userId,
-     
-  // //       // 👇 ADD THIS
-  // //     visit_id_ref: selectedVisitId || null,
-
-  // // // 👇 OPTIONAL
-  // //     ipd_admission_id_ref: selectedIPD || null,
-
-  //      items: cleanedItems
-  //   };
-
-   try {
-  const token = localStorage.getItem('jwt');
- const res = await axios.post(
-  `${BASE_URL}/api/billing/bills`,
-  payload,
-  {
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
-  }
-);
-
-setBillData(res.data.bill);
-
-setPaymentForm(prev => ({
-  ...prev,
-  amount: res.data.bill.balance_due || 0
-}));
-
-fetchPayments(res.data.bill._id);
-
-toast.success('Bill created successfully!');
-} catch (err) {
- const errorMessage = err.response?.data?.message;
-if (errorMessage === 'This procedure has already been billed.') {
-  toast.error('⚠️ This procedure has already been billed.');
-} else if (errorMessage === 'No daily report record found.') {
-  toast.error('📋 No daily report record found.');
-} else {
-  toast.error(errorMessage || 'Error creating bill');
-}
-}
-
-  };
-
-      // ================= PAYMENT HANDLE =================
-
-const handlePaymentChange = (e) => {
-  const { name, value } = e.target;
-
-  setPaymentForm(prev => ({
-    ...prev,
-    [name]: value
-  }));
-};
-// ================= SUBMIT PAYMENT =================
-
-const submitPayment = async (e) => {
-
-  e.preventDefault();
-
-  setPaymentError('');
-
-  if (!billData) {
-    toast.error("Create bill first");
-    return;
-  }
-
-  const amt = Number(paymentForm.amount);
-
-  if (amt > billData.balance_due) {
-    setPaymentError(
-      `Cannot exceed balance due ₹${billData.balance_due}`
-    );
-    return;
-  }
-
-  try {
-
-    const token = localStorage.getItem('jwt');
 
     const user = JSON.parse(
       localStorage.getItem('user')
     );
 
-    const payload = {
+    setUserId(
+      user?.userId || user?.id || ''
+    );
 
-      bill_id_ref: billData._id,
+  }, []);
 
-      amount_paid: amt,
+  // ================= FETCH MANUAL ITEMS =================
 
-      payment_method: paymentForm.method,
+  useEffect(() => {
 
-      external_reference_number:
-        paymentForm.externalRef || undefined,
+    const token = localStorage.getItem('jwt');
 
-      received_by_user_id_ref:
-        user.userId
-
-    };
-
-    const { data } = await axios.post(
-      `${BASE_URL}/api/billing/payments`,
-      payload,
+    axios.get(
+      `${BASE_URL}/api/billing/manual-charge-items`,
       {
         headers: {
           Authorization: `Bearer ${token}`
         }
       }
-    );
-
-    // ✅ UPDATE BILL
-    setBillData(data.updatedBill);
-
-    // ✅ REFRESH PAYMENT HISTORY
-    await fetchPayments(billData._id);
-
-    // ✅ RESET FORM
-    setPaymentForm({
-      amount: data.updatedBill.balance_due || '',
-      method: 'Cash',
-      externalRef: ''
+    )
+    .then(res => {
+      setManualItems(res.data.items || []);
+    })
+    .catch(() => {
+      toast.error('Failed to load manual charge items');
     });
 
-    // ✅ SUCCESS TOAST
-    toast.success(
-      `₹${amt} Payment Recorded Successfully ✅`
-    );
+  }, [BASE_URL]);
 
-  } catch (err) {
+  // ================= FETCH PATIENTS =================
 
-    setPaymentError(
-      err.response?.data?.message ||
-      'Payment error'
-    );
+  useEffect(() => {
 
-    toast.error(
-      err.response?.data?.message ||
-      'Payment Failed'
-    );
-  }
-};
+    const fetchPatients = async () => {
 
-const handlePrint = () => {
+      try {
 
-  const patient =
-    patients.find(p => p._id === patientId);
+        const token = localStorage.getItem('jwt');
 
-  const admission =
-    admissions.find(a => a._id === ipdAdmissionId);
+        const res = await axios.get(
+          `${BASE_URL}/api/receptionist/patients`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          }
+        );
 
-  const visit =
-    visits.find(v => v._id === visitId);
+        setPatients(res.data.patients || []);
 
-  const patientName =
-    patient?.fullName || "N/A";
+      } catch (err) {
 
-  const doctorName =
-    admission?.admittingDoctorId?.userId?.name ||
-    visit?.assignedDoctorId?.userId?.name ||
-    "N/A";
+        toast.error('Failed to load patients');
 
-  const admitDate =
-    admission?.admitDate
-      ? new Date(admission.admitDate).toLocaleString()
-      : "N/A";
+      }
+    };
 
-  const billDate =
-    billData?.bill_date
-      ? new Date(billData.bill_date).toLocaleString()
-      : new Date().toLocaleString();
+    fetchPatients();
 
-  const total =
-    billData?.total_amount || 0;
+  }, [BASE_URL]);
 
-  const paid =
-    billData?.total_paid || 0;
+  // ================= FETCH ADMISSIONS =================
 
-  const balance =
-    billData?.balance_due || 0;
+  useEffect(() => {
 
-  const paymentRows = payments.map((p, index) => `
-    <tr>
-      <td style="padding:8px;">${index + 1}</td>
-      <td style="padding:8px;">
-        ${new Date(p.payment_date).toLocaleString()}
-      </td>
-      <td style="padding:8px;">
-        ₹${p.amount_paid}
-      </td>
-      <td style="padding:8px;">
-        ${p.payment_method}
-      </td>
-    </tr>
-  `).join("");
+    if (!patientId) return;
 
-  const billRows = items.map(it => `
-    <tr>
-      <td style="padding:8px;">
-        ${it.description}
-      </td>
+    const token = localStorage.getItem('jwt');
 
-      <td style="padding:8px;text-align:center;">
-        ${it.quantity}
-      </td>
-
-      <td style="padding:8px;text-align:center;">
-        ₹${it.unit_price}
-      </td>
-
-      <td style="padding:8px;text-align:center;">
-        ₹${(it.quantity * it.unit_price)}
-      </td>
-    </tr>
-  `).join("");
-
-  const printContent = `
-  <html>
-
-    <head>
-
-      <title>Bill Receipt</title>
-
-      <style>
-
-        body{
-          font-family: Arial;
-          padding:30px;
-          color:#000;
+    axios.get(
+      `${BASE_URL}/api/ipd/admissions/${patientId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
         }
+      }
+    )
+    .then(res => {
 
-        h1,h2,h3,h4{
-          margin:0;
+      const admitted =
+        res.data.admissions?.filter(
+          a => a.status === 'Admitted'
+        ) || [];
+
+      setAdmissions(admitted);
+
+    })
+    .catch(() => {
+      toast.error('Failed to load admissions');
+    });
+
+  }, [patientId, BASE_URL]);
+
+  // ================= FETCH VISITS =================
+
+  useEffect(() => {
+
+    if (!patientId) return;
+
+    const token = localStorage.getItem('jwt');
+
+    axios.get(
+      `${BASE_URL}/api/receptionist/visits/${patientId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
         }
+      }
+    )
+    .then(res => {
 
-        table{
-          width:100%;
-          border-collapse:collapse;
-          margin-top:15px;
+      const allVisits =
+        res.data.visits || [];
+
+      const completed =
+        allVisits.filter(
+          v => v.status?.toLowerCase() === 'completed'
+        );
+
+      setVisits(completed);
+
+    })
+    .catch(() => {
+      toast.error('Failed to load visits');
+    });
+
+  }, [patientId, BASE_URL]);
+
+  // ================= FETCH CONSULTATIONS =================
+
+  useEffect(() => {
+
+    if (!visitId) return;
+
+    const token = localStorage.getItem('jwt');
+
+    axios.get(
+      `${BASE_URL}/api/doctor/opd-consultations/visit/${visitId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
         }
+      }
+    )
+    .then(res => {
+      setConsultations(
+        res.data.consultations || []
+      );
+    })
+    .catch(() => {
+      toast.error('Failed to load consultations');
+    });
 
-        th,td{
-          border:1px solid #ccc;
-          padding:10px;
-          font-size:14px;
-        }
+  }, [visitId, BASE_URL]);
 
-        th{
-          background:#1976d2;
-          color:#fff;
-        }
+  // ================= HANDLE ITEM CHANGE =================
 
-        .header{
-          text-align:center;
-          border-bottom:3px solid #1976d2;
-          padding-bottom:15px;
-          margin-bottom:20px;
-        }
+  const handleChange = (
+    index,
+    field,
+    value
+  ) => {
 
-        .section{
-          margin-top:25px;
-        }
+    const updated = [...items];
 
-        .summary-box{
-          background:#f5f5f5;
-          padding:15px;
-          border-radius:8px;
-          margin-top:20px;
-        }
+    updated[index][field] = value;
 
-        .right{
-          text-align:right;
-        }
+    if (field === 'item_source_id') {
 
-      </style>
+      const type =
+        updated[index].item_type;
 
-    </head>
+      // MANUAL
 
-    <body>
+      if (type === 'Manual') {
 
-      <div class="header">
+        const selected =
+          manualItems.find(
+            m => m._id === value
+          );
 
-        <h1>
-          🏥 Hospital Bill & Payment Receipt
-        </h1>
+        updated[index].unit_price =
+          selected?.defaultPrice || '';
 
-        <h2>
-          Dr. M.I. Jamkhanawala Tibbia Unani Medical College
-        </h2>
-
-        <p>
-          Haji Abdul Razzak Kalsekar Tibbia Hospital
-        </p>
-
-      </div>
-
-      <div class="section">
-
-        <table>
-
-          <tr>
-            <td>
-              <strong>Patient:</strong>
-              ${patientName}
-            </td>
-
-            <td>
-              <strong>Bill Date:</strong>
-              ${billDate}
-            </td>
-          </tr>
-
-          <tr>
-            <td>
-              <strong>Doctor:</strong>
-              ${doctorName}
-            </td>
-
-            <td>
-              <strong>Admission Date:</strong>
-              ${admitDate}
-            </td>
-          </tr>
-
-        </table>
-
-      </div>
-
-      ${
-        latestConsultation
-        ? `
-        <div class="section">
-
-          <h3>
-            Consultation Details
-          </h3>
-
-          <table>
-
-            <tr>
-              <td>
-                <strong>Chief Complaint</strong>
-              </td>
-
-              <td>
-                ${latestConsultation.chiefComplaint || 'N/A'}
-              </td>
-            </tr>
-
-            <tr>
-              <td>
-                <strong>Diagnosis</strong>
-              </td>
-
-              <td>
-                ${latestConsultation.diagnosis || 'N/A'}
-              </td>
-            </tr>
-
-            <tr>
-              <td>
-                <strong>Doctor Notes</strong>
-              </td>
-
-              <td>
-                ${latestConsultation.doctorNotes || 'N/A'}
-              </td>
-            </tr>
-
-          </table>
-
-        </div>
-        `
-        : ''
+        updated[index].description =
+          selected?.itemName || '';
       }
 
-      <div class="section">
+      // PROCEDURE
 
-        <h3>
-          Billing Items
-        </h3>
+      if (type === 'ProcedureSchedule') {
 
-        <table>
+        const selected =
+          schedules.find(
+            s => s._id === value
+          );
 
-          <thead>
+        updated[index].unit_price =
+          selected?.procedureId?.cost || '';
 
-            <tr>
-              <th>Description</th>
-              <th>Qty</th>
-              <th>Rate</th>
-              <th>Total</th>
-            </tr>
+        updated[index].description =
+          selected?.procedureId?.name || '';
+      }
 
-          </thead>
+      // OPD
 
-          <tbody>
+      if (type === 'OPDConsultation') {
 
-            ${billRows}
+        const selected =
+          consultations.find(
+            c => c._id === value
+          );
 
-          </tbody>
+        updated[index].unit_price = 300;
 
-        </table>
+        updated[index].description =
+          `OPD Consultation - ${
+            selected?.doctorId?.userId?.name || 'Doctor'
+          }`;
+      }
+    }
 
-      </div>
+    setItems(updated);
+  };
 
-      <div class="summary-box">
+  // ================= ADD ITEM =================
 
-        <h3>Bill Summary</h3>
+  const addItem = () => {
 
-        <p>
-          <strong>Total Amount:</strong>
-          ₹${total}
-        </p>
+    setItems([
+      ...items,
+      {
+        item_type: '',
+        item_source_id: '',
+        description: '',
+        quantity: 1,
+        unit_price: ''
+      }
+    ]);
 
-        <p>
-          <strong>Total Paid:</strong>
-          ₹${paid}
-        </p>
+  };
 
-        <p>
-          <strong>Balance Due:</strong>
-          ₹${balance}
-        </p>
+  // ================= REMOVE ITEM =================
 
-      </div>
+  const removeItem = (index) => {
 
-      <div class="section">
+    if (items.length === 1) return;
 
-        <h3>
-          Payment History
-        </h3>
+    setItems(
+      items.filter((_, i) => i !== index)
+    );
 
-        ${
-          payments.length > 0
-          ? `
-            <table>
+  };
 
-              <thead>
+  // ================= FETCH PAYMENTS =================
 
-                <tr>
-                  <th>#</th>
-                  <th>Date</th>
-                  <th>Amount</th>
-                  <th>Method</th>
-                </tr>
+  const fetchPayments = async (billId) => {
 
-              </thead>
+    try {
 
-              <tbody>
+      const token = localStorage.getItem('jwt');
 
-                ${paymentRows}
-
-              </tbody>
-
-            </table>
-          `
-          : `
-            <p>
-              No payments recorded
-            </p>
-          `
+      const res = await axios.get(
+        `${BASE_URL}/api/billing/payments/${billId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
         }
-
-      </div>
-
-      <div
-        style="
-          margin-top:60px;
-          display:flex;
-          justify-content:space-between;
-        "
-      >
-
-        <div>
-          Patient Signature
-        </div>
-
-        <div>
-          Authorized Signature
-        </div>
-
-      </div>
-
-    </body>
-
-  </html>
-  `;
-
-  const win = window.open(
-    '',
-    '',
-    'width=1000,height=800'
-  );
-
-  win.document.write(printContent);
-
-  win.document.close();
-
-  win.focus();
-
-  setTimeout(() => {
-    win.print();
-  }, 500);
-};
-
-
- return (
-    <div style={{ maxWidth: '1000px', margin: '2rem auto', padding: '2rem', fontFamily: 'Arial, sans-serif', background: '#fafafa', borderRadius: '10px', boxShadow: '0 0 8px rgba(0,0,0,0.1)' }}>
-    <div ref={printRef} style={{ maxWidth: '1000px', margin: '2rem auto', padding: '2rem', fontFamily: 'Arial, sans-serif', background: '#fafafa', borderRadius: '10px', boxShadow: '0 0 8px rgba(0,0,0,0.1)' }}>
-     <style>{styles}</style>
-      <h2 style={{ textAlign: 'center', marginBottom: '2rem' }}>Create Patient Bill</h2>
-      <form onSubmit={handleSubmit}>
-        {/* Patient Select */}
-{/* Patient Select */}
-<div style={{ marginBottom: '1.2rem' }}>
-  <label style={{ display: 'block', marginBottom: '5px' }}>Patient</label>
-
-  {/* On screen */}
-  <select
-    className="screen-only"
-    value={patientId}
-    onChange={e => setPatientId(e.target.value)}
-    required
-    style={{ width: '100%', padding: '8px' }}
-  >
-    <option value="">-- Select Patient --</option>
-    {patients.map(p => (
-      // <option key={p._id} value={p._id}>{p.fullName}</option>
-
-      <option key={p._id} value={p._id}>
-  {/* {p.fullName} ({p.patientType}) */}
-
-  {p.fullName} |
-{p.gender} |
-{p.patientType}
-</option>
-    ))}
-  </select>
-
-  {/* For print */}
-  <p className="print-only">
-    {patients.find(p => p._id === patientId)?.fullName || 'N/A'}
-  </p>
-</div>
-
-
-
-{/* ✅ OPD VISIT SELECT (YAHAN ADD KARO) */}
-<div style={{ marginBottom: '1rem' }}>
-  <label>Select OPD Visit</label>
-
-
-  <select
-  value={visitId}
-  onChange={(e) => setVisitId(e.target.value)}
-  style={{
-    width: '100%',
-    padding: '10px',
-    borderRadius: '6px',
-    border: '1px solid #ccc'
-  }}
->
-  <option value="">-- Select OPD Visit --</option>
-
-  {visits.map(v => (
-    <option key={v._id} value={v._id}>
-       Dr. {v.assignedDoctorId?.userId?.name || "N/A"} |
-  {v.visitDate
-    ? new Date(v.visitDate).toLocaleDateString()
-    : "N/A"} 
-    </option>
-  ))}
-</select>
-
-</div> 
-
-
-      {/* Admission Select */}
-{admissions.length > 0 && (
-  <div style={{ marginBottom: '1.2rem' }}>
-    <label style={{ display: 'block', marginBottom: '5px' }}>Admission</label>
-
-    <select
-      className="screen-only"
-      value={ipdAdmissionId}
-      onChange={e => {
-        setIpdAdmissionId(e.target.value);
-        const adm = admissions.find(a => a._id === e.target.value);
-         setVisitId(adm?.visitId?._id || '');
-      }}
-      required
-      style={{ width: '100%', padding: '8px' }}
-    >
-      <option value="">-- Select Admission --</option>
-      {admissions.map(a => (
-        <option key={a._id} value={a._id}>
-          {a.wardId?.name} (Bed {a.bedNumber})
-        </option>
-      ))}
-    </select>
-
-    <p className="print-only">
-      {admissions.find(a => a._id === ipdAdmissionId)?.wardId?.name || 'N/A'} 
-      (Bed {admissions.find(a => a._id === ipdAdmissionId)?.bedNumber || 'N/A'})
-    </p>
-  </div>
-)}
-
-
-        {/* Doctor + Room + OPD Details */}
-
-{(ipdAdmissionId || visitId) && (
-  <div
-    style={{
-      background: '#f2f2f2',
-      padding: '10px 15px',
-      borderRadius: '6px',
-      marginBottom: '1rem',
-      lineHeight: '1.6'
-    }}
-  >
-    {(() => {
-
-      const adm = admissions.find(
-        a => a._id === ipdAdmissionId
       );
 
-      const visit = visits.find(
-        v => v._id === visitId
+      setPayments(
+        res.data.payments || []
       );
 
-      return (
-        <>
+    } catch (err) {
 
-          {/* IPD DETAILS */}
-          {adm && (
-            <>
-              <p>
-                <strong>IPD Doctor:</strong>{" "}
-                {adm.admittingDoctorId?.userId?.name || 'N/A'}
-              </p>
+      console.error(err);
 
-              <p>
-                <strong>Room Category:</strong>{" "}
-                {adm.roomCategoryId?.name || 'N/A'}
-              </p>
+    }
+  };
 
-              <p>
-                <strong>Bed Number:</strong>{" "}
-                {adm.bedNumber || 'N/A'}
-              </p>
-            </>
-          )}
+  // ================= PAYMENT CHANGE =================
 
-     
+  const handlePaymentChange = (e) => {
 
-        </>
+    const { name, value } = e.target;
+
+    setPaymentForm(prev => ({
+      ...prev,
+      [name]: value
+    }));
+
+  };
+
+  // ================= SUBMIT BILL + PAYMENT =================
+
+  const submitPayment = async (e) => {
+
+    e.preventDefault();
+
+    setPaymentError('');
+
+    try {
+
+      const token = localStorage.getItem('jwt');
+
+      const cleanedItems = items.map(it => {
+
+        const copy = { ...it };
+
+        if (!copy.item_source_id)
+          delete copy.item_source_id;
+
+        copy.quantity =
+          Number(copy.quantity);
+
+        copy.unit_price =
+          Number(copy.unit_price);
+
+        return copy;
+      });
+
+      // ================= CREATE BILL =================
+
+      const billPayload = {
+
+        patient_id_ref: patientId,
+
+        generated_by_user_id: userId,
+
+        visit_id_ref:
+          visitId || null,
+
+        ipd_admission_id_ref:
+          ipdAdmissionId || null,
+
+        items: cleanedItems
+      };
+
+      const billRes = await axios.post(
+        `${BASE_URL}/api/billing/bills`,
+        billPayload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
       );
-    })()}
-  </div>
-)}
 
+      const createdBill =
+        billRes.data.bill;
 
+      // ================= PAYMENT =================
 
+      const paymentPayload = {
 
-{/* ================= PATIENT SUMMARY ================= */}
+        bill_id_ref:
+          createdBill._id,
 
-{patientId && (() => {
+        amount_paid:
+          Number(
+            paymentForm.amount ||
+            createdBill.balance_due
+          ),
 
-  const patient = patients.find(
-    p => p._id === patientId
-  );
+        payment_method:
+          paymentForm.method,
 
-  const visit = visits.find(
-    v => v._id === visitId
-  );
+        external_reference_number:
+          paymentForm.externalRef || undefined,
 
-  const adm = admissions.find(
-    a => a._id === ipdAdmissionId
-  );
+        received_by_user_id_ref:
+          userId
+      };
+
+      const paymentRes = await axios.post(
+        `${BASE_URL}/api/billing/payments`,
+        paymentPayload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+
+      setBillData(
+        paymentRes.data.updatedBill
+      );
+
+      await fetchPayments(
+        createdBill._id
+      );
+
+      toast.success(
+        'Bill + Payment Submitted Successfully ✅'
+      );
+
+      setTimeout(() => {
+
+        handlePrint();
+
+      }, 1000);
+
+    } catch (err) {
+
+      console.error(err);
+
+      toast.error(
+        err.response?.data?.message ||
+        'Submission Failed'
+      );
+    }
+  };
+
+  // ================= PRINT =================
+
+  const handlePrint = () => {
+
+    if (!billData) {
+
+      toast.error('No bill found');
+
+      return;
+    }
+
+    window.print();
+  };
 
   return (
+
     <div
       style={{
-        background: "#ffffff",
-        border: "1px solid #dcdcdc",
-        borderRadius: "10px",
-        padding: "18px",
-        marginBottom: "1.5rem",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.06)"
+        maxWidth: '1000px',
+        margin: '2rem auto',
+        padding: '2rem',
+        background: '#fafafa',
+        borderRadius: '10px'
       }}
     >
 
-      <h3
-        style={{
-          marginBottom: "1rem",
-          color: "#1976d2"
-        }}
-      >
-        Patient Summary
-      </h3>
+      <style>{styles}</style>
 
-      {/* BASIC INFO */}
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+      />
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit,minmax(250px,1fr))",
-          gap: "12px"
-        }}
-      >
+      <div ref={printRef}>
 
-        <div>
-          <strong>Patient Name:</strong><br />
-          {patient?.fullName || "N/A"}
-        </div>
+        <h2
+          style={{
+            textAlign: 'center',
+            marginBottom: '2rem'
+          }}
+        >
+          Create Patient Bill
+        </h2>
 
-        <div>
-          <strong>Patient Type:</strong><br />
-          <span
-            style={{
-              color:
-                patient?.patientType === "IPD"
-                  ? "red"
-                  : "green",
-              fontWeight: "bold"
-            }}
-          >
-            {patient?.patientType || "N/A"}
-          </span>
-        </div>
+        {/* SINGLE FORM ONLY */}
 
-        <div>
-          <strong>Gender:</strong><br />
-          {patient?.gender || "N/A"}
-        </div>
+        <form onSubmit={submitPayment}>
 
-        <div>
-          <strong>Phone:</strong><br />
-          {patient?.phone || "N/A"}
-        </div>
+          {/* PATIENT */}
 
-      </div>
+          <div style={{ marginBottom: '1rem' }}>
 
-      <hr style={{ margin: "1rem 0" }} />
+            <label>Patient</label>
 
-      {/* OPD DETAILS */}
-
-      {visit && (
-        <>
-          <h4 style={{ color: "#2e7d32" }}>
-            OPD Visit Details
-          </h4>
-
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit,minmax(250px,1fr))",
-              gap: "12px"
-            }}
-          >
-
-            <div>
-          
-                <strong>OPD Doctor:</strong>{" "}
-                {visit.assignedDoctorId?.userId?.name || 'N/A'}
-            
-
-            </div>
-
-            <div>
-              <strong>Visit Date:</strong><br />
-              {
-                visit.visitDate
-                  ? new Date(
-                      visit.visitDate
-                    ).toLocaleString()
-                  : "N/A"
+            <select
+              value={patientId}
+              onChange={(e) =>
+                setPatientId(e.target.value)
               }
-            </div>
-
-            <div>
-              <strong>Visit Status:</strong><br />
-
-
-  <span
-    style={{
-      color: visit.payment?.isPaid ? "green" : "red",
-      fontWeight: "bold"
-    }}
-  >
-    {visit.payment?.isPaid
-      ? `Paid ₹${visit.payment?.paidAmount || visit.payment?.amount || 0}`
-      : `Unpaid ₹${
-          (visit.payment?.amount || 0) -
-          (visit.payment?.paidAmount || 0)
-        }`}
-  </span>
-              {/* <span
-                style={{
-                  color:
-                    visit.paymentStatus === "Paid"
-                      ? "green"
-                      : "red",
-                  fontWeight: "bold"
-                }}
-              >
-                {visit.paymentStatus || "Unpaid"}
-              </span> */}
-            </div>
-
-            <div>
-              <strong>Consultation:</strong><br />
-
-              {
-                visit.status || "Pending"
-              }
-            </div>
-
-          </div>
-
-          <hr style={{ margin: "1rem 0" }} />
-        </>
-      )}
-
-      {/* IPD DETAILS */}
-
-      {adm && (
-        <>
-          <h4 style={{ color: "#c62828" }}>
-            IPD Admission Details
-          </h4>
-
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit,minmax(250px,1fr))",
-              gap: "12px"
-            }}
-          >
-
-            <div>
-              <strong>Admitting Doctor:</strong><br />
-              {
-                adm.admittingDoctorId?.userId
-                  ?.name || "N/A"
-              }
-            </div>
-
-            <div>
-              <strong>Ward:</strong><br />
-              {adm.wardId?.name || "N/A"}
-            </div>
-
-            <div>
-              <strong>Room Category:</strong><br />
-              {
-                adm.roomCategoryId?.name ||
-                "N/A"
-              }
-            </div>
-
-            <div>
-              <strong>Bed Number:</strong><br />
-              {adm.bedNumber || "N/A"}
-            </div>
-
-            <div>
-              <strong>Admission Date:</strong><br />
-              {
-                adm.admitDate
-                  ? new Date(
-                      adm.admitDate
-                    ).toLocaleString()
-                  : "N/A"
-              }
-            </div>
-
-            <div>
-              <strong>Status:</strong><br />
-              {adm.status || "N/A"}
-            </div>
-
-          </div>
-
-          <hr style={{ margin: "1rem 0" }} />
-        </>
-      )}
-
-      {/* SONOGRAPHY STATUS */}
-
-      {sonographyRecords.length > 0 && (
-        <>
-          <h4 style={{ color: "#1565c0" }}>
-            Sonography Status
-          </h4>
-
-          {sonographyRecords.map((s, i) => (
-            <div
-              key={i}
+              required
               style={{
-                background: "#f5f5f5",
-                padding: "10px",
-                borderRadius: "6px",
-                marginBottom: "10px"
+                width: '100%',
+                padding: '10px'
               }}
             >
-              <p>
-                <strong>Scan:</strong>{" "}
-                {s.scanType}
-              </p>
 
-              <p>
-                <strong>Doctor:</strong>{" "}
-                {s.doctorId?.userId?.name ||
-                  "N/A"}
-              </p>
+              <option value="">
+                Select Patient
+              </option>
 
-              <p>
-                <strong>Payment:</strong>{" "}
+              {patients.map(p => (
 
-                <span
+                <option
+                  key={p._id}
+                  value={p._id}
+                >
+                  {p.fullName}
+                </option>
+
+              ))}
+
+            </select>
+
+          </div>
+
+          {/* OPD VISIT */}
+
+          <div style={{ marginBottom: '1rem' }}>
+
+            <label>
+              Select OPD Visit
+            </label>
+
+            <select
+              value={visitId}
+              onChange={(e) =>
+                setVisitId(e.target.value)
+              }
+              style={{
+                width: '100%',
+                padding: '10px'
+              }}
+            >
+
+              <option value="">
+                Select Visit
+              </option>
+
+              {visits.map(v => (
+
+                <option
+                  key={v._id}
+                  value={v._id}
+                >
+                  Dr. {
+                    v.assignedDoctorId?.userId?.name
+                  }
+                </option>
+
+              ))}
+
+            </select>
+
+          </div>
+
+          {/* BILL ITEMS */}
+
+          <h3>
+            Billing Items
+          </h3>
+
+          {items.map((item, index) => (
+
+            <div
+              key={index}
+              style={{
+                background: '#fff',
+                padding: '1rem',
+                marginBottom: '1rem',
+                borderRadius: '8px',
+                border: '1px solid #ddd'
+              }}
+            >
+
+              {/* TYPE */}
+
+              <select
+                value={item.item_type}
+                onChange={(e) =>
+                  handleChange(
+                    index,
+                    'item_type',
+                    e.target.value
+                  )
+                }
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  marginBottom: '10px'
+                }}
+              >
+
+                <option value="">
+                  Select Type
+                </option>
+
+                <option value="Manual">
+                  Manual Charge
+                </option>
+
+                <option value="ProcedureSchedule">
+                  Procedure
+                </option>
+
+                <option value="OPDConsultation">
+                  OPD Consultation
+                </option>
+
+                <option value="Open">
+                  Open Charge
+                </option>
+
+              </select>
+
+              {/* MANUAL */}
+
+              {item.item_type === 'Manual' && (
+
+                <select
+                  value={item.item_source_id}
+                  onChange={(e) =>
+                    handleChange(
+                      index,
+                      'item_source_id',
+                      e.target.value
+                    )
+                  }
                   style={{
-                    color:
-                      s.paymentStatus === "Paid"
-                        ? "green"
-                        : "red",
-                    fontWeight: "bold"
+                    width: '100%',
+                    padding: '10px',
+                    marginBottom: '10px'
                   }}
                 >
-                  {s.paymentStatus || "Unpaid"}
-                </span>
+
+                  <option value="">
+                    Select Manual Item
+                  </option>
+
+                  {manualItems.map(mi => (
+
+                    <option
+                      key={mi._id}
+                      value={mi._id}
+                    >
+                      {mi.itemName} - ₹
+                      {mi.defaultPrice}
+                    </option>
+
+                  ))}
+
+                </select>
+
+              )}
+
+              {/* DESCRIPTION */}
+
+              <input
+                type="text"
+                placeholder="Description"
+                value={item.description}
+                onChange={(e) =>
+                  handleChange(
+                    index,
+                    'description',
+                    e.target.value
+                  )
+                }
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  marginBottom: '10px'
+                }}
+              />
+
+              {/* PRICE */}
+
+              <input
+                type="number"
+                placeholder="Unit Price"
+                value={item.unit_price}
+                onChange={(e) =>
+                  handleChange(
+                    index,
+                    'unit_price',
+                    e.target.value
+                  )
+                }
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  marginBottom: '10px'
+                }}
+              />
+
+              {/* QUANTITY */}
+
+              <input
+                type="number"
+                placeholder="Quantity"
+                value={item.quantity}
+                onChange={(e) =>
+                  handleChange(
+                    index,
+                    'quantity',
+                    e.target.value
+                  )
+                }
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  marginBottom: '10px'
+                }}
+              />
+
+              <button
+                type="button"
+                onClick={() =>
+                  removeItem(index)
+                }
+                style={{
+                  background: 'red',
+                  color: '#fff',
+                  padding: '8px 14px',
+                  border: 'none',
+                  borderRadius: '5px'
+                }}
+              >
+                Remove
+              </button>
+
+            </div>
+
+          ))}
+
+          {/* ADD ITEM */}
+
+          <button
+            type="button"
+            onClick={addItem}
+            style={{
+              padding: '10px 16px',
+              background: '#1976d2',
+              color: '#fff',
+              border: 'none',
+              borderRadius: '6px',
+              marginRight: '10px'
+            }}
+          >
+            + Add Item
+          </button>
+
+          {/* PAYMENT SECTION */}
+
+          {billData && (
+
+            <div
+              style={{
+                marginTop: '2rem',
+                background: '#fff',
+                padding: '1.5rem',
+                borderRadius: '10px',
+                border: '1px solid #ddd'
+              }}
+            >
+
+              <h2>
+                Payment Section
+              </h2>
+
+              <p>
+                <strong>Total:</strong> ₹
+                {billData?.total_amount || 0}
               </p>
 
               <p>
-                <strong>Status:</strong>{" "}
-                {s.status || "Pending"}
+                <strong>Paid:</strong> ₹
+                {billData?.total_paid || 0}
               </p>
+
+              <p>
+                <strong>Balance:</strong> ₹
+                {billData?.balance_due || 0}
+              </p>
+
             </div>
-          ))}
 
-          <hr style={{ margin: "1rem 0" }} />
-        </>
-      )}
+          )}
 
-    </div>
-  );
-
-})()}
-
-
-
-
-
-
-{/* CONSULTATION REPORT */}
-
-{consultations.length > 0 && (
-  <div
-    style={{
-      background: "#fff",
-      padding: "15px",
-      borderRadius: "8px",
-      marginBottom: "1rem",
-      border: "1px solid #ddd"
-    }}
-  >
-    <h3 style={{ color: "#1976d2" }}>
-      OPD Consultation Report
-    </h3>
-
-    {consultations.map((c) => (
-      <div
-        key={c._id}
-        style={{
-          marginBottom: "1rem",
-          padding: "10px",
-          background: "#f9f9f9",
-          borderRadius: "6px"
-        }}
-      >
-        <p>
-          <strong>Chief Complaint:</strong>{" "}
-          {c.chiefComplaint || "N/A"}
-        </p>
-
-        <p>
-          <strong>Diagnosis:</strong>{" "}
-          {c.diagnosis || "N/A"}
-        </p>
-
-        <p>
-          <strong>Doctor Notes:</strong>{" "}
-          {c.doctorNotes || "N/A"}
-        </p>
-
-        <p>
-          <strong>Medicines:</strong>{" "}
-          {c.medicinesPrescribedText || "N/A"}
-        </p>
-
-        <p>
-          <strong>Lab Tests:</strong>{" "}
-          {c.labInvestigationsSuggested?.join(", ") || "N/A"}
-        </p>
-
-        <p>
-          <strong>Doctor:</strong>{" "}
-          {c.doctorId?.userId?.name || "N/A"}
-        </p>
-      </div>
-    ))}
-  </div>
-)}
-
-
-
-        {/* Daily Reports */}
-        {dailyReports.length > 0 && (
-          <div style={{ background: '#e0f7fa', padding: '10px 15px', borderRadius: '6px', marginBottom: '1rem' }}>
-            <h4 style={{ marginBottom: '10px' }}>Latest Progress Report</h4>
-            <p><strong>Date:</strong> {new Date(dailyReports[0].reportDateTime).toLocaleString()}</p>
-            <ul style={{ paddingLeft: '20px' }}>
-              <li>Temperature: {dailyReports[0].vitals?.temperature || 'N/A'}</li>
-              <li>Pulse: {dailyReports[0].vitals?.pulse || 'N/A'}</li>
-              <li>BP: {dailyReports[0].vitals?.bp || 'N/A'}</li>
-              <li>Respiratory Rate: {dailyReports[0].vitals?.respiratoryRate || 'N/A'}</li>
-            </ul>
-          </div>
-        )}
-
-        {ipdAdmissionId && dailyReports.length === 0 && (
-          <div style={{ background: '#fff3cd', padding: '10px 15px', borderRadius: '6px', marginBottom: '1rem' }}>
-            No progress reports found for this admission.
-          </div>
-        )}
-
-        {/* Anesthesia Records */}
-        {anesthesiaRecords.length > 0 && (
-          <div style={{ background: '#e8f5e9', padding: '10px 15px', borderRadius: '6px', marginBottom: '1rem' }}>
-            <h4 style={{ marginBottom: '10px' }}>Anesthesia Records</h4>
-            {anesthesiaRecords.map((rec, i) => (
-              <div key={i} style={{ marginBottom: '0.5rem' }}>
-                <p><strong>Procedure:</strong> {rec.procedureName || 'N/A'}</p>
-                <p><strong>Anesthetist:</strong> {rec.anestheticId?.userId?.name || 'N/A'}</p>
-                <p><strong>Anesthesia:</strong> {rec.anesthesiaName} ({rec.anesthesiaType})</p>
-                <p><strong>Medicines Used:</strong> {rec.medicinesUsedText || 'N/A'}</p>
-                <hr />
-              </div>
-            ))}
-          </div>
-        )}
-
-
-
-        {/* ✅ Sonography Records */}
-
-        {/* ✅ Sonography Records (NEW - SAME STYLE) */}
-{sonographyRecords.length > 0 && (
-  <div style={{ background: '#e3f2fd', padding: '10px 15px', borderRadius: '6px', marginBottom: '1rem' }}>
-    <h4 style={{ marginBottom: '10px' }}>Sonography Records</h4>
-
-    {sonographyRecords.map((rec, i) => (
-      <div key={i} style={{ marginBottom: '0.5rem' }}>
-        <p><strong>Scan Type:</strong> {rec.scanType || 'N/A'}</p>
-        <p><strong>Status:</strong> {rec.status || 'N/A'}</p>
-        <p><strong>Cost:</strong> ₹{rec.cost || 0}</p>
-        <p><strong>Report:</strong> {rec.report || 'N/A'}</p>
-
-
-
-        <p>
-  <strong>Payment Status:</strong>{" "}
-  {rec.paymentStatus || "N/A"}
-</p>
-
-<p>
-  <strong>Manual Charge:</strong>{" "}
-  {rec.manualChargeId?.itemName || "N/A"}
-</p>
-        <p>
-          <strong>Date:</strong>{" "}
-          {rec.performedDate
-            ? new Date(rec.performedDate).toLocaleString()
-            : 'N/A'}
-        </p>
-        <hr />
-      </div>
-    ))}
-  </div>
-)}
-{/* {sonographyRecords.length > 0 && (
-  <div style={{ background: '#e3f2fd', padding: '10px 15px', borderRadius: '6px', marginBottom: '1rem' }}>
-    <h4 style={{ marginBottom: '10px' }}>Sonography Records</h4>
-
-    {sonographyRecords.map((rec, i) => (
-      <div key={i} style={{ marginBottom: '0.5rem' }}>
-        <p><strong>Scan:</strong> {rec.scanType}</p>
-        <p><strong>Status:</strong> {rec.status}</p>
-        <p><strong>Report:</strong> {rec.report || 'N/A'}</p>
-        <p><strong>Date:</strong> {
-          rec.performedDate 
-            ? new Date(rec.performedDate).toLocaleString() 
-            : 'N/A'
-        }</p>
-        <hr />
-      </div>
-    ))}
-  </div>
-)} */}
-
-
-
-        {/* Bill Items */}
-      {/* Billing Items */}
-<h3 style={{ marginTop: '2rem' }}>Billing Items</h3>
-{items.map((item, index) => (
-  <div key={index} style={{ border: '1px solid #ccc', padding: '1rem', marginBottom: '1.5rem', borderRadius: '6px', background: '#fff' }}>
-    
-    {/* Type Select */}
-  <div style={{ marginBottom: '0.8rem' }}>
-  <label>Type</label>
-
-  {/* Screen dropdown (only visible on screen) */}
-  <select
-    className="screen-only"
-    value={item.item_type}
-    onChange={e => handleChange(index, 'item_type', e.target.value)}
-    required
-    style={{ width: '100%', padding: '8px' }}
-  >
-    <option value="">Select Type</option>
-    <option value="ProcedureSchedule">Procedure Schedule</option>
-    <option value="Manual">Manual Charge</option>
-    <option value="Open">Open Charge</option>
-    <option value="Sonography">Sonography</option>
-
-    <option value="OPDConsultation">OPD Consultation</option>
-  </select>
-
-  {/* Print-only fallback (shows selected value in PDF/print) */}
-  <p className="print-only">
-    {item.item_type || "N/A"}
-  </p>
-</div>
-
-
-
-
-
-    {/* Manual Items */}
- {item.item_type === 'Manual' && (
-  <div style={{ marginBottom: '0.8rem' }}>
-    <label>Select Item</label>
-    {manualItems.length > 0 ? (
-      <>
-        {/* Screen view */}
-        <select
-          className="screen-only"
-          value={item.item_source_id}
-          onChange={e => handleChange(index, 'item_source_id', e.target.value)}
-          required
-          style={{ width: '100%', padding: '8px' }}
-        >
-          <option value="">Select Manual Item</option>
-          {manualItems.map(mi => (
-            <option key={mi._id} value={mi._id}>
-              {mi.itemName} – ₹{mi.defaultPrice}
-            </option>
-          ))}
-        </select>
-
-        {/* Print view */}
-        <p className="print-only">
-          {manualItems.find(mi => mi._id === item.item_source_id)?.itemName || 'N/A'} – ₹
-          {manualItems.find(mi => mi._id === item.item_source_id)?.defaultPrice || '0'}
-        </p>
-      </>
-    ) : (
-      <p style={{ color: "red" }}>⚠ No manual charge items available</p>
-    )}
-  </div>
-)}
-
-{/* OPD Consultation */}
-{item.item_type === 'OPDConsultation' && (
-  <div style={{ marginBottom: '0.8rem' }}>
-    <label>Select Consultation</label>
-
-    {consultations.length > 0 ? (
-      <select
-        className="screen-only"
-        value={item.item_source_id}
-        onChange={e =>
-          handleChange(index, 'item_source_id', e.target.value)
-        }
-        required
-        style={{ width: '100%', padding: '8px' }}
-      >
-        <option value="">
-          Select Consultation
-        </option>
-
-        {consultations.map(c => (
-          <option key={c._id} value={c._id}>
-            {c.doctorId?.userId?.name || "Doctor"} |
-            {c.diagnosis || "Consultation"} |
-            ₹300
-          </option>
-        ))}
-      </select>
-    ) : (
-      <p style={{ color: 'red' }}>
-        ⚠ No consultation found
-      </p>
-    )}
-  </div>
-)}
-
-
-
-    {/* Sonography Records */}
-{item.item_type === 'Sonography' && (
-  <div style={{ marginBottom: '0.8rem' }}>
-    <label>Select Sonography</label>
-
-    {sonographyRecords.length > 0 ? (
-      <select
-        className="screen-only"
-        value={item.item_source_id}
-        onChange={e =>
-          handleChange(index, 'item_source_id', e.target.value)
-        }
-        required
-        style={{ width: '100%', padding: '8px' }}
-      >
-        <option value="">Select Sonography</option>
-
-
-{sonographyRecords.map(s => (
-  <option key={s._id} value={s._id}>
-    {s.patientId?.fullName || "N/A"} |
-    {s.scanType || "N/A"} |
-    ₹{s.cost || 0} |
-    {s.paymentStatus || "N/A"} |
-    {s.manualChargeId?.itemName || "N/A"}
-  </option>
-))}
-        {/* {sonographyRecords.map(s => (
-          <option key={s._id} value={s._id}>
-            {s.scanType} – ₹{s.cost}
-          </option>
-        ))} */}
-      </select>
-    ) : (
-      <p style={{ color: "red" }}>
-        ⚠ No sonography records found
-      </p>
-    )}
-  </div>
-)}
-
-
-
-{/* ✅ Sonography Details Show */}
-{item.item_type === 'Sonography' && item.item_source_id && (() => {
-
-  const selectedSono = sonographyRecords.find(
-    s => s._id === item.item_source_id
-  );
-
-  if (!selectedSono) return null;
-
-  return (
-    <div
-      style={{
-        background: '#f5f5f5',
-        padding: '10px',
-        borderRadius: '6px',
-        marginBottom: '1rem',
-        lineHeight: '1.7'
-      }}
-    >
-      <p>
-        <strong>👤 Patient:</strong>{" "}
-        {selectedSono.patientId?.fullName || 'N/A'}
-      </p>
-
-      <p>
-        <strong>🧪 Scan:</strong>{" "}
-        {selectedSono.scanType || 'N/A'}
-      </p>
-
-      <p>
-        <strong>💰 Cost:</strong> ₹
-        {selectedSono.cost || 0}
-      </p>
-
-      <p>
-        <strong>💳 Payment:</strong>{" "}
-        {selectedSono.paymentStatus || 'N/A'}
-      </p>
-
-      <p>
-        <strong>🧾 Manual Charge:</strong>{" "}
-        {selectedSono.manualChargeId?.itemName || 'N/A'}
-      </p>
-
-      <p>
-        <strong>📝 Report:</strong>{" "}
-        {selectedSono.report || 'N/A'}
-      </p>
-
-      <p>
-        <strong>📅 Date:</strong>{" "}
-        {selectedSono.performedDate
-          ? new Date(selectedSono.performedDate).toLocaleString()
-          : 'N/A'}
-      </p>
-    </div>
-  );
-
-})()}
-
-
-
-
-
-    {item.item_type === 'ProcedureSchedule' && (
-      <div style={{ marginBottom: '0.8rem' }}>
-        <label>Select Procedure</label>
-        {schedules.length > 0 ? (
-          <select
-            className="screen-only"
-            value={item.item_source_id}
-            onChange={e => handleChange(index, 'item_source_id', e.target.value)}
-            required
-            style={{ width: '100%', padding: '8px' }}
-          >
-            <option value="">Select Procedure</option>
-            {schedules.map(s => (
-              <option key={s._id} value={s._id}>
-                {s.procedureId?.name} – ₹{s.procedureId?.cost} ({s.surgeonId?.userId?.name})
-              </option>
-            ))}
-          </select>
-        ) : (
-          <p style={{ color: "red" }}>⚠ No procedures available for billing</p>
-        )}
-      </div>
-    )}
-
-    {/* Open Charge */}
-    {item.item_type === 'Open' && (
-      <>
-        <input
-          type="text"
-          placeholder="Description"
-          value={item.description}
-          onChange={e => handleChange(index, 'description', e.target.value)}
-          required
-          style={{ width: '100%', padding: '8px', marginBottom: '0.8rem' }}
-        />
-        <input
-          type="number"
-          placeholder="Unit Price"
-          value={item.unit_price}
-          onChange={e => handleChange(index, 'unit_price', e.target.value)}
-          required
-          style={{ width: '100%', padding: '8px', marginBottom: '0.8rem' }}
-        />
-      </>
-    )}
-
-    {/* Quantity */}
-    <input
-      type="number"
-      placeholder="Quantity"
-      value={item.quantity}
-      onChange={e => handleChange(index, 'quantity', e.target.value)}
-      required
-      style={{ width: '100%', padding: '8px', marginBottom: '0.8rem' }}
-    />
-
-    <button
-      type="button"
-      onClick={() => removeItem(index)}
-      style={{ padding: '6px 12px', background: '#ff6961', color: '#fff', border: 'none', borderRadius: '4px' }}
-    >
-      Remove
-    </button>
-  </div>
-))}
-
-
-        <button type="button" onClick={addItem} style={{ padding: '10px 15px', background: '#007bff', color: '#fff', border: 'none', borderRadius: '6px', marginRight: '10px' }}>
-          + Add Item
-        </button>
-
-        <button type="submit" style={{ padding: '10px 15px', background: 'green', color: '#fff', border: 'none', borderRadius: '6px' }}>
-          Create Bill
-        </button>
-        
-        {/* ================= PAYMENT SECTION ================= */}
-
-{billData && (
-
-  <div
-    style={{
-      marginTop: '2rem',
-      background: '#fff',
-      padding: '1.5rem',
-      borderRadius: '10px',
-      border: '1px solid #ddd'
-    }}
-  >
-
-    <h2
-      style={{
-        marginBottom: '1rem',
-        color: '#1976d2'
-      }}
-    >
-      Payment Section
-    </h2>
-
-    <p>
-      <strong>Total:</strong> ₹
-      {billData.total_amount}
-    </p>
-
-    <p>
-      <strong>Paid:</strong> ₹
-      {billData.total_paid}
-    </p>
-
-    <p>
-      <strong>Balance:</strong> ₹
-      {billData.balance_due}
-    </p>
-
-    <form onSubmit={submitPayment}>
-
-      {/* Amount */}
-
-      <div style={{ marginBottom: '1rem' }}>
-
-        <label>Amount</label>
-
-        <input
-          type="number"
-          name="amount"
-          value={paymentForm.amount}
-          onChange={handlePaymentChange}
-          required
-          style={{
-            width: '100%',
-            padding: '10px'
-          }}
-        />
-
-      </div>
-
-      {/* Method */}
-
-      <div style={{ marginBottom: '1rem' }}>
-
-        <label>Payment Method</label>
-
-        <select
-          name="method"
-          value={paymentForm.method}
-          onChange={handlePaymentChange}
-          style={{
-            width: '100%',
-            padding: '10px'
-          }}
-        >
-
-          <option value="Cash">
-            Cash
-          </option>
-
-          <option value="Card">
-            Card
-          </option>
-
-          <option value="UPI">
-            UPI
-          </option>
-
-          <option value="External_Reference">
-            External Reference
-          </option>
-
-        </select>
-
-      </div>
-
-      {/* External Ref */}
-
-      {paymentForm.method ===
-        'External_Reference' && (
-
-        <div
-          style={{
-            marginBottom: '1rem'
-          }}
-        >
-
-          <label>
-            External Reference
-          </label>
-
-          <input
-            type="text"
-            name="externalRef"
-            value={paymentForm.externalRef}
-            onChange={handlePaymentChange}
-            style={{
-              width: '100%',
-              padding: '10px'
-            }}
-          />
-
-        </div>
-      )}
-
-      <button
-        type="submit"
-        style={{
-          padding: '10px 20px',
-          background: 'green',
-          color: '#fff',
-          border: 'none',
-          borderRadius: '6px'
-        }}
-      >
-        Submit Payment
-      </button>
-
-      {paymentError && (
-        <p
-          style={{
-            color: 'red',
-            marginTop: '10px'
-          }}
-        >
-          {paymentError}
-        </p>
-      )}
-
-    </form>
-
-    {/* PAYMENT HISTORY */}
-
-    <div style={{ marginTop: '2rem' }}>
-
-      <h3>Payment History</h3>
-
-      {payments.length === 0 ? (
-
-        <p>No payments yet</p>
-
-      ) : (
-
-        payments.map((p) => (
+          {/* PAYMENT */}
 
           <div
-            key={p._id}
             style={{
-              padding: '10px',
-              marginBottom: '10px',
-              background: '#f5f5f5',
+              marginTop: '2rem',
+              background: '#fff',
+              padding: '1rem',
+              borderRadius: '8px'
+            }}
+          >
+
+            <h3>
+              Payment Details
+            </h3>
+
+            <input
+              type="number"
+              name="amount"
+              placeholder="Amount"
+              value={paymentForm.amount}
+              onChange={handlePaymentChange}
+              required
+              style={{
+                width: '100%',
+                padding: '10px',
+                marginBottom: '10px'
+              }}
+            />
+
+            <select
+              name="method"
+              value={paymentForm.method}
+              onChange={handlePaymentChange}
+              style={{
+                width: '100%',
+                padding: '10px',
+                marginBottom: '10px'
+              }}
+            >
+
+              <option value="Cash">
+                Cash
+              </option>
+
+              <option value="Card">
+                Card
+              </option>
+
+              <option value="UPI">
+                UPI
+              </option>
+
+              <option value="External_Reference">
+                External Reference
+              </option>
+
+            </select>
+
+            {paymentForm.method ===
+              'External_Reference' && (
+
+              <input
+                type="text"
+                name="externalRef"
+                placeholder="Reference Number"
+                value={paymentForm.externalRef}
+                onChange={handlePaymentChange}
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  marginBottom: '10px'
+                }}
+              />
+
+            )}
+
+          </div>
+
+          {/* SUBMIT */}
+
+          <button
+            type="submit"
+            style={{
+              marginTop: '1.5rem',
+              padding: '12px 20px',
+              background: 'green',
+              color: '#fff',
+              border: 'none',
               borderRadius: '6px'
             }}
           >
+            Submit Bill + Payment
+          </button>
 
-            <p>
-              <strong>Date:</strong>{" "}
-              {
-                new Date(
-                  p.payment_date
-                ).toLocaleString()
-              }
+          {/* PRINT */}
+
+          <button
+            type="button"
+            onClick={handlePrint}
+            style={{
+              marginLeft: '10px',
+              padding: '12px 20px',
+              background: '#6c63ff',
+              color: '#fff',
+              border: 'none',
+              borderRadius: '6px'
+            }}
+          >
+            Print Bill
+          </button>
+
+          {paymentError && (
+
+            <p
+              style={{
+                color: 'red',
+                marginTop: '10px'
+              }}
+            >
+              {paymentError}
             </p>
 
-            <p>
-              <strong>Amount:</strong> ₹
-              {p.amount_paid}
-            </p>
+          )}
 
-            <p>
-              <strong>Method:</strong>{" "}
-              {p.payment_method}
-            </p>
-
-          </div>
-
-        ))
-      )}
-
-    </div>
-
-  </div>
-)}
-        <button
-  type="button"
-  onClick={handlePrint}
-  className="screen-only"
-  style={{
-    padding: "10px 15px",
-    background: "#6c63ff",
-    color: "#fff",
-    border: "none",
-    borderRadius: "6px",
-    marginLeft: "10px",
-  }}
->
-  🖨 🖨 Print Bill & Payment
-</button>
-
-      </form>
-
- 
+        </form>
 
       </div>
-       <ToastContainer position="top-right" autoClose={3000} />
+
     </div>
   );
 };
