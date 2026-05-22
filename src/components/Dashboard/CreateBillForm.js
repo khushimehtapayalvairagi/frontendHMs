@@ -1808,31 +1808,37 @@ ${sonographyRecords.length > 0 ? `
 
 
 {/* ✅ OPD VISIT SELECT (YAHAN ADD KARO) */}
-<div style={{ marginBottom: '1rem' }}>
+{/* ✅ OPD VISIT SELECT */}
+<div
+  className="screen-only"
+  style={{ marginBottom: '1rem' }}
+>
   <label>Select OPD Visit</label>
 
-
   <select
-  value={visitId}
-  onChange={(e) => setVisitId(e.target.value)}
-  style={{
-    width: '100%',
-    padding: '10px',
-    borderRadius: '6px',
-    border: '1px solid #ccc'
-  }}
->
-  <option value="">-- Select OPD Visit --</option>
+    value={visitId}
+    onChange={(e) => setVisitId(e.target.value)}
+    style={{
+      width: '100%',
+      padding: '10px',
+      borderRadius: '6px',
+      border: '1px solid #ccc'
+    }}
+  >
+    <option value="">-- Select OPD Visit --</option>
 
-  {visits.map(v => (
-    <option key={v._id} value={v._id}>
-       Dr. {v.assignedDoctorId?.userId?.name || "N/A"} |
-  {v.visitDate
-    ? new Date(v.visitDate).toLocaleDateString()
-    : "N/A"} 
-    </option>
-  ))}
-</select>
+    {visits.map(v => (
+      <option key={v._id} value={v._id}>
+        Dr. {v.assignedDoctorId?.userId?.name || "N/A"} |
+        {v.visitDate
+          ? new Date(v.visitDate).toLocaleDateString()
+          : "N/A"}
+      </option>
+    ))}
+  </select>
+</div>
+
+{/* ✅ PRINT ONLY */}
 <p className="print-only">
   {visits.find(v => v._id === visitId)
     ? `Dr. ${
@@ -1847,8 +1853,6 @@ ${sonographyRecords.length > 0 ? `
       }`
     : "N/A"}
 </p>
-
-</div> 
 
 
       {/* Admission Select */}
@@ -2688,6 +2692,7 @@ ${sonographyRecords.length > 0 ? `
 
  {ipdAdmissionId && (
   <div
+    className="screen-only"
     style={{
       marginTop: '1rem',
       padding: '1rem',
