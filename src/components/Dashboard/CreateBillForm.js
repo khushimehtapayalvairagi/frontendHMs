@@ -956,41 +956,48 @@ useEffect(() => {
 
       const allPatients = patientRes.data.patients || [];
 
-    const updatedPatients = await Promise.all(
+const updatedPatients = await Promise.all(
   allPatients.map(async (patient) => {
 
     let patientType = "OPD";
-
-    let activeAdmission = null;
-    let dischargedAdmission = null;
 
     try {
 
       const admRes = await axios.get(
         `${BASE_URL}/api/ipd/admissions/${patient._id}`,
         {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
         }
       );
 
       const admissions = admRes.data.admissions || [];
 
-      // ✅ latest admission
-      const latestAdmission = admissions.sort(
+      // ✅ SAFE SORT
+      const sortedAdmissions = [...admissions].sort(
         (a, b) =>
-          new Date(b.createdAt) - new Date(a.createdAt)
-      )[0];
+          new Date(b.createdAt) -
+          new Date(a.createdAt)
+      );
 
-      if (
-        latestAdmission?.status?.toLowerCase() ===
-        "admitted"
-      ) {
+      // ✅ LATEST ADMISSION
+      const latestAdmission =
+        sortedAdmissions[0];
+
+      // ✅ CLEAN STATUS
+      const latestStatus =
+        latestAdmission?.status
+          ?.toLowerCase()
+          ?.trim();
+
+      // ✅ PATIENT TYPE
+      if (latestStatus === "admitted") {
 
         patientType = "IPD";
 
       } else if (
-        latestAdmission?.status?.toLowerCase() ===
-        "discharged"
+        latestStatus === "discharged"
       ) {
 
         patientType = "Discharged";
@@ -1005,15 +1012,19 @@ useEffect(() => {
 
         patientType,
 
-        // ✅ ONLY REAL DISCHARGED IPD
+        // ✅ FINAL STATUS
         status:
-          latestAdmission?.status?.toLowerCase() ===
-          "discharged"
+          latestStatus === "discharged"
             ? "Discharged"
             : "Active"
       };
 
     } catch (err) {
+
+      console.error(
+        "Patient admission fetch error:",
+        err
+      );
 
       return {
         ...patient,

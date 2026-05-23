@@ -109,10 +109,8 @@ const handleSearch = () => {
         {!isMobile && <TableCell >{new Date(p.dob).toLocaleDateString()}</TableCell>}
         {!isMobile && <TableCell >{p.gender}</TableCell>}
         {!isMobile && <TableCell >{p.contactNumber}</TableCell>}
-    <TableCell>
-  {["discharged", "inactive"].includes(
-    p.status?.toLowerCase()
-  )
+ <TableCell>
+  {p.status === "Discharged"
     ? "Discharged"
     : "Active"}
 </TableCell>
