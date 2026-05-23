@@ -1277,15 +1277,17 @@ useEffect(() => {
     ]);
     if (dischargePatient && ipdAdmissionId) {
 
-  await axios.put(
-    `${BASE_URL}/api/ipd/admissions/${ipdAdmissionId}/discharge`,
-    {},
-    {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
+await axios.put(
+  `${BASE_URL}/api/ipd/admissions/${ipdAdmissionId}/discharge`,
+  {
+    dischargeDate
+  },
+  {
+    headers: {
+      Authorization: `Bearer ${token}`
     }
-  );
+  }
+);
 
   toast.success("Patient discharged successfully ✅");
 }
