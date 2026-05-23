@@ -1216,38 +1216,46 @@ useEffect(() => {
     return copy;
 
   });
-
+console.log({
+  dischargePatient,
+  dischargeDate
+});
   // ✅ NEW COMBINED PAYLOAD
-  const payload = {
+ console.log({
+  dischargePatient,
+  dischargeDate
+});
 
-    patient_id_ref: patientId,
+const payload = {
 
-    generated_by_user_id: userId,
+  patient_id_ref: patientId,
 
-    visit_id_ref: visitId || null,
+  generated_by_user_id: userId,
 
-    ipd_admission_id_ref:
-      ipdAdmissionId || null,
+  visit_id_ref: visitId || null,
 
-    items: cleanedItems,
-   dischargePatient,
-    // ================= PAYMENT =================
-         
-  discharge_date: dischargeDate || null,
-    amount_paid:
-      Number(paymentForm.amount),
+  ipd_admission_id_ref:
+    ipdAdmissionId || null,
 
-    payment_method:
-      paymentForm.method,
+  items: cleanedItems,
 
-    external_reference_number:
-      paymentForm.externalRef || "",
+  dischargePatient,
 
-    received_by_user_id_ref:
-      userId
-    
+  discharge_date:
+    dischargeDate || null,
 
-  };
+  amount_paid:
+    Number(paymentForm.amount),
+
+  payment_method:
+    paymentForm.method,
+
+  external_reference_number:
+    paymentForm.externalRef || "",
+
+  received_by_user_id_ref:
+    userId
+};
 
   try {
 
@@ -1617,27 +1625,7 @@ const selectedVisit = visits.find(
       return (
         <>
 
-          {/* IPD DETAILS */}
-          {/* {adm && (
-            <>
-              <p>
-                <strong>IPD Doctor:</strong>{" "}
-                {adm.admittingDoctorId?.userId?.name || 'N/A'}
-              </p>
-
-              <p>
-                <strong>Room Category:</strong>{" "}
-                {adm.roomCategoryId?.name || 'N/A'}
-              </p>
-
-              <p>
-                <strong>Bed Number:</strong>{" "}
-                {adm.bedNumber || 'N/A'}
-              </p>
-            </>
-          )} */}
-
-     
+         
 
         </>
       );
@@ -1781,17 +1769,7 @@ const selectedVisit = visits.find(
           (visit.payment?.paidAmount || 0)
         }`}
   </span>
-              {/* <span
-                style={{
-                  color:
-                    visit.paymentStatus === "Paid"
-                      ? "green"
-                      : "red",
-                  fontWeight: "bold"
-                }}
-              >
-                {visit.paymentStatus || "Unpaid"}
-              </span> */}
+            
             </div>
 
             <div>
@@ -1882,74 +1860,7 @@ const selectedVisit = visits.find(
       : "N/A"
   }
 </div>
-       {/* <div>
-  <strong>Status:</strong><br />
 
-  <span
-    style={{
-      color: dischargePatient ? "green" : "red",
-      fontWeight: "bold"
-    }}
-  >
-    {billData?.ipd_status ||
-      (dischargePatient
-        ? "Discharged"
-        : adm?.status || "Admitted")}
-  </span>
-</div> */}
-{/* {billData && (
-  <div
-    style={{
-      background: "#e8f5e9",
-      padding: "15px",
-      borderRadius: "8px",
-      marginTop: "1rem",
-      border: "1px solid #c8e6c9"
-    }}
-  >
-    <h4 style={{ color: "#2e7d32" }}>Billing Summary</h4>
-
-    <div style={{ display: "grid", gap: "8px" }}>
-
-      <div>
-        <strong>Total Amount:</strong>{" "}
-        ₹{billData.total_amount || 0}
-      </div>
-
-      <div>
-        <strong>Paid Amount:</strong>{" "}
-        <span style={{ color: "green", fontWeight: "bold" }}>
-          ₹{billData.amount_paid || 0}
-        </span>
-      </div>
-
-      <div>
-        <strong>Balance Due:</strong>{" "}
-        <span style={{ color: "red", fontWeight: "bold" }}>
-          ₹{billData.balance_due || 0}
-        </span>
-      </div>
-
-      <div>
-        <strong>Status:</strong>{" "}
-        <span
-          style={{
-            fontWeight: "bold",
-            color:
-              billData.payment_status === "Paid"
-                ? "green"
-                : billData.payment_status === "Partial"
-                ? "orange"
-                : "red"
-          }}
-        >
-          {billData.payment_status}
-        </span>
-      </div>
-
-    </div>
-  </div>
-)} */}
           </div>
 
           <hr style={{ margin: "1rem 0" }} />
@@ -2158,29 +2069,7 @@ const selectedVisit = visits.find(
     ))}
   </div>
 )}
-{/* {sonographyRecords.length > 0 && (
-  <div style={{ background: '#e3f2fd', padding: '10px 15px', borderRadius: '6px', marginBottom: '1rem' }}>
-    <h4 style={{ marginBottom: '10px' }}>Sonography Records</h4>
 
-    {sonographyRecords.map((rec, i) => (
-      <div key={i} style={{ marginBottom: '0.5rem' }}>
-        <p><strong>Scan:</strong> {rec.scanType}</p>
-        <p><strong>Status:</strong> {rec.status}</p>
-        <p><strong>Report:</strong> {rec.report || 'N/A'}</p>
-        <p><strong>Date:</strong> {
-          rec.performedDate 
-            ? new Date(rec.performedDate).toLocaleString() 
-            : 'N/A'
-        }</p>
-        <hr />
-      </div>
-    ))}
-  </div>
-)} */}
-
-
-
-        {/* Bill Items */}
       {/* Billing Items */}
 <h3 style={{ marginTop: '2rem' }}>Billing Items</h3>
 {items.map((item, index) => (
@@ -2250,45 +2139,7 @@ const selectedVisit = visits.find(
     )}
   </div>
 )}
-
-{/* OPD Consultation */}
-{/* {item.item_type === 'OPDConsultation' && (
-  <div style={{ marginBottom: '0.8rem' }}>
-    <label>Select Consultation</label>
-
-    {consultations.length > 0 ? (
-      <select
-        className="screen-only"
-        value={item.item_source_id}
-        onChange={e =>
-          handleChange(index, 'item_source_id', e.target.value)
-        }
-        required
-        style={{ width: '100%', padding: '8px' }}
-      >
-        <option value="">
-          Select Consultation
-        </option>
-
-        {consultations.map(c => (
-          <option key={c._id} value={c._id}>
-            {c.doctorId?.userId?.name || "Doctor"} |
-            {c.diagnosis || "Consultation"} |
-            ₹300
-          </option>
-        ))}
-      </select>
-    ) : (
-      <p style={{ color: 'red' }}>
-        ⚠ No consultation found
-      </p>
-    )}
-  </div>
-)} */}
-
-
-
-    {/* Sonography Records */}
+ {/* Sonography Records */}
 {item.item_type === 'Sonography' && (
   <div style={{ marginBottom: '0.8rem' }}>
     <label>Select Sonography</label>
@@ -2328,8 +2179,6 @@ const selectedVisit = visits.find(
     )}
   </div>
 )}
-
-
 
 {/* ✅ Sonography Details Show */}
 {item.item_type === 'Sonography' && item.item_source_id && (() => {
@@ -2390,7 +2239,6 @@ const selectedVisit = visits.find(
   );
 
 })()}
-
 
     {item.item_type === 'ProcedureSchedule' && (
       <div style={{ marginBottom: '0.8rem' }}>
@@ -2571,7 +2419,6 @@ const selectedVisit = visits.find(
         <button type="button" onClick={addItem} style={{ padding: '10px 15px', background: '#007bff', color: '#fff', border: 'none', borderRadius: '6px', marginRight: '10px' }}>
           + Add Item
         </button>
-             {/* ================= PAYMENT DETAILS ================= */}
            {/* ================= PAYMENT SECTION ================= */}
 
 <div
@@ -2645,6 +2492,7 @@ const selectedVisit = visits.find(
       <option value="Cash">Cash</option>
       <option value="UPI">UPI</option>
     </select>
+    
   </div>
 
   {/* UPI Reference */}
@@ -2677,26 +2525,33 @@ const selectedVisit = visits.find(
   )}
 
   {/* Print Payment Info */}
-  <div
-    style={{
-      background: '#fff',
-      padding: '10px',
-      borderRadius: '6px',
-      marginTop: '10px'
-    }}
-  >
-    <p>
-      <strong>Payment Method:</strong>{" "}
-      {paymentForm.method}
-    </p>
+ <div
+  style={{
+    background: '#fff',
+    padding: '10px',
+    borderRadius: '6px',
+    marginTop: '10px'
+  }}
+>
+  <p>
+    <strong>Payment Method:</strong>{" "}
+    {paymentForm.method}
+  </p>
 
-    {paymentForm.method === 'UPI' && (
-      <p>
-        <strong>UPI Ref No:</strong>{" "}
-        {paymentForm.externalRef || "N/A"}
-      </p>
-    )}
-  </div>
+  <p>
+    <strong>Received By:</strong>{" "}
+    {payments[0]?.received_by_user_id_ref?.name || "N/A"}
+  </p>
+
+
+
+  {paymentForm.method === 'UPI' && (
+    <p>
+      <strong>UPI Ref No:</strong>{" "}
+      {paymentForm.externalRef || "N/A"}
+    </p>
+  )}
+</div>
 </div>
 
         <button type="submit" style={{ padding: '10px 15px', background: 'green', color: '#fff', border: 'none', borderRadius: '6px' }}>
@@ -2733,26 +2588,28 @@ const selectedVisit = visits.find(
         Patient Status
       </label>
 
-      <select
-        value={dischargePatient ? 'Discharged' : 'Admitted'}
-        onChange={(e) =>
-          setDischargePatient(
-            e.target.value === 'Discharged'
-          )
-        }
-        style={{
-          width: '100%',
-          padding: '10px',
-          borderRadius: '6px',
-          border: '1px solid #ccc'
-        }}
-      >
-   
+     <select
+  value={dischargePatient ? 'Discharged' : 'Admitted'}
+  onChange={(e) =>
+    setDischargePatient(
+      e.target.value === 'Discharged'
+    )
+  }
+  style={{
+    width: '100%',
+    padding: '10px',
+    borderRadius: '6px',
+    border: '1px solid #ccc'
+  }}
+>
+  <option value="Admitted">
+    Admitted
+  </option>
 
-        <option value="Discharged">
-          Discharged
-        </option>
-      </select>
+  <option value="Discharged">
+    Discharged
+  </option>
+</select>
     </div>
 
     {/* Date */}
@@ -2768,19 +2625,20 @@ const selectedVisit = visits.find(
           Discharge Date
         </label>
 
-        <input
-          type="datetime-local"
-          value={dischargeDate}
-          onChange={(e) =>
-            setDischargeDate(e.target.value)
-          }
-          style={{
-            width: '100%',
-            padding: '10px',
-            borderRadius: '6px',
-            border: '1px solid #ccc'
-          }}
-        />
+       <input
+  type="datetime-local"
+  required={dischargePatient}
+  value={dischargeDate}
+  onChange={(e) =>
+    setDischargeDate(e.target.value)
+  }
+  style={{
+    width: '100%',
+    padding: '10px',
+    borderRadius: '6px',
+    border: '1px solid #ccc'
+  }}
+/>
       </div>
     )}
   </div>
