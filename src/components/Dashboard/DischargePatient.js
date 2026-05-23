@@ -12,6 +12,7 @@ const DischargePatient = () => {
   const [admissions, setAdmissions] = useState([]);
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedAdmissionId, setSelectedAdmissionId] = useState(null);
+  const [dischargeDate, setDischargeDate] = useState('');
   const token = localStorage.getItem('jwt');
 const BASE_URL = process.env.REACT_APP_BASE_URL;
   const fetchAdmittedPatients = async () => {
@@ -40,8 +41,9 @@ const BASE_URL = process.env.REACT_APP_BASE_URL;
 
   const handleDischarge = async () => {
     try {
-      await axios.put(`${BASE_URL}/api/ipd/admissions/${selectedAdmissionId}/discharge`, {}, {
+      await axios.put(`${BASE_URL}/api/ipd/admissions/${selectedAdmissionId}/discharge`, {  dischargeDate}, {
         headers: { Authorization: `Bearer ${token}` },
+  
       });
       toast.success('Patient discharged');
       setAdmissions(prev => prev.filter(adm => adm._id !== selectedAdmissionId));
@@ -103,7 +105,20 @@ const BASE_URL = process.env.REACT_APP_BASE_URL;
 
       <Dialog open={openDialog} onClose={handleCloseDialog}>
         <DialogTitle>Confirm Discharge</DialogTitle>
-        <DialogContent>Are you sure you want to discharge this patient?</DialogContent>
+      <DialogContent>
+  <p>Are you sure you want to discharge this patient?</p>
+
+  <input
+    type="date"
+    value={dischargeDate}
+    onChange={(e) => setDischargeDate(e.target.value)}
+    style={{
+      width: '100%',
+      padding: '10px',
+      marginTop: '10px'
+    }}
+  />
+</DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDialog} color="secondary" variant="outlined">Cancel</Button>
           <Button onClick={handleDischarge} color="primary" variant="contained">Discharge</Button>
