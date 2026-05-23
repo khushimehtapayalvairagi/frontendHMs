@@ -1275,22 +1275,7 @@ useEffect(() => {
     setPayments([
       res.data.payment
     ]);
-    if (dischargePatient && ipdAdmissionId) {
 
-await axios.put(
-  `${BASE_URL}/api/ipd/admissions/${ipdAdmissionId}/discharge`,
-  {
-    dischargeDate
-  },
-  {
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
-  }
-);
-
-  toast.success("Patient discharged successfully ✅");
-}
     const updatedAdmissions = await axios.get(
   `${BASE_URL}/api/ipd/admissions/${patientId}`,
   {
