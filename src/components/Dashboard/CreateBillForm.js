@@ -978,9 +978,20 @@ const activeAdmission = admissions.find(
     adm.status?.toLowerCase() === "admitted"
 );
 
-patientType = activeAdmission
-  ? "IPD"
-  : "OPD";
+const dischargedAdmission = admissions.find(
+  adm =>
+    adm.status?.toLowerCase() === "discharged"
+);
+
+if (activeAdmission) {
+  patientType = "IPD";
+}
+else if (dischargedAdmission) {
+  patientType = "Discharged";
+}
+else {
+  patientType = "OPD";
+}
             // const hasIPD = admissions.some(
             //   adm => adm.status === "Admitted"
             // );
@@ -1002,7 +1013,8 @@ patientType = activeAdmission
 
       // setPatients(updatedPatients);
 const activePatients = updatedPatients.filter(
-  (p) => p.status?.toLowerCase() !== "discharged"
+  (p) =>
+    p.status?.trim().toLowerCase() !== "discharged"
 );
 
 setPatients(activePatients || []);
