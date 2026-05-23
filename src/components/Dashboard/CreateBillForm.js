@@ -956,48 +956,41 @@ useEffect(() => {
 
       const allPatients = patientRes.data.patients || [];
 
-const updatedPatients = await Promise.all(
+    const updatedPatients = await Promise.all(
   allPatients.map(async (patient) => {
 
     let patientType = "OPD";
+
+    let activeAdmission = null;
+    let dischargedAdmission = null;
 
     try {
 
       const admRes = await axios.get(
         `${BASE_URL}/api/ipd/admissions/${patient._id}`,
         {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
+          headers: { Authorization: `Bearer ${token}` }
         }
       );
 
       const admissions = admRes.data.admissions || [];
 
-      // ✅ SAFE SORT
-      const sortedAdmissions = [...admissions].sort(
+      // ✅ latest admission
+      const latestAdmission = admissions.sort(
         (a, b) =>
-          new Date(b.createdAt) -
-          new Date(a.createdAt)
-      );
+          new Date(b.createdAt) - new Date(a.createdAt)
+      )[0];
 
-      // ✅ LATEST ADMISSION
-      const latestAdmission =
-        sortedAdmissions[0];
-
-      // ✅ CLEAN STATUS
-      const latestStatus =
-        latestAdmission?.status
-          ?.toLowerCase()
-          ?.trim();
-
-      // ✅ PATIENT TYPE
-      if (latestStatus === "admitted") {
+      if (
+        latestAdmission?.status?.toLowerCase() ===
+        "admitted"
+      ) {
 
         patientType = "IPD";
 
       } else if (
-        latestStatus === "discharged"
+        latestAdmission?.status?.toLowerCase() ===
+        "discharged"
       ) {
 
         patientType = "Discharged";
@@ -1012,19 +1005,15 @@ const updatedPatients = await Promise.all(
 
         patientType,
 
-        // ✅ FINAL STATUS
+        // ✅ ONLY REAL DISCHARGED IPD
         status:
-          latestStatus === "discharged"
+          latestAdmission?.status?.toLowerCase() ===
+          "discharged"
             ? "Discharged"
             : "Active"
       };
 
     } catch (err) {
-
-      console.error(
-        "Patient admission fetch error:",
-        err
-      );
 
       return {
         ...patient,
@@ -1279,10 +1268,10 @@ const payload = {
 
   items: cleanedItems,
 
-  dischargePatient,
+  // dischargePatient,
 
-  discharge_date:
-    dischargeDate || null,
+  // discharge_date:
+  //   dischargeDate || null,
 
   amount_paid:
     Number(paymentForm.amount),
@@ -1882,7 +1871,7 @@ const selectedVisit = visits.find(
   }
 </div>
         
-<div>
+{/* <div>
   <strong>Discharge Date:</strong><br />
 
   {
@@ -1898,7 +1887,7 @@ const selectedVisit = visits.find(
 
       : "N/A"
   }
-</div>
+</div> */}
 
           </div>
 
@@ -2596,10 +2585,9 @@ const selectedVisit = visits.find(
 
        
         
-        {/* ================= PAYMENT SECTION ================= */}
      {/* ================= DISCHARGE OPTION ================= */}
 
- {ipdAdmissionId && (
+ {/* {ipdAdmissionId && (
   <div
     className="screen-only"
     style={{
@@ -2615,7 +2603,7 @@ const selectedVisit = visits.find(
     </h3>
 
     {/* Status */}
-    <div style={{ marginBottom: '1rem' }}>
+    {/* <div style={{ marginBottom: '1rem' }}>
       <label
         style={{
           display: 'block',
@@ -2651,7 +2639,7 @@ const selectedVisit = visits.find(
     </div>
 
     {/* Date */}
-    {dischargePatient && (
+    {/* {dischargePatient && (
       <div>
         <label
           style={{
@@ -2680,7 +2668,7 @@ const selectedVisit = visits.find(
       </div>
     )}
   </div>
-)}
+)}  */}
  <button type="submit" style={{ padding: '10px 15px', background: 'green', color: '#fff', border: 'none', borderRadius: '6px' }}>
        Submit Bill & Payment
         </button>
