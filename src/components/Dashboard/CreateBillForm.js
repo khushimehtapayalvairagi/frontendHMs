@@ -1927,13 +1927,14 @@ const selectedVisit = visits.find(
       : "N/A"
   }
 </div>
+
 <div>
   <strong>Discharge Date:</strong><br />
   {
-    dischargeDate
+    adm?.actualDischargeDate
+      ? new Date(adm.actualDischargeDate).toLocaleString()
+      : dischargeDate
       ? new Date(dischargeDate).toLocaleString()
-      : adm?.dischargeDate
-      ? new Date(adm.dischargeDate).toLocaleString()
       : "N/A"
   }
 </div>
@@ -1941,7 +1942,59 @@ const selectedVisit = visits.find(
               <strong>Status:</strong><br />
               {adm.status || "N/A"}
             </div> */}
+{billData && (
+  <div
+    style={{
+      background: "#e8f5e9",
+      padding: "15px",
+      borderRadius: "8px",
+      marginTop: "1rem",
+      border: "1px solid #c8e6c9"
+    }}
+  >
+    <h4 style={{ color: "#2e7d32" }}>Billing Summary</h4>
 
+    <div style={{ display: "grid", gap: "8px" }}>
+
+      <div>
+        <strong>Total Amount:</strong>{" "}
+        ₹{billData.total_amount || 0}
+      </div>
+
+      <div>
+        <strong>Paid Amount:</strong>{" "}
+        <span style={{ color: "green", fontWeight: "bold" }}>
+          ₹{billData.amount_paid || 0}
+        </span>
+      </div>
+
+      <div>
+        <strong>Balance Due:</strong>{" "}
+        <span style={{ color: "red", fontWeight: "bold" }}>
+          ₹{billData.balance_due || 0}
+        </span>
+      </div>
+
+      <div>
+        <strong>Status:</strong>{" "}
+        <span
+          style={{
+            fontWeight: "bold",
+            color:
+              billData.payment_status === "Paid"
+                ? "green"
+                : billData.payment_status === "Partial"
+                ? "orange"
+                : "red"
+          }}
+        >
+          {billData.payment_status}
+        </span>
+      </div>
+
+    </div>
+  </div>
+)}
           </div>
 
           <hr style={{ margin: "1rem 0" }} />
