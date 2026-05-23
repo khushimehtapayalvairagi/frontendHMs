@@ -956,81 +956,52 @@ useEffect(() => {
 
       const allPatients = patientRes.data.patients || [];
 
-    const updatedPatients = await Promise.all(
-  allPatients.map(async (patient) => {
+      // ✅ ONLY ACTIVE / NORMAL PATIENTS
+      const updatedPatients = await Promise.all(
+        allPatients.map(async (patient) => {
 
-    let patientType = "OPD";
+          let patientType = "OPD";
 
-    let activeAdmission = null;
-    let dischargedAdmission = null;
+          try {
 
-    try {
+            const admRes = await axios.get(
+              `${BASE_URL}/api/ipd/admissions/${patient._id}`,
+              {
+                headers: { Authorization: `Bearer ${token}` }
+              }
+            );
 
-      const admRes = await axios.get(
-        `${BASE_URL}/api/ipd/admissions/${patient._id}`,
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
+            const admissions = admRes.data.admissions || [];
+
+            // ✅ ONLY CHECK ACTIVE ADMISSION
+            const activeAdmission = admissions.find(
+              a => a.status?.toLowerCase() === "admitted"
+            );
+
+            if (activeAdmission) {
+              patientType = "IPD";
+            }
+
+            return {
+              ...patient,
+              patientType,
+              status: "Active"
+            };
+
+          } catch (err) {
+
+            return {
+              ...patient,
+              patientType: "OPD",
+              status: "Active"
+            };
+          }
+        })
       );
 
-      const admissions = admRes.data.admissions || [];
+      // ✅ NO DISCHARGED FILTER NEEDED NOW
+      setPatients(updatedPatients);
 
-      // ✅ latest admission
-      const latestAdmission = admissions.sort(
-        (a, b) =>
-          new Date(b.createdAt) - new Date(a.createdAt)
-      )[0];
-
-      if (
-        latestAdmission?.status?.toLowerCase() ===
-        "admitted"
-      ) {
-
-        patientType = "IPD";
-
-      } else if (
-        latestAdmission?.status?.toLowerCase() ===
-        "discharged"
-      ) {
-
-        patientType = "Discharged";
-
-      } else {
-
-        patientType = "OPD";
-      }
-
-      return {
-        ...patient,
-
-        patientType,
-
-        // ✅ ONLY REAL DISCHARGED IPD
-        status:
-          latestAdmission?.status?.toLowerCase() ===
-          "discharged"
-            ? "Discharged"
-            : "Active"
-      };
-
-    } catch (err) {
-
-      return {
-        ...patient,
-        patientType: "OPD",
-        status: "Active"
-      };
-    }
-  })
-);
-
-      // setPatients(updatedPatients);
-// const activePatients = updatedPatients.filter(
-//   (p) =>
-//     p.patientType !== "Discharged"
-// );
-
-setPatients(updatedPatients || []);
     } catch (error) {
       console.error(error);
       toast.error("Failed to load patients");
@@ -1038,6 +1009,7 @@ setPatients(updatedPatients || []);
   };
 
   fetchPatients();
+
 }, [BASE_URL]);
 
 
@@ -1114,23 +1086,24 @@ useEffect(() => {
   // 🔽 EXISTING CODE (is ke baad)
 useEffect(() => {
   if (!patientId) return;
+
   const token = localStorage.getItem('jwt');
 
   axios.get(`${BASE_URL}/api/ipd/admissions/${patientId}`, {
     headers: { Authorization: `Bearer ${token}` }
   })
- .then(res => {
+  .then(res => {
 
-  const allAdmissions = res.data.admissions || [];
+    const allAdmissions = res.data.admissions || [];
 
-  // ✅ admitted + discharged dono
-  const filteredAdmissions = allAdmissions.filter(a =>
-    ["Admitted", "Discharged"].includes(a.status)
-  );
+    // ✅ ONLY ACTIVE ADMISSIONS
+    const activeAdmissions = allAdmissions.filter(
+      a => a.status?.toLowerCase() === "admitted"
+    );
 
-  setAdmissions(filteredAdmissions);
+    setAdmissions(activeAdmissions);
 
-})
+  })
   .catch(() => toast.error('Failed to load admissions'));
 
 }, [patientId]);
