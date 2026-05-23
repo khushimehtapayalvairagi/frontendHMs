@@ -655,22 +655,83 @@ import { useLocation } from 'react-router-dom';
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 const CreateBillForm = () => {
-   const styles = `
-    /* Hide print-only stuff when not printing */
-    .print-only {
-      display: none !important;
-    }
+ const styles = `
+/* ================= BILLING TABLE ================= */
+.billing-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+}
 
-    /* Hide screen-only stuff when printing */
-    @media print {
-      .screen-only {
-        display: none !important;
-      }
-      .print-only {
-        display: block !important;
-      }
-    }
-  `;
+.billing-table th,
+.billing-table td {
+  border: 1px solid #ddd;
+  padding: 10px;
+  text-align: left;
+  font-size: 14px;
+}
+
+.billing-table th {
+  background: #1976d2;
+  color: white;
+  font-weight: 600;
+}
+
+.billing-table tr:nth-child(even) {
+  background: #f9f9f9;
+}
+
+/* ================= BILLING SUMMARY ================= */
+.billing-summary-box {
+  background: #e8f5e9;
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid #c8e6c9;
+  margin-top: 1rem;
+}
+
+/* ================= SCREEN / PRINT CONTROL ================= */
+.screen-only {
+  display: block;
+}
+
+.print-only {
+  display: none;
+}
+
+/* ================= PRINT MODE ================= */
+@media print {
+
+  .screen-only {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .billing-table th {
+    background: #1976d2 !important;
+    color: white !important;
+  }
+
+  .billing-table tr:nth-child(even) {
+    background: #f9f9f9 !important;
+  }
+}
+`;
   const location = useLocation();
   const { patientId: passedPatientId, ipdAdmissionId: passedAdmissionId } = location.state || {};
 const [anesthesiaRecords, setAnesthesiaRecords] = useState([]);
@@ -1942,7 +2003,7 @@ const selectedVisit = visits.find(
               <strong>Status:</strong><br />
               {adm.status || "N/A"}
             </div> */}
-{billData && (
+{/* {billData && (
   <div
     style={{
       background: "#e8f5e9",
@@ -1994,7 +2055,7 @@ const selectedVisit = visits.find(
 
     </div>
   </div>
-)}
+)} */}
           </div>
 
           <hr style={{ margin: "1rem 0" }} />
@@ -2144,7 +2205,7 @@ const selectedVisit = visits.find(
         )}
 
         {ipdAdmissionId && dailyReports.length === 0 && (
-          <div style={{ background: '#fff3cd', padding: '10px 15px', borderRadius: '6px', marginBottom: '1rem' }}>
+          <div   className="screen-only" style={{ background: '#fff3cd', padding: '10px 15px', borderRadius: '6px', marginBottom: '1rem' }}>
             No progress reports found for this admission.
           </div>
         )}
@@ -2228,283 +2289,75 @@ const selectedVisit = visits.find(
         {/* Bill Items */}
       {/* Billing Items */}
 <h3 style={{ marginTop: '2rem' }}>Billing Items</h3>
-{items.map((item, index) => (
-  <div key={index} style={{ border: '1px solid #ccc', padding: '1rem', marginBottom: '1.5rem', borderRadius: '6px', background: '#fff' }}>
-    
-    {/* Type Select */}
-  <div style={{ marginBottom: '0.8rem' }}>
-  <label>Type</label>
+<table className="billing-table">
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Qty</th>
+      <th>Unit Price</th>
+      <th>Total</th>
+      <th className="screen-only">Action</th>
+    </tr>
+  </thead>
 
-  {/* Screen dropdown (only visible on screen) */}
-  <select
-    className="screen-only"
-    value={item.item_type}
-    onChange={e => handleChange(index, 'item_type', e.target.value)}
-    required
-    style={{ width: '100%', padding: '8px' }}
-  >
-    <option value="">Select Type</option>
-    <option value="ProcedureSchedule">Procedure Schedule</option>
-    <option value="Manual">Manual Charge</option>
-    <option value="Open">Open Charge</option>
-    <option value="Sonography">Sonography</option>
+  <tbody>
+    {items.map((item, index) => (
+      <tr key={index}>
+        
+        {/* Type */}
+        <td>
+          {item.item_type}
+        </td>
 
-    {/* <option value="OPDConsultation">OPD Consultation</option> */}
-  </select>
+        {/* Description */}
+        <td>
+          {item.description}
+        </td>
 
-  {/* Print-only fallback (shows selected value in PDF/print) */}
-  <p className="print-only">
-    {item.item_type || "N/A"}
-  </p>
-</div>
-
-
-
-
-
-    {/* Manual Items */}
- {item.item_type === 'Manual' && (
-  <div style={{ marginBottom: '0.8rem' }}>
-    <label>Select Item</label>
-    {manualItems.length > 0 ? (
-      <>
-        {/* Screen view */}
-        <select
-          className="screen-only"
-          value={item.item_source_id}
-          onChange={e => handleChange(index, 'item_source_id', e.target.value)}
-          required
-          style={{ width: '100%', padding: '8px' }}
-        >
-          <option value="">Select Manual Item</option>
-          {manualItems.map(mi => (
-            <option key={mi._id} value={mi._id}>
-              {mi.itemName} – ₹{mi.defaultPrice}
-            </option>
-          ))}
-        </select>
-
-        {/* Print view */}
-        <p className="print-only">
-          {manualItems.find(mi => mi._id === item.item_source_id)?.itemName || 'N/A'} – ₹
-          {manualItems.find(mi => mi._id === item.item_source_id)?.defaultPrice || '0'}
-        </p>
-      </>
-    ) : (
-      <p style={{ color: "red" }}>⚠ No manual charge items available</p>
-    )}
-  </div>
-)}
-
-{/* OPD Consultation */}
-{/* {item.item_type === 'OPDConsultation' && (
-  <div style={{ marginBottom: '0.8rem' }}>
-    <label>Select Consultation</label>
-
-    {consultations.length > 0 ? (
-      <select
-        className="screen-only"
-        value={item.item_source_id}
-        onChange={e =>
-          handleChange(index, 'item_source_id', e.target.value)
-        }
-        required
-        style={{ width: '100%', padding: '8px' }}
-      >
-        <option value="">
-          Select Consultation
-        </option>
-
-        {consultations.map(c => (
-          <option key={c._id} value={c._id}>
-            {c.doctorId?.userId?.name || "Doctor"} |
-            {c.diagnosis || "Consultation"} |
-            ₹300
-          </option>
-        ))}
-      </select>
-    ) : (
-      <p style={{ color: 'red' }}>
-        ⚠ No consultation found
-      </p>
-    )}
-  </div>
-)} */}
-
-
-
-    {/* Sonography Records */}
-{item.item_type === 'Sonography' && (
-  <div style={{ marginBottom: '0.8rem' }}>
-    <label>Select Sonography</label>
-
-    {sonographyRecords.length > 0 ? (
-      <select
-        className="screen-only"
-        value={item.item_source_id}
-        onChange={e =>
-          handleChange(index, 'item_source_id', e.target.value)
-        }
-        required
-        style={{ width: '100%', padding: '8px' }}
-      >
-        <option value="">Select Sonography</option>
-
-
-{sonographyRecords.map(s => (
-  <option key={s._id} value={s._id}>
-    {s.patientId?.fullName || "N/A"} |
-    {s.scanType || "N/A"} |
-    ₹{s.cost || 0} |
-    {s.paymentStatus || "N/A"} |
-    {s.manualChargeId?.itemName || "N/A"}
-  </option>
-))}
-        {/* {sonographyRecords.map(s => (
-          <option key={s._id} value={s._id}>
-            {s.scanType} – ₹{s.cost}
-          </option>
-        ))} */}
-      </select>
-    ) : (
-      <p style={{ color: "red" }}>
-        ⚠ No sonography records found
-      </p>
-    )}
-  </div>
-)}
-
-
-
-{/* ✅ Sonography Details Show */}
-{item.item_type === 'Sonography' && item.item_source_id && (() => {
-
-  const selectedSono = sonographyRecords.find(
-    s => s._id === item.item_source_id
-  );
-
-  if (!selectedSono) return null;
-
-  return (
-    <div
-      style={{
-        background: '#f5f5f5',
-        padding: '10px',
-        borderRadius: '6px',
-        marginBottom: '1rem',
-        lineHeight: '1.7'
-      }}
-    >
-      <p>
-        <strong>👤 Patient:</strong>{" "}
-        {selectedSono.patientId?.fullName || 'N/A'}
-      </p>
-
-      <p>
-        <strong>🧪 Scan:</strong>{" "}
-        {selectedSono.scanType || 'N/A'}
-      </p>
-
-      <p>
-        <strong>💰 Cost:</strong> ₹
-        {selectedSono.cost || 0}
-      </p>
-
-      <p>
-        <strong>💳 Payment:</strong>{" "}
-        {selectedSono.paymentStatus || 'N/A'}
-      </p>
-
-      <p>
-        <strong>🧾 Manual Charge:</strong>{" "}
-        {selectedSono.manualChargeId?.itemName || 'N/A'}
-      </p>
-
-      <p>
-        <strong>📝 Report:</strong>{" "}
-        {selectedSono.report || 'N/A'}
-      </p>
-
-      <p>
-        <strong>📅 Date:</strong>{" "}
-        {selectedSono.performedDate
-          ? new Date(selectedSono.performedDate).toLocaleString()
-          : 'N/A'}
-      </p>
-    </div>
-  );
-
-})()}
-
-
-
-
-
-    {item.item_type === 'ProcedureSchedule' && (
-      <div style={{ marginBottom: '0.8rem' }}>
-        <label>Select Procedure</label>
-        {schedules.length > 0 ? (
-          <select
+        {/* Quantity */}
+        <td>
+          <input
+            type="number"
+            value={item.quantity}
+            onChange={e =>
+              handleChange(index, 'quantity', e.target.value)
+            }
             className="screen-only"
-            value={item.item_source_id}
-            onChange={e => handleChange(index, 'item_source_id', e.target.value)}
-            required
-            style={{ width: '100%', padding: '8px' }}
+            style={{ width: "60px" }}
+          />
+          <span className="print-only">{item.quantity}</span>
+        </td>
+
+        {/* Unit Price */}
+        <td>
+          ₹{item.unit_price}
+        </td>
+
+        {/* Total */}
+        <td>
+          ₹{item.quantity * item.unit_price}
+        </td>
+
+        {/* Remove */}
+        <td className="screen-only">
+          <button
+            type="button"
+            onClick={() => removeItem(index)}
+            style={{
+              background: "red",
+              color: "#fff",
+              border: "none",
+              padding: "5px 10px"
+            }}
           >
-            <option value="">Select Procedure</option>
-            {schedules.map(s => (
-              <option key={s._id} value={s._id}>
-                {s.procedureId?.name} – ₹{s.procedureId?.cost} ({s.surgeonId?.userId?.name})
-              </option>
-            ))}
-          </select>
-        ) : (
-          <p style={{ color: "red" }}>⚠ No procedures available for billing</p>
-        )}
-      </div>
-    )}
-
-    {/* Open Charge */}
-    {item.item_type === 'Open' && (
-      <>
-        <input
-          type="text"
-          placeholder="Description"
-          value={item.description}
-          onChange={e => handleChange(index, 'description', e.target.value)}
-          required
-          style={{ width: '100%', padding: '8px', marginBottom: '0.8rem' }}
-        />
-        <input
-          type="number"
-          placeholder="Unit Price"
-          value={item.unit_price}
-          onChange={e => handleChange(index, 'unit_price', e.target.value)}
-          required
-          style={{ width: '100%', padding: '8px', marginBottom: '0.8rem' }}
-        />
-      </>
-    )}
-
-    {/* Quantity */}
-    <input
-      type="number"
-      placeholder="Quantity"
-      value={item.quantity}
-      onChange={e => handleChange(index, 'quantity', e.target.value)}
-      required
-      style={{ width: '100%', padding: '8px', marginBottom: '0.8rem' }}
-    />
-
-    <button
-      type="button"
-      onClick={() => removeItem(index)}
-      style={{ padding: '6px 12px', background: '#ff6961', color: '#fff', border: 'none', borderRadius: '4px' }}
-    >
-      Remove
-    </button>
-  </div>
-))}
+            Remove
+          </button>
+        </td>
+      </tr>
+    ))}
+  </tbody>
+</table>
 
 
         <button type="button" onClick={addItem} style={{ padding: '10px 15px', background: '#007bff', color: '#fff', border: 'none', borderRadius: '6px', marginRight: '10px' }}>
