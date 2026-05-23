@@ -1253,8 +1253,7 @@ const payload = {
   external_reference_number:
     paymentForm.externalRef || "",
 
-  received_by_user_id_ref:
-    userId
+ received_by_user_id_ref: user.userId
 };
 
   try {
@@ -2541,6 +2540,7 @@ const selectedVisit = visits.find(
   <p>
     <strong>Received By:</strong>{" "}
     {payments[0]?.received_by_user_id_ref?.name || "N/A"}
+    
   </p>
 
 
@@ -2554,9 +2554,7 @@ const selectedVisit = visits.find(
 </div>
 </div>
 
-        <button type="submit" style={{ padding: '10px 15px', background: 'green', color: '#fff', border: 'none', borderRadius: '6px' }}>
-       Submit Bill & Payment
-        </button>
+       
         
         {/* ================= PAYMENT SECTION ================= */}
      {/* ================= DISCHARGE OPTION ================= */}
@@ -2643,6 +2641,9 @@ const selectedVisit = visits.find(
     )}
   </div>
 )}
+ <button type="submit" style={{ padding: '10px 15px', background: 'green', color: '#fff', border: 'none', borderRadius: '6px' }}>
+       Submit Bill & Payment
+        </button>
      <button
   type="button"
   onClick={handlePrint}
