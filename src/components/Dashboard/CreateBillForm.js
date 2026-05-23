@@ -2639,14 +2639,15 @@ const selectedVisit = visits.find(
     total += rate * Number(item.quantity || 0);
   });
 
-  // const paid = Number(paidAmount || 0);
-  const paidAmount = Number(paymentForm.amount || 0);   // 👈 ensure state exists
-  const balance = total - paid;
+  const paidAmount = Number(paymentForm.amount || 0);
+  const balance = total - paidAmount;
 
   return (
     <div style={{ marginTop: '1rem', padding: '1rem', background: '#fafafa' }}>
       <p><b>Total Amount:</b> ₹{total}</p>
-      <p><b>Paid Amount:</b> ₹{paid}</p>
+
+      <p><b>Paid Amount:</b> ₹{paidAmount}</p>
+
       <p style={{ color: balance > 0 ? 'red' : 'green' }}>
         <b>Balance Due:</b> ₹{balance}
       </p>
