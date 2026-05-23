@@ -956,72 +956,81 @@ useEffect(() => {
 
       const allPatients = patientRes.data.patients || [];
 
-      const updatedPatients = await Promise.all(
-        allPatients.map(async (patient) => {
+    const updatedPatients = await Promise.all(
+  allPatients.map(async (patient) => {
 
- let patientType = "OPD";
+    let patientType = "OPD";
 
-// ✅ IMPORTANT
-let activeAdmission = null;
-let dischargedAdmission = null;
+    let activeAdmission = null;
+    let dischargedAdmission = null;
 
-try {
+    try {
 
-  // ✅ CHECK IPD ADMISSION
-  const admRes = await axios.get(
-    `${BASE_URL}/api/ipd/admissions/${patient._id}`,
-    {
-      headers: { Authorization: `Bearer ${token}` }
-    }
-  );
-
-  const admissions = admRes.data.admissions || [];
-
-  activeAdmission = admissions.find(
-    adm =>
-      adm.status?.toLowerCase() === "admitted"
-  );
-
-  dischargedAdmission = admissions.find(
-    adm =>
-      adm.status?.toLowerCase() === "discharged"
-  );
-
-  if (activeAdmission) {
-    patientType = "IPD";
-  }
-  else if (dischargedAdmission) {
-    patientType = "Discharged";
-  }
-  else {
-    patientType = "OPD";
-  }
-
-} catch (err) {
-  console.log("Admission check failed");
-}
-
-return {
-  ...patient,
-  patientType,
-
-  status:
-    dischargedAdmission
-      ? "Discharged"
-      : activeAdmission
-      ? "Admitted"
-      : "Active"
-};
-        })
+      const admRes = await axios.get(
+        `${BASE_URL}/api/ipd/admissions/${patient._id}`,
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
       );
 
-      // setPatients(updatedPatients);
-const activePatients = updatedPatients.filter(
-  (p) =>
-    p.patientType !== "Discharged"
+      const admissions = admRes.data.admissions || [];
+
+      // ✅ latest admission
+      const latestAdmission = admissions.sort(
+        (a, b) =>
+          new Date(b.createdAt) - new Date(a.createdAt)
+      )[0];
+
+      if (
+        latestAdmission?.status?.toLowerCase() ===
+        "admitted"
+      ) {
+
+        patientType = "IPD";
+
+      } else if (
+        latestAdmission?.status?.toLowerCase() ===
+        "discharged"
+      ) {
+
+        patientType = "Discharged";
+
+      } else {
+
+        patientType = "OPD";
+      }
+
+      return {
+        ...patient,
+
+        patientType,
+
+        // ✅ ONLY REAL DISCHARGED IPD
+        status:
+          latestAdmission?.status?.toLowerCase() ===
+          "discharged"
+            ? "Discharged"
+            : "Active"
+      };
+
+    } catch (err) {
+
+      return {
+        ...patient,
+        patientType: "OPD",
+        status: "Active"
+      };
+    }
+  })
 );
 
-setPatients(activePatients || []);
+      // setPatients(updatedPatients);
+// const activePatients = updatedPatients.filter(
+//   (p) =>
+//     p.patientType !== "Discharged"
+// );
+
+setPatients(updatedPatients || []);
     } catch (error) {
       console.error(error);
       toast.error("Failed to load patients");
