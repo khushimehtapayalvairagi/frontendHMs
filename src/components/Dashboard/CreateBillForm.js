@@ -1004,17 +1004,25 @@ else {
             console.log("Admission check failed");
           }
 
-          return {
-            ...patient,
-            patientType
-          };
+      return {
+  ...patient,
+  patientType,
+
+  // ✅ IMPORTANT
+  status:
+    dischargedAdmission
+      ? "Discharged"
+      : activeAdmission
+      ? "Admitted"
+      : "Active"
+};
         })
       );
 
       // setPatients(updatedPatients);
 const activePatients = updatedPatients.filter(
   (p) =>
-    p.status?.trim().toLowerCase() !== "discharged"
+    p.patientType !== "Discharged"
 );
 
 setPatients(activePatients || []);
