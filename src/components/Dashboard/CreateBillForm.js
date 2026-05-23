@@ -655,55 +655,39 @@ import { useLocation } from 'react-router-dom';
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 const CreateBillForm = () => {
- const styles = `
-/* ================= BILLING TABLE ================= */
-.billing-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 10px;
-  background: #fff;
-  border-radius: 8px;
-  overflow: hidden;
-}
+   const styles = `
+    /* Hide print-only stuff when not printing */
+    .print-only {
+      display: none !important;
+    }
+      const thStyle = {
+  border: '1px solid #ddd',
+  padding: '10px',
+  textAlign: 'left'
+};
 
-.billing-table th,
-.billing-table td {
-  border: 1px solid #ddd;
-  padding: 10px;
-  text-align: left;
-  font-size: 14px;
-}
+const tdStyle = {
+  border: '1px solid #ddd',
+  padding: '10px'
+};
 
-.billing-table th {
-  background: #1976d2;
-  color: white;
-  font-weight: 600;
-}
+    /* Hide screen-only stuff when printing */
+   @media print {
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
 
-.billing-table tr:nth-child(even) {
-  background: #f9f9f9;
-}
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
 
-/* ================= BILLING SUMMARY ================= */
-.billing-summary-box {
-  background: #e8f5e9;
-  padding: 15px;
-  border-radius: 8px;
-  border: 1px solid #c8e6c9;
-  margin-top: 1rem;
-}
-
-/* ================= SCREEN / PRINT CONTROL ================= */
-.screen-only {
-  display: block;
-}
-
-.print-only {
-  display: none;
-}
-
-/* ================= PRINT MODE ================= */
-@media print {
+  th, td {
+    border: 1px solid #000 !important;
+    padding: 8px;
+    font-size: 12px;
+  }
 
   .screen-only {
     display: none !important;
@@ -713,25 +697,12 @@ const CreateBillForm = () => {
     display: block !important;
   }
 
-  .no-print {
+  button {
     display: none !important;
   }
-
-  body {
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
-
-  .billing-table th {
-    background: #1976d2 !important;
-    color: white !important;
-  }
-
-  .billing-table tr:nth-child(even) {
-    background: #f9f9f9 !important;
-  }
 }
-`;
+    }
+  `;
   const location = useLocation();
   const { patientId: passedPatientId, ipdAdmissionId: passedAdmissionId } = location.state || {};
 const [anesthesiaRecords, setAnesthesiaRecords] = useState([]);
@@ -1486,7 +1457,7 @@ const handlePrint = () => {
 const selectedAdmission = admissions.find(
   a => a._id === ipdAdmissionId
 );
-
+ 
 const selectedPatient = patients.find(
   p => p._id === patientId
 );
@@ -1638,15 +1609,16 @@ const selectedVisit = visits.find(
 
 {/* ✅ OPD VISIT SELECT (YAHAN ADD KARO) */}
 {/* ✅ OPD VISIT SELECT */}
-<div
-  className="screen-only"
-  style={{ marginBottom: '1rem' }}
->
+{/* OPD VISIT SELECT */}
+<div style={{ marginBottom: '1rem' }}>
   <label>Select OPD Visit</label>
 
   <select
+    className="screen-only"
     value={visitId}
-    onChange={(e) => setVisitId(e.target.value)}
+    onChange={(e) => {
+      setVisitId(e.target.value);
+    }}
     style={{
       width: '100%',
       padding: '10px',
@@ -1665,23 +1637,18 @@ const selectedVisit = visits.find(
       </option>
     ))}
   </select>
-</div>
 
-{/* ✅ PRINT ONLY */}
-<p className="print-only">
-  {visits.find(v => v._id === visitId)
-    ? `Dr. ${
-        visits.find(v => v._id === visitId)
-          ?.assignedDoctorId?.userId?.name || "N/A"
-      } | ${
-        visits.find(v => v._id === visitId)?.visitDate
-          ? new Date(
-              visits.find(v => v._id === visitId).visitDate
-            ).toLocaleDateString()
-          : "N/A"
-      }`
-    : "N/A"}
-</p>
+  {/* PRINT VIEW (IMPORTANT FIX) */}
+  <p className="print-only" style={{ marginTop: '5px' }}>
+    {visits.find(v => v._id === visitId)
+      ? `Dr. ${visits.find(v => v._id === visitId)?.assignedDoctorId?.userId?.name || "N/A"} | ${
+          visits.find(v => v._id === visitId)?.visitDate
+            ? new Date(visits.find(v => v._id === visitId).visitDate).toLocaleDateString()
+            : "N/A"
+        }`
+      : "N/A"}
+  </p>
+</div>
 
 
       {/* Admission Select */}
@@ -1846,7 +1813,7 @@ const selectedVisit = visits.find(
 
         <div>
           <strong>Phone:</strong><br />
-          {patient?.phone || "N/A"}
+         {patient?.contactNumber || "N/A"}
         </div>
 
       </div>
@@ -1988,21 +1955,21 @@ const selectedVisit = visits.find(
       : "N/A"
   }
 </div>
-
+        
 <div>
-  <strong>Discharge Date:</strong><br />
-  {
-    adm?.actualDischargeDate
-      ? new Date(adm.actualDischargeDate).toLocaleString()
-      : dischargeDate
-      ? new Date(dischargeDate).toLocaleString()
-      : "N/A"
-  }
+<strong>Discharge Date:</strong><br />
+{adm?.actualDischargeDate
+  ? new Date(adm.actualDischargeDate).toLocaleString()
+  : dischargePatient
+    ? new Date().toLocaleString()
+    : "N/A"}
 </div>
-            {/* <div>
-              <strong>Status:</strong><br />
-              {adm.status || "N/A"}
-            </div> */}
+         <div>
+  <strong>Status:</strong><br />
+  {dischargePatient
+    ? "Discharged"
+    : adm?.status || "Admitted"}
+</div>
 {/* {billData && (
   <div
     style={{
@@ -2289,76 +2256,391 @@ const selectedVisit = visits.find(
         {/* Bill Items */}
       {/* Billing Items */}
 <h3 style={{ marginTop: '2rem' }}>Billing Items</h3>
-<table className="billing-table">
+{items.map((item, index) => (
+  <div key={index} style={{ border: '1px solid #ccc', padding: '1rem', marginBottom: '1.5rem', borderRadius: '6px', background: '#fff' }}>
+    
+    {/* Type Select */}
+  <div style={{ marginBottom: '0.8rem' }}>
+  <label>Type</label>
+
+  {/* Screen dropdown (only visible on screen) */}
+  <select
+    className="screen-only"
+    value={item.item_type}
+    onChange={e => handleChange(index, 'item_type', e.target.value)}
+    required
+    style={{ width: '100%', padding: '8px' }}
+  >
+    <option value="">Select Type</option>
+    <option value="ProcedureSchedule">Procedure Schedule</option>
+    <option value="Manual">Manual Charge</option>
+    <option value="Open">Open Charge</option>
+    <option value="Sonography">Sonography</option>
+
+    {/* <option value="OPDConsultation">OPD Consultation</option> */}
+  </select>
+
+  {/* Print-only fallback (shows selected value in PDF/print) */}
+  <p className="print-only">
+    {item.item_type || "N/A"}
+  </p>
+</div>
+
+
+
+
+
+    {/* Manual Items */}
+ {item.item_type === 'Manual' && (
+  <div style={{ marginBottom: '0.8rem' }}>
+    <label>Select Item</label>
+    {manualItems.length > 0 ? (
+      <>
+        {/* Screen view */}
+        <select
+          className="screen-only"
+          value={item.item_source_id}
+          onChange={e => handleChange(index, 'item_source_id', e.target.value)}
+          required
+          style={{ width: '100%', padding: '8px' }}
+        >
+          <option value="">Select Manual Item</option>
+          {manualItems.map(mi => (
+            <option key={mi._id} value={mi._id}>
+              {mi.itemName} – ₹{mi.defaultPrice}
+            </option>
+          ))}
+        </select>
+
+        {/* Print view */}
+        <p className="print-only">
+          {manualItems.find(mi => mi._id === item.item_source_id)?.itemName || 'N/A'} – ₹
+          {manualItems.find(mi => mi._id === item.item_source_id)?.defaultPrice || '0'}
+        </p>
+      </>
+    ) : (
+      <p style={{ color: "red" }}>⚠ No manual charge items available</p>
+    )}
+  </div>
+)}
+
+{/* OPD Consultation */}
+{/* {item.item_type === 'OPDConsultation' && (
+  <div style={{ marginBottom: '0.8rem' }}>
+    <label>Select Consultation</label>
+
+    {consultations.length > 0 ? (
+      <select
+        className="screen-only"
+        value={item.item_source_id}
+        onChange={e =>
+          handleChange(index, 'item_source_id', e.target.value)
+        }
+        required
+        style={{ width: '100%', padding: '8px' }}
+      >
+        <option value="">
+          Select Consultation
+        </option>
+
+        {consultations.map(c => (
+          <option key={c._id} value={c._id}>
+            {c.doctorId?.userId?.name || "Doctor"} |
+            {c.diagnosis || "Consultation"} |
+            ₹300
+          </option>
+        ))}
+      </select>
+    ) : (
+      <p style={{ color: 'red' }}>
+        ⚠ No consultation found
+      </p>
+    )}
+  </div>
+)} */}
+
+
+
+    {/* Sonography Records */}
+{item.item_type === 'Sonography' && (
+  <div style={{ marginBottom: '0.8rem' }}>
+    <label>Select Sonography</label>
+
+    {sonographyRecords.length > 0 ? (
+      <select
+        className="screen-only"
+        value={item.item_source_id}
+        onChange={e =>
+          handleChange(index, 'item_source_id', e.target.value)
+        }
+        required
+        style={{ width: '100%', padding: '8px' }}
+      >
+        <option value="">Select Sonography</option>
+
+
+{sonographyRecords.map(s => (
+  <option key={s._id} value={s._id}>
+    {s.patientId?.fullName || "N/A"} |
+    {s.scanType || "N/A"} |
+    ₹{s.cost || 0} |
+    {s.paymentStatus || "N/A"} |
+    {s.manualChargeId?.itemName || "N/A"}
+  </option>
+))}
+        {/* {sonographyRecords.map(s => (
+          <option key={s._id} value={s._id}>
+            {s.scanType} – ₹{s.cost}
+          </option>
+        ))} */}
+      </select>
+    ) : (
+      <p style={{ color: "red" }}>
+        ⚠ No sonography records found
+      </p>
+    )}
+  </div>
+)}
+
+
+
+{/* ✅ Sonography Details Show */}
+{item.item_type === 'Sonography' && item.item_source_id && (() => {
+
+  const selectedSono = sonographyRecords.find(
+    s => s._id === item.item_source_id
+  );
+
+  if (!selectedSono) return null;
+
+  return (
+    <div
+      style={{
+        background: '#f5f5f5',
+        padding: '10px',
+        borderRadius: '6px',
+        marginBottom: '1rem',
+        lineHeight: '1.7'
+      }}
+    >
+      <p>
+        <strong>👤 Patient:</strong>{" "}
+        {selectedSono.patientId?.fullName || 'N/A'}
+      </p>
+
+      <p>
+        <strong>🧪 Scan:</strong>{" "}
+        {selectedSono.scanType || 'N/A'}
+      </p>
+
+      <p>
+        <strong>💰 Cost:</strong> ₹
+        {selectedSono.cost || 0}
+      </p>
+
+      <p>
+        <strong>💳 Payment:</strong>{" "}
+        {selectedSono.paymentStatus || 'N/A'}
+      </p>
+
+      <p>
+        <strong>🧾 Manual Charge:</strong>{" "}
+        {selectedSono.manualChargeId?.itemName || 'N/A'}
+      </p>
+
+      <p>
+        <strong>📝 Report:</strong>{" "}
+        {selectedSono.report || 'N/A'}
+      </p>
+
+      <p>
+        <strong>📅 Date:</strong>{" "}
+        {selectedSono.performedDate
+          ? new Date(selectedSono.performedDate).toLocaleString()
+          : 'N/A'}
+      </p>
+    </div>
+  );
+
+})()}
+
+
+
+
+
+    {item.item_type === 'ProcedureSchedule' && (
+      <div style={{ marginBottom: '0.8rem' }}>
+        <label>Select Procedure</label>
+        {schedules.length > 0 ? (
+          <select
+            className="screen-only"
+            value={item.item_source_id}
+            onChange={e => handleChange(index, 'item_source_id', e.target.value)}
+            required
+            style={{ width: '100%', padding: '8px' }}
+          >
+            <option value="">Select Procedure</option>
+            {schedules.map(s => (
+              <option key={s._id} value={s._id}>
+                {s.procedureId?.name} – ₹{s.procedureId?.cost} ({s.surgeonId?.userId?.name})
+              </option>
+            ))}
+          </select>
+        ) : (
+          <p style={{ color: "red" }}>⚠ No procedures available for billing</p>
+        )}
+      </div>
+    )}
+
+    {/* Open Charge */}
+    {item.item_type === 'Open' && (
+      <>
+        <input
+          type="text"
+          placeholder="Description"
+          value={item.description}
+          onChange={e => handleChange(index, 'description', e.target.value)}
+          required
+          style={{ width: '100%', padding: '8px', marginBottom: '0.8rem' }}
+        />
+        <input
+          type="number"
+          placeholder="Unit Price"
+          value={item.unit_price}
+          onChange={e => handleChange(index, 'unit_price', e.target.value)}
+          required
+          style={{ width: '100%', padding: '8px', marginBottom: '0.8rem' }}
+        />
+      </>
+    )}
+
+    {/* Quantity */}
+    <input
+      type="number"
+      placeholder="Quantity"
+      value={item.quantity}
+      onChange={e => handleChange(index, 'quantity', e.target.value)}
+      required
+      style={{ width: '100%', padding: '8px', marginBottom: '0.8rem' }}
+    />
+
+    <button
+      type="button"
+      onClick={() => removeItem(index)}
+      style={{ padding: '6px 12px', background: '#ff6961', color: '#fff', border: 'none', borderRadius: '4px' }}
+    >
+      Remove
+    </button>
+  </div>
+))}
+{/* ================= BILL SUMMARY TABLE ================= */}
+<h3 style={{ marginTop: '2rem' }}>Bill Summary</h3>
+
+<table
+  style={{
+    width: '100%',
+    borderCollapse: 'collapse',
+    marginTop: '1rem',
+    background: '#fff',
+    border: '1px solid #ddd'
+  }}
+>
   <thead>
-    <tr>
-      <th>Type</th>
-      <th>Description</th>
-      <th>Qty</th>
-      <th>Unit Price</th>
-      <th>Total</th>
-      <th className="screen-only">Action</th>
+    <tr style={{ background: '#f2f2f2' }}>
+      <th style={thStyle}>#</th>
+      <th style={thStyle}>Item</th>
+      <th style={thStyle}>Qty</th>
+      <th style={thStyle}>Rate</th>
+      <th style={thStyle}>Amount</th>
     </tr>
   </thead>
 
   <tbody>
-    {items.map((item, index) => (
-      <tr key={index}>
-        
-        {/* Type */}
-        <td>
-          {item.item_type}
-        </td>
+    {items.map((item, i) => {
+      let name = 'N/A';
+      let rate = 0;
 
-        {/* Description */}
-        <td>
-          {item.description}
-        </td>
+      if (item.item_type === 'Manual') {
+        const found = manualItems.find(m => m._id === item.item_source_id);
+        name = found?.itemName || 'Manual Item';
+        rate = found?.defaultPrice || 0;
+      }
 
-        {/* Quantity */}
-        <td>
-          <input
-            type="number"
-            value={item.quantity}
-            onChange={e =>
-              handleChange(index, 'quantity', e.target.value)
-            }
-            className="screen-only"
-            style={{ width: "60px" }}
-          />
-          <span className="print-only">{item.quantity}</span>
-        </td>
+      if (item.item_type === 'Open') {
+        name = item.description || 'Open Charge';
+        rate = Number(item.unit_price || 0);
+      }
 
-        {/* Unit Price */}
-        <td>
-          ₹{item.unit_price}
-        </td>
+      if (item.item_type === 'ProcedureSchedule') {
+        const found = schedules.find(s => s._id === item.item_source_id);
+        name = found?.procedureId?.name || 'Procedure';
+        rate = found?.procedureId?.cost || 0;
+      }
 
-        {/* Total */}
-        <td>
-          ₹{item.quantity * item.unit_price}
-        </td>
+      if (item.item_type === 'Sonography') {
+        const found = sonographyRecords.find(s => s._id === item.item_source_id);
+        name = found?.scanType || 'Sonography';
+        rate = found?.cost || 0;
+      }
 
-        {/* Remove */}
-        <td className="screen-only">
-          <button
-            type="button"
-            onClick={() => removeItem(index)}
-            style={{
-              background: "red",
-              color: "#fff",
-              border: "none",
-              padding: "5px 10px"
-            }}
-          >
-            Remove
-          </button>
-        </td>
-      </tr>
-    ))}
+      const qty = Number(item.quantity || 0);
+      const amount = qty * rate;
+
+      return (
+        <tr key={i}>
+          <td style={tdStyle}>{i + 1}</td>
+          <td style={tdStyle}>{name}</td>
+          <td style={tdStyle}>{qty}</td>
+          <td style={tdStyle}>₹{rate}</td>
+          <td style={tdStyle}>₹{amount}</td>
+        </tr>
+      );
+    })}
   </tbody>
 </table>
 
+{/* ================= TOTAL CALCULATION ================= */}
+{(() => {
+  let total = 0;
+
+  items.forEach(item => {
+    let rate = 0;
+
+    if (item.item_type === 'Manual') {
+      const found = manualItems.find(m => m._id === item.item_source_id);
+      rate = found?.defaultPrice || 0;
+    }
+
+    if (item.item_type === 'Open') {
+      rate = Number(item.unit_price || 0);
+    }
+
+    if (item.item_type === 'ProcedureSchedule') {
+      const found = schedules.find(s => s._id === item.item_source_id);
+      rate = found?.procedureId?.cost || 0;
+    }
+
+    if (item.item_type === 'Sonography') {
+      const found = sonographyRecords.find(s => s._id === item.item_source_id);
+      rate = found?.cost || 0;
+    }
+
+    total += rate * Number(item.quantity || 0);
+  });
+
+  const paid = Number(paidAmount || 0);   // 👈 ensure state exists
+  const balance = total - paid;
+
+  return (
+    <div style={{ marginTop: '1rem', padding: '1rem', background: '#fafafa' }}>
+      <p><b>Total Amount:</b> ₹{total}</p>
+      <p><b>Paid Amount:</b> ₹{paid}</p>
+      <p style={{ color: balance > 0 ? 'red' : 'green' }}>
+        <b>Balance Due:</b> ₹{balance}
+      </p>
+    </div>
+  );
+})()}
 
         <button type="button" onClick={addItem} style={{ padding: '10px 15px', background: '#007bff', color: '#fff', border: 'none', borderRadius: '6px', marginRight: '10px' }}>
           + Add Item
