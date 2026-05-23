@@ -668,19 +668,11 @@ const CreateBillForm = () => {
 
    const styles = `
     /* Hide print-only stuff when not printing */
-    .print-only {
-      display: none !important;
-    }
-      const thStyle = {
-  border: '1px solid #ddd',
-  padding: '10px',
-  textAlign: 'left'
-};
+   .print-only {
+  display: none;
+}
 
-const tdStyle = {
-  border: '1px solid #ddd',
-  padding: '10px'
-};
+  
 
     /* Hide screen-only stuff when printing */
    @media print {
@@ -700,13 +692,14 @@ const tdStyle = {
     font-size: 12px;
   }
 
+  .print-only {
+    display: block !important;
+  }
+
   .screen-only {
     display: none !important;
   }
 
-  .print-only {
-    display: block !important;
-  }
 
   button {
     display: none !important;
@@ -1168,27 +1161,6 @@ if (type === 'Sonography') {
     setItems(items.filter((_, i) => i !== index));
   };
 
-// ================= FETCH PAYMENTS =================
-
-// const fetchPayments = async (billId) => {
-//   const token = localStorage.getItem('jwt');
-
-//   try {
-//     const res = await axios.get(
-//       `${BASE_URL}/api/billing/payments/${billId}`,
-//       {
-//         headers: {
-//           Authorization: `Bearer ${token}`
-//         }
-//       }
-//     );
-
-//     setPayments(res.data.payments || []);
-
-//   } catch (err) {
-//     console.error(err);
-//   }
-// };
 
 
 useEffect(() => {
@@ -1376,93 +1348,7 @@ const handlePaymentChange = (e) => {
     [name]: value
   }));
 };
-// ================= SUBMIT PAYMENT =================
 
-// const submitPayment = async (e) => {
-
-//   e.preventDefault();
-
-//   setPaymentError('');
-
-//   if (!billData) {
-//     toast.error("Create bill first");
-//     return;
-//   }
-
-//   const amt = Number(paymentForm.amount);
-
-//   if (amt > billData.balance_due) {
-//     setPaymentError(
-//       `Cannot exceed balance due ₹${billData.balance_due}`
-//     );
-//     return;
-//   }
-
-//   try {
-
-//     const token = localStorage.getItem('jwt');
-
-//     const user = JSON.parse(
-//       localStorage.getItem('user')
-//     );
-
-//     const payload = {
-
-//       bill_id_ref: billData._id,
-
-//       amount_paid: amt,
-
-//       payment_method: paymentForm.method,
-
-//       external_reference_number:
-//         paymentForm.externalRef || undefined,
-
-//       received_by_user_id_ref:
-//         user.userId
-
-//     };
-
-//     const { data } = await axios.post(
-//       `${BASE_URL}/api/billing/payments`,
-//       payload,
-//       {
-//         headers: {
-//           Authorization: `Bearer ${token}`
-//         }
-//       }
-//     );
-
-//     // ✅ UPDATE BILL
-//     setBillData(data.updatedBill);
-
-//     // ✅ REFRESH PAYMENT HISTORY
-//     await fetchPayments(billData._id);
-
-//     // ✅ RESET FORM
-//     setPaymentForm({
-//       amount: data.updatedBill.balance_due || '',
-//       method: 'Cash',
-//       externalRef: ''
-//     });
-
-//     // ✅ SUCCESS TOAST
-//     toast.success(
-//       `₹${amt} Payment Recorded Successfully ✅`
-//     );
-
-//   } catch (err) {
-
-//     setPaymentError(
-//       err.response?.data?.message ||
-//       'Payment error'
-//     );
-
-//     toast.error(
-//       err.response?.data?.message ||
-//       'Payment Failed'
-//     );
-//   }
-// };
 
 const handlePrint = () => {
 const selectedAdmission = admissions.find(
@@ -1650,7 +1536,7 @@ const selectedVisit = visits.find(
   </select>
 
   {/* PRINT VIEW (IMPORTANT FIX) */}
-  <p className="print-only" style={{ marginTop: '5px' }}>
+  <p className="screen-only" style={{ marginTop: '5px' }}>
     {visits.find(v => v._id === visitId)
       ? `Dr. ${visits.find(v => v._id === visitId)?.assignedDoctorId?.userId?.name || "N/A"} | ${
           visits.find(v => v._id === visitId)?.visitDate
@@ -1686,7 +1572,7 @@ const selectedVisit = visits.find(
       ))}
     </select>
 
-    <p className="print-only">
+    <p className="screen-only">
       {admissions.find(a => a._id === ipdAdmissionId)?.wardId?.name || 'N/A'} 
       (Bed {admissions.find(a => a._id === ipdAdmissionId)?.bedNumber || 'N/A'})
     </p>
@@ -1968,18 +1854,39 @@ const selectedVisit = visits.find(
 </div>
         
 <div>
-<strong>Discharge Date:</strong><br />
-{adm?.actualDischargeDate
-  ? new Date(adm.actualDischargeDate).toLocaleString()
-  : dischargePatient
-    ? new Date().toLocaleString()
-    : "N/A"}
+  <strong>Discharge Date:</strong><br />
+
+  {
+    dischargeDate
+      ? new Date(dischargeDate).toLocaleString()
+
+      : billData?.discharge_date
+      ? new Date(
+          billData.discharge_date
+        ).toLocaleString()
+
+      : adm?.actualDischargeDate
+      ? new Date(
+          adm.actualDischargeDate
+        ).toLocaleString()
+
+      : "N/A"
+  }
 </div>
-         <div>
+       <div>
   <strong>Status:</strong><br />
-  {dischargePatient
-    ? "Discharged"
-    : adm?.status || "Admitted"}
+
+  <span
+    style={{
+      color: dischargePatient ? "green" : "red",
+      fontWeight: "bold"
+    }}
+  >
+    {billData?.ipd_status ||
+      (dischargePatient
+        ? "Discharged"
+        : adm?.status || "Admitted")}
+  </span>
 </div>
 {/* {billData && (
   <div
@@ -2476,9 +2383,6 @@ const selectedVisit = visits.find(
 })()}
 
 
-
-
-
     {item.item_type === 'ProcedureSchedule' && (
       <div style={{ marginBottom: '0.8rem' }}>
         <label>Select Procedure</label>
@@ -2659,7 +2563,132 @@ const selectedVisit = visits.find(
           + Add Item
         </button>
              {/* ================= PAYMENT DETAILS ================= */}
+           {/* ================= PAYMENT SECTION ================= */}
 
+<div
+  style={{
+    marginTop: '1.5rem',
+    padding: '1rem',
+    background: '#f8f9fa',
+    borderRadius: '10px',
+    border: '1px solid #ddd'
+  }}
+>
+  <h3
+    style={{
+      marginBottom: '1rem',
+      color: '#1976d2'
+    }}
+  >
+    Payment Details
+  </h3>
+
+  {/* Amount */}
+  <div style={{ marginBottom: '1rem' }}>
+    <label
+      style={{
+        display: 'block',
+        marginBottom: '6px',
+        fontWeight: 'bold'
+      }}
+    >
+      Amount
+    </label>
+
+    <input
+      type="number"
+      name="amount"
+      value={paymentForm.amount}
+      onChange={handlePaymentChange}
+      placeholder="Enter amount"
+      style={{
+        width: '100%',
+        padding: '10px',
+        borderRadius: '6px',
+        border: '1px solid #ccc'
+      }}
+    />
+  </div>
+
+  {/* Payment Method */}
+  <div style={{ marginBottom: '1rem' }}>
+    <label
+      style={{
+        display: 'block',
+        marginBottom: '6px',
+        fontWeight: 'bold'
+      }}
+    >
+      Payment Method
+    </label>
+
+    <select
+      name="method"
+      value={paymentForm.method}
+      onChange={handlePaymentChange}
+      style={{
+        width: '100%',
+        padding: '10px',
+        borderRadius: '6px',
+        border: '1px solid #ccc'
+      }}
+    >
+      <option value="Cash">Cash</option>
+      <option value="UPI">UPI</option>
+    </select>
+  </div>
+
+  {/* UPI Reference */}
+  {paymentForm.method === 'UPI' && (
+    <div style={{ marginBottom: '1rem' }}>
+      <label
+        style={{
+          display: 'block',
+          marginBottom: '6px',
+          fontWeight: 'bold'
+        }}
+      >
+        UPI Reference Number
+      </label>
+
+      <input
+        type="text"
+        name="externalRef"
+        value={paymentForm.externalRef}
+        onChange={handlePaymentChange}
+        placeholder="Enter UPI Ref No."
+        style={{
+          width: '100%',
+          padding: '10px',
+          borderRadius: '6px',
+          border: '1px solid #ccc'
+        }}
+      />
+    </div>
+  )}
+
+  {/* Print Payment Info */}
+  <div
+    style={{
+      background: '#fff',
+      padding: '10px',
+      borderRadius: '6px',
+      marginTop: '10px'
+    }}
+  >
+    <p>
+      <strong>Payment Method:</strong>{" "}
+      {paymentForm.method}
+    </p>
+
+    {paymentForm.method === 'UPI' && (
+      <p>
+        <strong>UPI Ref No:</strong>{" "}
+        {paymentForm.externalRef || "N/A"}
+      </p>
+    )}
+  </div>
+</div>
 
         <button type="submit" style={{ padding: '10px 15px', background: 'green', color: '#fff', border: 'none', borderRadius: '6px' }}>
        Submit Bill & Payment
