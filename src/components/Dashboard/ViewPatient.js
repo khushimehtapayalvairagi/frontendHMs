@@ -99,16 +99,7 @@ const handleSearch = () => {
     setFilteredPatient([]);
     toast.error("No patient found");
   }
-};
-
-
-
-
-
-
-
-
-
+}
   const renderTableRow = (p, index) => (
     <React.Fragment key={p.patientId} >
       <TableRow hover sx={{ p: 1, border: 1 }}>
