@@ -118,7 +118,11 @@ const handleSearch = () => {
         {!isMobile && <TableCell >{new Date(p.dob).toLocaleDateString()}</TableCell>}
         {!isMobile && <TableCell >{p.gender}</TableCell>}
         {!isMobile && <TableCell >{p.contactNumber}</TableCell>}
-        <TableCell>{p.status}</TableCell>
+       <TableCell>
+  {p.status === "Discharged"
+    ? "Discharged"
+    : "Active"}
+</TableCell>
         <TableCell >
         <IconButton onClick={() => {
   setSelectedPatient(p);
@@ -199,11 +203,7 @@ const rowsToRender = filteredPatient && filteredPatient.length > 0 ? filteredPat
     {!isMobile && <TableCell>DOB</TableCell>}
     {!isMobile && <TableCell>Gender</TableCell>}
     {!isMobile && <TableCell>Contact</TableCell>}
-  <TableCell>
-  {p.status === "Discharged"
-    ? "Discharged"
-    : "Active"}
-</TableCell>
+    <TableCell>Status</TableCell>
     <TableCell>More</TableCell>
   </TableRow>
 </TableHead>
