@@ -841,8 +841,8 @@ const handlePrint = () => {
       <h3>
         Grand Total:
         ₹{
-          typeof billingData.summary?.grandTotal === 'number'
-            ? billingData.summary.grandTotal.toFixed(2)
+          typeof billingData.totalAmount=== 'number'
+            ? billingData.grandTotal.toFixed(2)
             : '0.00'
         }
       </h3>
@@ -862,7 +862,7 @@ const handlePrint = () => {
 
         <tbody>
 
-          {(billingData.summary?.breakdown || []).map(
+          {(billingData.breakdown || []).map(
             (item, index) => (
 
               <tr key={index}>
