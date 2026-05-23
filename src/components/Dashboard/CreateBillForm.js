@@ -959,56 +959,52 @@ useEffect(() => {
       const updatedPatients = await Promise.all(
         allPatients.map(async (patient) => {
 
-          let patientType = "OPD";
+ let patientType = "OPD";
 
-          try {
-            // ✅ CHECK IPD ADMISSION
-            const admRes = await axios.get(
-              `${BASE_URL}/api/ipd/admissions/${patient._id}`,
-              {
-                headers: { Authorization: `Bearer ${token}` }
-              }
-            );
+// ✅ IMPORTANT
+let activeAdmission = null;
+let dischargedAdmission = null;
 
-            const admissions = admRes.data.admissions || [];
+try {
 
+  // ✅ CHECK IPD ADMISSION
+  const admRes = await axios.get(
+    `${BASE_URL}/api/ipd/admissions/${patient._id}`,
+    {
+      headers: { Authorization: `Bearer ${token}` }
+    }
+  );
 
-const activeAdmission = admissions.find(
-  adm =>
-    adm.status?.toLowerCase() === "admitted"
-);
+  const admissions = admRes.data.admissions || [];
 
-const dischargedAdmission = admissions.find(
-  adm =>
-    adm.status?.toLowerCase() === "discharged"
-);
+  activeAdmission = admissions.find(
+    adm =>
+      adm.status?.toLowerCase() === "admitted"
+  );
 
-if (activeAdmission) {
-  patientType = "IPD";
+  dischargedAdmission = admissions.find(
+    adm =>
+      adm.status?.toLowerCase() === "discharged"
+  );
+
+  if (activeAdmission) {
+    patientType = "IPD";
+  }
+  else if (dischargedAdmission) {
+    patientType = "Discharged";
+  }
+  else {
+    patientType = "OPD";
+  }
+
+} catch (err) {
+  console.log("Admission check failed");
 }
-else if (dischargedAdmission) {
-  patientType = "Discharged";
-}
-else {
-  patientType = "OPD";
-}
-            // const hasIPD = admissions.some(
-            //   adm => adm.status === "Admitted"
-            // );
 
-            // if (hasIPD) {
-            //   patientType = "IPD";
-            // }
-
-          } catch (err) {
-            console.log("Admission check failed");
-          }
-
-      return {
+return {
   ...patient,
   patientType,
 
-  // ✅ IMPORTANT
   status:
     dischargedAdmission
       ? "Discharged"
