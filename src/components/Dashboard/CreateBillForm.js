@@ -1000,8 +1000,12 @@ patientType = activeAdmission
         })
       );
 
-      setPatients(updatedPatients);
+      // setPatients(updatedPatients);
+const activePatients = updatedPatients.filter(
+  (p) => p.status?.toLowerCase() !== "discharged"
+);
 
+setPatients(activePatients || []);
     } catch (error) {
       console.error(error);
       toast.error("Failed to load patients");

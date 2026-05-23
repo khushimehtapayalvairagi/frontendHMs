@@ -199,7 +199,11 @@ const rowsToRender = filteredPatient && filteredPatient.length > 0 ? filteredPat
     {!isMobile && <TableCell>DOB</TableCell>}
     {!isMobile && <TableCell>Gender</TableCell>}
     {!isMobile && <TableCell>Contact</TableCell>}
-    <TableCell>Status</TableCell>
+  <TableCell>
+  {p.status === "Discharged"
+    ? "Discharged"
+    : "Active"}
+</TableCell>
     <TableCell>More</TableCell>
   </TableRow>
 </TableHead>
