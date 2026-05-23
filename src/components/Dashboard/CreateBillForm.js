@@ -2639,7 +2639,8 @@ const selectedVisit = visits.find(
     total += rate * Number(item.quantity || 0);
   });
 
-  const paid = Number(paidAmount || 0);   // 👈 ensure state exists
+  // const paid = Number(paidAmount || 0);
+  const paidAmount = Number(paymentForm.amount || 0);   // 👈 ensure state exists
   const balance = total - paid;
 
   return (
