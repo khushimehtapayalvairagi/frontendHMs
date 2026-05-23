@@ -940,78 +940,123 @@ useEffect(() => {
 
 
 
-
 useEffect(() => {
   const fetchPatients = async () => {
+
     try {
+
       const token = localStorage.getItem('jwt');
 
-      // ✅ ALL PATIENTS
       const patientRes = await axios.get(
         `${BASE_URL}/api/receptionist/patients`,
         {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
         }
       );
 
-      const allPatients = patientRes.data.patients || [];
+      const allPatients =
+        patientRes.data.patients || [];
 
-      // ✅ ONLY ACTIVE / NORMAL PATIENTS
-      const updatedPatients = await Promise.all(
-        allPatients.map(async (patient) => {
+      const updatedPatients = [];
 
-          let patientType = "OPD";
+      for (const patient of allPatients) {
 
-          try {
+        try {
 
-            const admRes = await axios.get(
-              `${BASE_URL}/api/ipd/admissions/${patient._id}`,
-              {
-                headers: { Authorization: `Bearer ${token}` }
+          const admRes = await axios.get(
+            `${BASE_URL}/api/ipd/admissions/${patient._id}`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`
               }
-            );
-
-            const admissions = admRes.data.admissions || [];
-
-            // ✅ ONLY CHECK ACTIVE ADMISSION
-            const activeAdmission = admissions.find(
-              a => a.status?.toLowerCase() === "admitted"
-            );
-
-            if (activeAdmission) {
-              patientType = "IPD";
             }
+          );
 
-            return {
+          const admissions =
+            admRes.data.admissions || [];
+
+          // ✅ ACTIVE IPD
+          const activeAdmission =
+            admissions.find(
+              a =>
+                a.status === "Admitted"
+            );
+
+          // ✅ DISCHARGED
+          const dischargedAdmission =
+            admissions.find(
+              a =>
+                a.status === "Discharged"
+            );
+
+          // ==========================
+          // ACTIVE IPD
+          // ==========================
+
+          if (activeAdmission) {
+
+            updatedPatients.push({
               ...patient,
-              patientType,
-              status: "Active"
-            };
+              patientType: "IPD",
+              status: "Admitted"
+            });
 
-          } catch (err) {
+          }
 
-            return {
+          // ==========================
+          // DISCHARGED
+          // HIDE FROM LIST
+          // ==========================
+
+          else if (dischargedAdmission) {
+
+            // ❌ skip patient
+
+          }
+
+          // ==========================
+          // NORMAL OPD
+          // ==========================
+
+          else {
+
+            updatedPatients.push({
               ...patient,
               patientType: "OPD",
               status: "Active"
-            };
-          }
-        })
-      );
+            });
 
-      // ✅ NO DISCHARGED FILTER NEEDED NOW
+          }
+
+        } catch (err) {
+
+          updatedPatients.push({
+            ...patient,
+            patientType: "OPD",
+            status: "Active"
+          });
+
+        }
+
+      }
+
       setPatients(updatedPatients);
 
     } catch (error) {
+
       console.error(error);
+
       toast.error("Failed to load patients");
+
     }
+
   };
 
   fetchPatients();
 
 }, [BASE_URL]);
-
 
 
 // ✅ FETCH OPD VISITS
