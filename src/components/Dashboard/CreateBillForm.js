@@ -655,6 +655,17 @@ import { useLocation } from 'react-router-dom';
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 const CreateBillForm = () => {
+    const thStyle = {
+    border: '1px solid #ddd',
+    padding: '10px',
+    textAlign: 'left'
+  };
+
+  const tdStyle = {
+    border: '1px solid #ddd',
+    padding: '10px'
+  };
+
    const styles = `
     /* Hide print-only stuff when not printing */
     .print-only {
