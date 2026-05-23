@@ -1225,7 +1225,7 @@ console.log({
   dischargePatient,
   dischargeDate
 });
-
+const user = JSON.parse(localStorage.getItem('user'));
 const payload = {
 
   patient_id_ref: patientId,
