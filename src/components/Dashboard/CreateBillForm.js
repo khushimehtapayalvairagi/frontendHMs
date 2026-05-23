@@ -1275,6 +1275,17 @@ useEffect(() => {
     setPayments([
       res.data.payment
     ]);
+    const updatedAdmissions = await axios.get(
+  `${BASE_URL}/api/ipd/admissions/${patientId}`,
+  {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  }
+);
+
+setAdmissions(updatedAdmissions.data.admissions || []);
+
 
     // ✅ UPDATE PAYMENT FORM
    setPaymentForm({
@@ -1857,23 +1868,20 @@ const selectedVisit = visits.find(
   <strong>Discharge Date:</strong><br />
 
   {
-    dischargeDate
-      ? new Date(dischargeDate).toLocaleString()
+    admissions.find(
+      a => a._id === ipdAdmissionId
+    )?.actualDischargeDate
 
-      : billData?.discharge_date
       ? new Date(
-          billData.discharge_date
-        ).toLocaleString()
-
-      : adm?.actualDischargeDate
-      ? new Date(
-          adm.actualDischargeDate
+          admissions.find(
+            a => a._id === ipdAdmissionId
+          ).actualDischargeDate
         ).toLocaleString()
 
       : "N/A"
   }
 </div>
-       <div>
+       {/* <div>
   <strong>Status:</strong><br />
 
   <span
@@ -1887,7 +1895,7 @@ const selectedVisit = visits.find(
         ? "Discharged"
         : adm?.status || "Admitted")}
   </span>
-</div>
+</div> */}
 {/* {billData && (
   <div
     style={{
