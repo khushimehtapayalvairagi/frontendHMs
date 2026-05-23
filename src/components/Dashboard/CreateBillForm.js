@@ -2539,7 +2539,7 @@ const selectedVisit = visits.find(
 
   <p>
     <strong>Received By:</strong>{" "}
-    {payments[0]?.received_by_user_id_ref?.name || "N/A"}
+    {payments[0]?.received_by_user_id_ref?.user.name || "N/A"}
     
   </p>
 
