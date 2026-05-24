@@ -245,24 +245,38 @@ const handlePrint = () => {
   value={searchTerm}
   onChange={(e) => searchPatients(e.target.value)}
 />
+
 {
   selectedPatient && (
-    <div
-      style={{
-        background: "#d4edda",
-        padding: "10px",
-        marginTop: "10px",
-        borderRadius: "5px"
+    <button
+      type="button"
+      onClick={() => {
+
+        setSelectedPatient(null);
+
+        setForm({
+          fullName: "",
+          age: "",
+          gender: "",
+          dob: "",
+          contactNumber: "",
+          email: "",
+          address: "",
+          aadhaarNumber: "",
+          relatives: [
+            {
+              name: "",
+              contactNumber: "",
+              relationship: ""
+            }
+          ]
+        });
+
+        setSearchTerm("");
       }}
     >
-      Existing Patient Selected:
-      <b>
-        {" "}
-        {selectedPatient.fullName}
-      </b>
-
-      ({selectedPatient.patientId})
-    </div>
+      Clear Selected Patient
+    </button>
   )
 }
 
@@ -282,14 +296,9 @@ const handlePrint = () => {
               marginBottom: "5px",
               cursor: "pointer"
             }}
-         onClick={() => {
+ onClick={() => {
 
-  console.log("Clicked Patient:", p);
-
-  setSelectedPatient({
-    ...p,
-    _id: p._id
-  });
+  setSelectedPatient(p);
 
   setForm({
     fullName: p.fullName || "",
@@ -302,11 +311,16 @@ const handlePrint = () => {
     email: p.email || "",
     address: p.address || "",
     aadhaarNumber: p.aadhaarNumber || "",
-    relatives: p.relatives || []
+    relatives:
+      p.relatives?.length > 0
+        ? p.relatives
+        : [{ name: "", contactNumber: "", relationship: "" }]
   });
 
+  // ❌ ye mat karo
+  // setSearchTerm("");
+
   setExistingPatients([]);
-  setSearchTerm("");
 }}
           >
 
@@ -335,13 +349,13 @@ const handlePrint = () => {
 />
         <input name="age" placeholder="Age" value={form.age} onChange={handleChange}   readOnly={!!selectedPatient}/>
 
-        <select name="gender" value={form.gender} onChange={handleChange}   readOnly={!!selectedPatient}>
+        <select name="gender" value={form.gender} onChange={handleChange}   disabled={!!selectedPatient}>
           <option value="">Gender</option>
           <option>Male</option>
           <option>Female</option>
         </select>
 
-        <input name="address" placeholder="Address" value={form.address} onChange={handleChange} />
+        <input name="address" placeholder="Address" value={form.address} onChange={handleChange} disabled={!!selectedPatient}/>
         <input name="contactNumber" placeholder="Contact" value={form.contactNumber}  readOnly={!!selectedPatient} onChange={handleChange} />
         <input name="aadhaarNumber" placeholder="Aadhaar" value={form.aadhaarNumber} onChange={handleChange} />
 

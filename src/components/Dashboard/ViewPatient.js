@@ -220,46 +220,69 @@ const rowsToRender = filteredPatient && filteredPatient.length > 0 ? filteredPat
        <Typography><strong>Aadhaar Number:</strong> {selectedPatient.aadhaarNumber}</Typography>
 
         <Typography><strong>Address:</strong> {selectedPatient.address}</Typography>
-      <Typography mt={2}>
-  <strong>Visit Details:</strong>
+ <Typography mt={2}>
+  <strong>Visit History:</strong>
 </Typography>
 
-{selectedPatient.visit ? (
-  <>
-    <Typography>
-      <strong>Visit Type:</strong>{" "}
-      {selectedPatient.visit.visitType}
-    </Typography>
+{selectedPatient.visits?.length > 0 ? (
 
-    <Typography>
-  <strong>Doctor:</strong>{" "}
-  {selectedPatient.visit.assignedDoctorId?.userId?.name || "N/A"}
-</Typography>
+  selectedPatient.visits.map((visit, index) => (
 
-    <Typography>
-      <strong>Billing Type:</strong>{" "}
-      {selectedPatient.visit.billingType}
-    </Typography>
+    <Box
+      key={visit._id}
+      sx={{
+        border: "1px solid #ccc",
+        borderRadius: "8px",
+        padding: "10px",
+        marginTop: "10px"
+      }}
+    >
 
-    <Typography>
-      <strong>Payment:</strong>{" "}
-      ₹ {selectedPatient.visit.payment?.amount || 0}
-    </Typography>
+      <Typography>
+        <strong>Visit #{index + 1}</strong>
+      </Typography>
 
-    <Typography>
-      <strong>Payment Status:</strong>{" "}
-      {selectedPatient.visit.payment?.isPaid
-        ? "Paid"
-        : "Pending"}
-    </Typography>
+      <Typography>
+        <strong>Visit Type:</strong>{" "}
+        {visit.visitType}
+      </Typography>
 
-    <Typography>
-      <strong>Visit Date:</strong>{" "}
-      {new Date(
-        selectedPatient.visit.createdAt
-      ).toLocaleString()}
-    </Typography>
-  </>
+      <Typography>
+        <strong>Doctor:</strong>{" "}
+        {visit.assignedDoctorId?.userId?.name || "N/A"}
+      </Typography>
+
+      <Typography>
+        <strong>Billing Type:</strong>{" "}
+        {visit.billingType}
+      </Typography>
+
+      <Typography>
+        <strong>Payment:</strong>{" "}
+        ₹ {visit.payment?.amount || 0}
+      </Typography>
+
+      <Typography>
+        <strong>Payment Status:</strong>{" "}
+        {visit.payment?.isPaid
+          ? "Paid"
+          : "Pending"}
+      </Typography>
+
+      <Typography>
+        <strong>Status:</strong>{" "}
+        {visit.status}
+      </Typography>
+
+      <Typography>
+        <strong>Visit Date:</strong>{" "}
+        {new Date(visit.createdAt).toLocaleString()}
+      </Typography>
+
+    </Box>
+
+  ))
+
 ) : (
   <Typography>No visit found</Typography>
 )}
