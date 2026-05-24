@@ -1530,7 +1530,7 @@ const selectedVisit = visits.find(
 };
 
  return (
-    <div style={{ maxWidth: '1000px', margin: '2rem auto', padding: '2rem', fontFamily: 'Arial, sans-serif', background: '#fafafa', borderRadius: '10px', boxShadow: '0 0 8px rgba(0,0,0,0.1)' }}>
+    // <div style={{ maxWidth: '1000px', margin: '2rem auto', padding: '2rem', fontFamily: 'Arial, sans-serif', background: '#fafafa', borderRadius: '10px', boxShadow: '0 0 8px rgba(0,0,0,0.1)' }}>
     <div ref={printRef} style={{ maxWidth: '1000px', margin: '2rem auto', padding: '2rem', fontFamily: 'Arial, sans-serif', background: '#fafafa', borderRadius: '10px', boxShadow: '0 0 8px rgba(0,0,0,0.1)' }}>
      <style>{styles}</style>
       <h2 style={{ textAlign: 'center', marginBottom: '2rem' }}>Create Patient Bill</h2>
@@ -2710,7 +2710,7 @@ const selectedVisit = visits.find(
 
  
 
-      </div>
+      {/* </div> */}
        <ToastContainer position="top-right" autoClose={3000} />
     </div>
   );
