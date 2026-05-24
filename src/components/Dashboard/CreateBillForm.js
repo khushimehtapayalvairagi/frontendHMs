@@ -707,7 +707,7 @@ const [anesthesiaRecords, setAnesthesiaRecords] = useState([]);
 
 const [sonographyRecords, setSonographyRecords] = useState([]);
 
-
+const [receivedBy, setReceivedBy] = useState(null);
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 const printRef = useRef(null);
 
@@ -1319,6 +1319,7 @@ const payload = {
 
     // ✅ SET BILL
     setBillData(res.data.bill);
+    setReceivedBy(res.data.generatedByUser);
 
     // ✅ SET PAYMENT HISTORY
     setPayments([
@@ -2577,11 +2578,10 @@ const selectedVisit = visits.find(
     {paymentForm.method}
   </p>
 
-  <p>
-    <strong>Received By:</strong>{" "}
-    {billData?.generatedByUser?.name || "N/A"}
-    
-  </p>
+<p>
+  <strong>Received By:</strong>{" "}
+  {receivedBy?.name || "N/A"}
+</p>
 
 
 
