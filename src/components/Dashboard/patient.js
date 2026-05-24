@@ -282,27 +282,32 @@ const handlePrint = () => {
               marginBottom: "5px",
               cursor: "pointer"
             }}
-            onClick={() => {
+         onClick={() => {
 
-              setSelectedPatient(p);
-            
-              setForm({
-                fullName: p.fullName || "",
-                age: p.age || "",
-                gender: p.gender || "",
-                dob: p.dob
-                  ? p.dob.split("T")[0]
-                  : "",
-                contactNumber: p.contactNumber || "",
-                email: p.email || "",
-                address: p.address || "",
-                aadhaarNumber: p.aadhaarNumber || "",
-                relatives: p.relatives || []
-              });
+  console.log("Clicked Patient:", p);
 
-              setExistingPatients([]);
-               setSearchTerm("");
-            }}
+  setSelectedPatient({
+    ...p,
+    _id: p._id
+  });
+
+  setForm({
+    fullName: p.fullName || "",
+    age: p.age || "",
+    gender: p.gender || "",
+    dob: p.dob
+      ? p.dob.split("T")[0]
+      : "",
+    contactNumber: p.contactNumber || "",
+    email: p.email || "",
+    address: p.address || "",
+    aadhaarNumber: p.aadhaarNumber || "",
+    relatives: p.relatives || []
+  });
+
+  setExistingPatients([]);
+  setSearchTerm("");
+}}
           >
 
             <b>{p.fullName}</b> ({p.patientId})
