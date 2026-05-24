@@ -666,47 +666,41 @@ const CreateBillForm = () => {
     padding: '10px'
   };
 
-   const styles = `
-    /* Hide print-only stuff when not printing */
-   .print-only {
-  display: none;
+  const styles = `
+.print-only{
+  display:none;
 }
 
-  
-
-    /* Hide screen-only stuff when printing */
-   @media print {
-  body {
+@media print{
+  body{
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
 
-  table {
-    width: 100%;
-    border-collapse: collapse;
+  table{
+    width:100%;
+    border-collapse:collapse;
   }
 
-  th, td {
-    border: 1px solid #000 !important;
-    padding: 8px;
-    font-size: 12px;
+  th,td{
+    border:1px solid #000 !important;
+    padding:8px;
+    font-size:12px;
   }
 
-  .print-only {
-    display: block !important;
+  .print-only{
+    display:block !important;
   }
 
-  .screen-only {
-    display: none !important;
+  .screen-only{
+    display:none !important;
   }
 
-
-  button {
-    display: none !important;
+  button{
+    display:none !important;
   }
 }
-    }
-  `;
+`;
   const location = useLocation();
   const { patientId: passedPatientId, ipdAdmissionId: passedAdmissionId } = location.state || {};
 const [anesthesiaRecords, setAnesthesiaRecords] = useState([]);
