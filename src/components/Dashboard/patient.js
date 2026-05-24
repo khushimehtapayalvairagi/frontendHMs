@@ -25,11 +25,41 @@ const PatientForm = () => {
   const [amount, setAmount] = useState("");
   const [isPaid, setIsPaid] = useState(false);
   const [doctors, setDoctors] = useState([]);
-
+const [existingPatients, setExistingPatients] = useState([]);
+const [selectedPatient, setSelectedPatient] = useState(null);
+const [searchTerm, setSearchTerm] = useState("");
   const [submittedData, setSubmittedData] = useState(null);
 
   const BASE_URL = process.env.REACT_APP_BASE_URL;
 
+  const searchPatients = async (value) => {
+
+  setSearchTerm(value);
+
+  if (!value) {
+    setExistingPatients([]);
+    return;
+  }
+
+  try {
+
+    const token = localStorage.getItem("jwt");
+
+    const res = await axios.get(
+      `${BASE_URL}/api/patients/search?query=${value}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+
+    setExistingPatients(res.data.patients || []);
+
+  } catch (err) {
+    console.log(err);
+  }
+};
   // 🔥 GET DOCTORS
   useEffect(() => {
     const fetchDoctors = async () => {
@@ -74,21 +104,34 @@ const PatientForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!form.fullName || !form.age || !form.gender || !form.address) {
-      return toast.error("Patient details missing");
-    }
+  // ✅ NEW PATIENT VALIDATION
+if (
+  !selectedPatient &&
+  (!form.fullName ||
+    !form.age ||
+    !form.gender ||
+    !form.address)
+) {
+  return toast.error("Patient details missing");
+}
 
     if (!visitType || !assignedDoctorId) {
       return toast.error("Visit details required");
     }
 
-    if (visitType === "OPD" && (!amount || !isPaid)) {
-      return toast.error("Payment required for OPD");
-    }
+    // if (visitType === "OPD" && (!amount || !isPaid)) {
+    //   return toast.error("Payment required for OPD");
+    // }
+    if (visitType === "OPD" && !amount) {
+  return toast.error("Payment amount required");
+}
 
     const token = localStorage.getItem("jwt");
 
     const payload = {
+        existingPatientId:
+    selectedPatient?._id,
+
       ...form,
       aadhaarNumber: form.aadhaarNumber?.trim() || undefined,
       relatives: form.relatives?.filter(r => r.name || r.contactNumber || r.relationship),
@@ -194,25 +237,107 @@ const handlePrint = () => {
       <h2>👩‍⚕️ Patient + Visit Registration</h2>
 
       <form onSubmit={handleSubmit}>
+          <h3>Search Existing Patient</h3>
 
+<input
+  type="text"
+  placeholder="Search by Patient ID / Name / Contact"
+  value={searchTerm}
+  onChange={(e) => searchPatients(e.target.value)}
+/>
+{
+  selectedPatient && (
+    <div
+      style={{
+        background: "#d4edda",
+        padding: "10px",
+        marginTop: "10px",
+        borderRadius: "5px"
+      }}
+    >
+      Existing Patient Selected:
+      <b>
+        {" "}
+        {selectedPatient.fullName}
+      </b>
+
+      ({selectedPatient.patientId})
+    </div>
+  )
+}
+
+{
+  existingPatients.length > 0 && (
+
+    <div className="search-results">
+
+      {
+        existingPatients.map((p) => (
+
+          <div
+            key={p._id}
+            style={{
+              border: "1px solid #ccc",
+              padding: "10px",
+              marginBottom: "5px",
+              cursor: "pointer"
+            }}
+            onClick={() => {
+
+              setSelectedPatient(p);
+            
+              setForm({
+                fullName: p.fullName || "",
+                age: p.age || "",
+                gender: p.gender || "",
+                dob: p.dob
+                  ? p.dob.split("T")[0]
+                  : "",
+                contactNumber: p.contactNumber || "",
+                email: p.email || "",
+                address: p.address || "",
+                aadhaarNumber: p.aadhaarNumber || "",
+                relatives: p.relatives || []
+              });
+
+              setExistingPatients([]);
+               setSearchTerm("");
+            }}
+          >
+
+            <b>{p.fullName}</b> ({p.patientId})
+
+            <br />
+
+            {p.contactNumber}
+
+          </div>
+
+        ))
+      }
+
+    </div>
+  )
+}
         {/* PATIENT */}
-        <input name="fullName" placeholder="Full Name" value={form.fullName} onChange={handleChange} />
+        <input name="fullName" placeholder="Full Name" value={form.fullName} onChange={handleChange}  readOnly={!!selectedPatient} />
         <input
   type="date"
   name="dob"
   value={form.dob}
   onChange={handleChange}
+    readOnly={!!selectedPatient}
 />
-        <input name="age" placeholder="Age" value={form.age} onChange={handleChange} />
+        <input name="age" placeholder="Age" value={form.age} onChange={handleChange}   readOnly={!!selectedPatient}/>
 
-        <select name="gender" value={form.gender} onChange={handleChange}>
+        <select name="gender" value={form.gender} onChange={handleChange}   readOnly={!!selectedPatient}>
           <option value="">Gender</option>
           <option>Male</option>
           <option>Female</option>
         </select>
 
         <input name="address" placeholder="Address" value={form.address} onChange={handleChange} />
-        <input name="contactNumber" placeholder="Contact" value={form.contactNumber} onChange={handleChange} />
+        <input name="contactNumber" placeholder="Contact" value={form.contactNumber}  readOnly={!!selectedPatient} onChange={handleChange} />
         <input name="aadhaarNumber" placeholder="Aadhaar" value={form.aadhaarNumber} onChange={handleChange} />
 
         {/* VISIT */}
