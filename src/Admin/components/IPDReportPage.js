@@ -842,7 +842,7 @@ const handlePrint = () => {
         Grand Total:
         ₹{
           typeof billingData.totalAmount=== 'number'
-            ? billingData.grandTotal.toFixed(2)
+            ? billingData.totalAmount.toFixed(2)
             : '0.00'
         }
       </h3>
