@@ -945,7 +945,9 @@ const handlePrint = () => {
                 <tr key={bill._id || index}>
 
                   <td>
-                    {bill.billNumber || bill._id}
+                   <td>
+  {bill.billId || bill.billNumber || bill._id}
+</td>
                   </td>
 
                   <td>
