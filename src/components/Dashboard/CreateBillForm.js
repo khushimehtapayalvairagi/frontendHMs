@@ -1267,24 +1267,30 @@ console.log({
   dischargeDate
 });
 const user = JSON.parse(localStorage.getItem('user'));
-setUserId(user?._id || user?.id);
+
+// ✅ IMPORTANT
+const currentUserId =
+  user?.userId || user?.id;
+
+// ✅ SHOW IN UI
+setReceivedBy({
+  name: user?.name || 'N/A'
+});
+
 const payload = {
 
   patient_id_ref: patientId,
 
-  generated_by_user_id: userId,
+  generated_by_user_id:
+    currentUserId,
 
-  visit_id_ref: visitId || null,
+  visit_id_ref:
+    visitId || null,
 
   ipd_admission_id_ref:
     ipdAdmissionId || null,
 
   items: cleanedItems,
-
-  // dischargePatient,
-
-  // discharge_date:
-  //   dischargeDate || null,
 
   amount_paid:
     Number(paymentForm.amount),
@@ -1295,7 +1301,8 @@ const payload = {
   external_reference_number:
     paymentForm.externalRef || "",
 
- received_by_user_id_ref: userId
+  received_by_user_id_ref:
+    currentUserId
 };
 
   try {
@@ -1319,7 +1326,6 @@ const payload = {
 
     // ✅ SET BILL
     setBillData(res.data.bill);
-    setReceivedBy(res.data.generatedByUser);
 
     // ✅ SET PAYMENT HISTORY
     setPayments([
