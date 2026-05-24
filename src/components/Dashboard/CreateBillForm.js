@@ -1294,7 +1294,7 @@ const payload = {
   external_reference_number:
     paymentForm.externalRef || "",
 
- received_by_user_id_ref: user.userId
+ received_by_user_id_ref: userId
 };
 
   try {
@@ -1564,8 +1564,6 @@ const selectedVisit = visits.find(
 
 
 
-{/* ✅ OPD VISIT SELECT (YAHAN ADD KARO) */}
-{/* ✅ OPD VISIT SELECT */}
 {/* OPD VISIT SELECT */}
 <div style={{ marginBottom: '1rem' }}>
   <label>Select OPD Visit</label>
@@ -1596,7 +1594,7 @@ const selectedVisit = visits.find(
   </select>
 
   {/* PRINT VIEW (IMPORTANT FIX) */}
-  <p className="screen-only" style={{ marginTop: '5px' }}>
+  <p className="print-only" style={{ marginTop: '5px' }}>
     {visits.find(v => v._id === visitId)
       ? `Dr. ${visits.find(v => v._id === visitId)?.assignedDoctorId?.userId?.name || "N/A"} | ${
           visits.find(v => v._id === visitId)?.visitDate
