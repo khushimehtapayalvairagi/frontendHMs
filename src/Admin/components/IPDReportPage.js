@@ -910,6 +910,7 @@ const handlePrint = () => {
                       : '0.00'
                   }
                 </td>
+                
               </tr>
 
             )
@@ -1243,6 +1244,8 @@ const handlePrint = () => {
                     <th>Room</th>
                     <th>Bed</th>
                     <th>Admission</th>
+                    <th>Discharged Date</th>
+
                     <th>Status</th>
                   </tr>
 
@@ -1283,6 +1286,13 @@ const handlePrint = () => {
                           entry.admissionDate
                         ).toLocaleDateString()}
                       </td>
+                         <td>
+        {entry.dischargeDate
+          ? new Date(
+              entry.dischargeDate
+            ).toLocaleDateString()
+          : 'N/A'}
+      </td>
 
                       <td>
                         {entry.status}
