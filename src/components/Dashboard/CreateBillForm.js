@@ -1330,16 +1330,16 @@ const payload = {
       res.data.payment
     ]);
 
-    const updatedAdmissions = await axios.get(
-  `${BASE_URL}/api/ipd/admissions/${patientId}`,
-  {
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
-  }
-);
+//     const updatedAdmissions = await axios.get(
+//   `${BASE_URL}/api/ipd/admissions/${patientId}`,
+//   {
+//     headers: {
+//       Authorization: `Bearer ${token}`
+//     }
+//   }
+// );
 
-setAdmissions(updatedAdmissions.data.admissions || []);
+// setAdmissions(updatedAdmissions.data.admissions || []);
 
 
     // ✅ UPDATE PAYMENT FORM
