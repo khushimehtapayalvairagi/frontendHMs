@@ -1286,13 +1286,13 @@ const handlePrint = () => {
                           entry.admissionDate
                         ).toLocaleDateString()}
                       </td>
-                         <td>
-        {entry.dischargeDate
-          ? new Date(
-              entry.dischargeDate
-            ).toLocaleDateString()
-          : 'N/A'}
-      </td>
+      <td>
+  {entry.actualDischargeDate
+    ? new Date(
+        entry.actualDischargeDate
+      ).toLocaleDateString()
+    : 'N/A'}
+</td>
 
                       <td>
                         {entry.status}
