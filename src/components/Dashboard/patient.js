@@ -46,7 +46,7 @@ const [searchTerm, setSearchTerm] = useState("");
     const token = localStorage.getItem("jwt");
 
     const res = await axios.get(
-      `${BASE_URL}/api/patients/search?query=${value}`,
+      `${BASE_URL}/api/receptionist/patients/search?query=${value}`,
       {
         headers: {
           Authorization: `Bearer ${token}`
