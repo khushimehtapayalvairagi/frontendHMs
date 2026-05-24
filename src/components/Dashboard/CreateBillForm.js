@@ -1067,47 +1067,33 @@ useEffect(() => {
       }
     }
   )
-  .then(res => {
+ .then(res => {
 
-    const allVisits =
-      res.data.visits || res.data || [];
+  const allVisits = res.data.visits || res.data || [];
 
-    // ✅ ONLY COMPLETED VISITS
-    const completedVisits =
-      allVisits.filter(
-        v =>
-          v.status?.toLowerCase() === "completed"
-      );
+  // ✅ ONLY COMPLETED CONSULTATION VISITS
+  const completedVisits = allVisits.filter(
+    v => v.status?.toLowerCase() === "completed"
+  );
 
-    // ✅ SHOW ALL COMPLETED
-    setVisits(completedVisits);
+  setVisits(completedVisits);
 
-    // ✅ AUTO SELECT
-    if (
-      completedVisits.length > 0 &&
-      !ipdAdmissionId
-    ) {
-      setVisitId(
-        completedVisits[0]._id
-      );
-    }
+  // ✅ AUTO SELECT FIRST COMPLETED VISIT
+  if (completedVisits.length > 0 && !ipdAdmissionId) {
+    setVisitId(completedVisits[0]._id);
+  }
 
-    // ✅ NO VISITS
-    if (
-      completedVisits.length === 0
-    ) {
-      toast.warning(
-        "No completed visits found"
-      );
-    }
+  // ✅ AGAR KOI COMPLETED VISIT NAHI
+  if (completedVisits.length === 0) {
+    toast.warning(
+      "No completed consultation visits found"
+    );
+  }
 
-  })
+})
   .catch(err => {
     console.error(err);
-
-    toast.error(
-      "Failed to load OPD visits"
-    );
+    toast.error("Failed to load OPD visits");
   });
 
 }, [patientId, ipdAdmissionId, BASE_URL]);
@@ -1281,14 +1267,12 @@ console.log({
   dischargeDate
 });
 const user = JSON.parse(localStorage.getItem('user'));
-const currentUserId =
-  user?._id || user?.id;
+setUserId(user?._id || user?.id);
 const payload = {
 
   patient_id_ref: patientId,
 
-  generated_by_user_id: currentUserId,
-
+  generated_by_user_id: userId,
 
   visit_id_ref: visitId || null,
 
@@ -1311,9 +1295,7 @@ const payload = {
   external_reference_number:
     paymentForm.externalRef || "",
 
-  received_by_user_id_ref:
-    currentUserId
- 
+ received_by_user_id_ref: userId
 };
 
   try {
@@ -1565,14 +1547,12 @@ const selectedVisit = visits.find(
     {patients.map(p => (
       // <option key={p._id} value={p._id}>{p.fullName}</option>
 
-    <option key={p._id} value={p._id}>
-  {p.fullName} |
-  {p.gender} |
-  {p.patientType} |
+      <option key={p._id} value={p._id}>
+  {/* {p.fullName} ({p.patientType}) */}
 
-  {p.billingStatus === "Billed"
-    ? "✅ Billed"
-    : "🟡 Unbilled"}
+  {p.fullName} |
+{p.gender} |
+{p.patientType}
 </option>
     ))}
   </select>
@@ -2597,10 +2577,11 @@ const selectedVisit = visits.find(
     {paymentForm.method}
   </p>
 
- {/* <p>
-  <strong>Received By:</strong>{" "}
-  {payments[0]?.received_by_user_id_ref?.name || "N/A"}
-</p> */}
+  <p>
+    <strong>Received By:</strong>{" "}
+    {payments[0]?.received_by_user_id_ref?.user.name || "N/A"}
+    
+  </p>
 
 
 
@@ -2610,10 +2591,6 @@ const selectedVisit = visits.find(
       {paymentForm.externalRef || "N/A"}
     </p>
   )}
-      <p>
-  <strong>Received By:</strong>{" "}
-  {payments[0]?.received_by_user_id_ref?.name || "N/A"}
-</p>
 </div>
 </div>
 
