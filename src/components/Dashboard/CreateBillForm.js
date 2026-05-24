@@ -1512,6 +1512,10 @@ const selectedVisit = visits.find(
           <p>
             Haji Abdul Razzak Kalsekar Tibbia Hospital
           </p>
+          <h3>
+  Bill ID:
+  ${billData?.billId || 'N/A'}
+</h3>
         </div>
 
         ${printContents}
@@ -1534,6 +1538,23 @@ const selectedVisit = visits.find(
  return (
     <div style={{ maxWidth: '1000px', margin: '2rem auto', padding: '2rem', fontFamily: 'Arial, sans-serif', background: '#fafafa', borderRadius: '10px', boxShadow: '0 0 8px rgba(0,0,0,0.1)' }}>
     <div ref={printRef} style={{ maxWidth: '1000px', margin: '2rem auto', padding: '2rem', fontFamily: 'Arial, sans-serif', background: '#fafafa', borderRadius: '10px', boxShadow: '0 0 8px rgba(0,0,0,0.1)' }}>
+     {billData?.billId && (
+  <div
+    style={{
+      background: "#e3f2fd",
+      padding: "12px",
+      borderRadius: "8px",
+      marginBottom: "1rem",
+      fontWeight: "bold",
+      color: "#1976d2",
+      fontSize: "18px",
+      textAlign: "center"
+    }}
+  >
+    Bill ID: {billData.billId}
+  </div>
+)}
+
      <style>{styles}</style>
       <h2 style={{ textAlign: 'center', marginBottom: '2rem' }}>Create Patient Bill</h2>
       <form onSubmit={handleSubmit}>
