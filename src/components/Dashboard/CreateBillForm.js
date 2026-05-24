@@ -2593,10 +2593,10 @@ const selectedVisit = visits.find(
     {paymentForm.method}
   </p>
 
- <p>
+ {/* <p>
   <strong>Received By:</strong>{" "}
   {payments[0]?.received_by_user_id_ref?.name || "N/A"}
-</p>
+</p> */}
 
 
 
@@ -2606,6 +2606,10 @@ const selectedVisit = visits.find(
       {paymentForm.externalRef || "N/A"}
     </p>
   )}
+      <p>
+  <strong>Received By:</strong>{" "}
+  {payments[0]?.received_by_user_id_ref?.name || "N/A"}
+</p>
 </div>
 </div>
 
