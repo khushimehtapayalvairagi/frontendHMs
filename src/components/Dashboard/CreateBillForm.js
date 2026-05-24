@@ -1281,12 +1281,14 @@ console.log({
   dischargeDate
 });
 const user = JSON.parse(localStorage.getItem('user'));
-setUserId(user?._id || user?.id);
+const currentUserId =
+  user?._id || user?.id;
 const payload = {
 
   patient_id_ref: patientId,
 
-  generated_by_user_id: userId,
+  generated_by_user_id: currentUserId,
+
 
   visit_id_ref: visitId || null,
 
@@ -1309,7 +1311,9 @@ const payload = {
   external_reference_number:
     paymentForm.externalRef || "",
 
- received_by_user_id_ref: userId
+  received_by_user_id_ref:
+    currentUserId
+ 
 };
 
   try {
