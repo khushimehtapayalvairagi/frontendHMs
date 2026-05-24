@@ -32,12 +32,13 @@ const [searchTerm, setSearchTerm] = useState("");
 
   const BASE_URL = process.env.REACT_APP_BASE_URL;
 
-  const searchPatients = async (value) => {
+const searchPatients = async (value) => {
 
   setSearchTerm(value);
 
   if (!value) {
     setExistingPatients([]);
+    setSelectedPatient(null);
     return;
   }
 
@@ -54,7 +55,50 @@ const [searchTerm, setSearchTerm] = useState("");
       }
     );
 
-    setExistingPatients(res.data.patients || []);
+    const patients = res.data.patients || [];
+
+    setExistingPatients(patients);
+
+    // ✅ EXACT PATIENT ID MATCH
+    const exactPatient = patients.find(
+      (p) =>
+        p.patientId?.toLowerCase() ===
+        value.toLowerCase()
+    );
+
+    // ✅ AUTO PREFILL
+    if (exactPatient) {
+
+      setSelectedPatient(exactPatient);
+
+      setForm({
+        fullName: exactPatient.fullName || "",
+        age: exactPatient.age || "",
+        gender: exactPatient.gender || "",
+        dob: exactPatient.dob
+          ? exactPatient.dob.split("T")[0]
+          : "",
+        contactNumber:
+          exactPatient.contactNumber || "",
+        email: exactPatient.email || "",
+        address: exactPatient.address || "",
+        aadhaarNumber:
+          exactPatient.aadhaarNumber || "",
+        relatives:
+          exactPatient.relatives?.length > 0
+            ? exactPatient.relatives
+            : [
+                {
+                  name: "",
+                  contactNumber: "",
+                  relationship: ""
+                }
+              ]
+      });
+
+      // optional
+      setExistingPatients([]);
+    }
 
   } catch (err) {
     console.log(err);
