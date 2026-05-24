@@ -1067,33 +1067,47 @@ useEffect(() => {
       }
     }
   )
- .then(res => {
+  .then(res => {
 
-  const allVisits = res.data.visits || res.data || [];
+    const allVisits =
+      res.data.visits || res.data || [];
 
-  // ✅ ONLY COMPLETED CONSULTATION VISITS
-  const completedVisits = allVisits.filter(
-    v => v.status?.toLowerCase() === "completed"
-  );
+    // ✅ ONLY COMPLETED VISITS
+    const completedVisits =
+      allVisits.filter(
+        v =>
+          v.status?.toLowerCase() === "completed"
+      );
 
-  setVisits(completedVisits);
+    // ✅ SHOW ALL COMPLETED
+    setVisits(completedVisits);
 
-  // ✅ AUTO SELECT FIRST COMPLETED VISIT
-  if (completedVisits.length > 0 && !ipdAdmissionId) {
-    setVisitId(completedVisits[0]._id);
-  }
+    // ✅ AUTO SELECT
+    if (
+      completedVisits.length > 0 &&
+      !ipdAdmissionId
+    ) {
+      setVisitId(
+        completedVisits[0]._id
+      );
+    }
 
-  // ✅ AGAR KOI COMPLETED VISIT NAHI
-  if (completedVisits.length === 0) {
-    toast.warning(
-      "No completed consultation visits found"
-    );
-  }
+    // ✅ NO VISITS
+    if (
+      completedVisits.length === 0
+    ) {
+      toast.warning(
+        "No completed visits found"
+      );
+    }
 
-})
+  })
   .catch(err => {
     console.error(err);
-    toast.error("Failed to load OPD visits");
+
+    toast.error(
+      "Failed to load OPD visits"
+    );
   });
 
 }, [patientId, ipdAdmissionId, BASE_URL]);
@@ -1547,12 +1561,14 @@ const selectedVisit = visits.find(
     {patients.map(p => (
       // <option key={p._id} value={p._id}>{p.fullName}</option>
 
-      <option key={p._id} value={p._id}>
-  {/* {p.fullName} ({p.patientType}) */}
-
+    <option key={p._id} value={p._id}>
   {p.fullName} |
-{p.gender} |
-{p.patientType}
+  {p.gender} |
+  {p.patientType} |
+
+  {p.billingStatus === "Billed"
+    ? "✅ Billed"
+    : "🟡 Unbilled"}
 </option>
     ))}
   </select>
@@ -2577,11 +2593,10 @@ const selectedVisit = visits.find(
     {paymentForm.method}
   </p>
 
-  <p>
-    <strong>Received By:</strong>{" "}
-    {payments[0]?.received_by_user_id_ref?.user.name || "N/A"}
-    
-  </p>
+ <p>
+  <strong>Received By:</strong>{" "}
+  {payments[0]?.received_by_user_id_ref?.name || "N/A"}
+</p>
 
 
 
