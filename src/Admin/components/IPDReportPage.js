@@ -1119,13 +1119,12 @@ const handlePrint = () => {
                         : 'N/A'}
                     </td>
 
-                    <td>
-                      {payment.bill_id_ref
-                        ?.billNumber ||
-                        payment.bill_id_ref
-                          ?._id ||
-                        'N/A'}
-                    </td>
+                <td>
+  {payment.bill_id_ref?.billId ||
+    payment.bill_id_ref?.billNumber ||
+    payment.bill_id_ref?._id ||
+    'N/A'}
+</td>
 
                     <td>
                       {payment.bill_id_ref

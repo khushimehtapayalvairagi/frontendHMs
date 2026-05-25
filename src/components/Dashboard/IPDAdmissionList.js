@@ -5,6 +5,7 @@ import { ToastContainer, toast } from 'react-toastify';
 
 const IPDAdmissionList = () => {
   const { patientId } = useParams();
+  
   const navigate = useNavigate();
   const token = localStorage.getItem('jwt');
 const location = useLocation();

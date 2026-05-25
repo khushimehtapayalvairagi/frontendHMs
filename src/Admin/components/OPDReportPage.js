@@ -2759,7 +2759,7 @@ if (
                         <th>Patient</th>
                         <th>Doctor</th>
                         <th>Diagnosis</th>
-                        <th>Payment</th>
+                        {/* <th>Payment</th> */}
                       </tr>
                     </thead>
 
@@ -2790,9 +2790,9 @@ if (
                           </td>
 
 
-                          <td>
+                          {/* <td>
                                 ₹{c.visitPayment || 0}
-                          </td>
+                          </td> */}
 
 
                         </tr>
