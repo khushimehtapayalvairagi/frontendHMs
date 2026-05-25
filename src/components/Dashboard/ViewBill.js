@@ -102,7 +102,7 @@ function ViewBill() {
       <h2 style={{ marginBottom: '1rem' }}>Lookup Bill or Bills by Patient</h2>
 
       <form onSubmit={handleSubmit} style={{ marginBottom: '1.5rem' }}>
-       <input
+       {/* <input
   type="text"
   value={billId}
   onChange={(e) =>
@@ -116,7 +116,7 @@ function ViewBill() {
     marginLeft: '1rem',
     width: '200px'
   }}
-/>
+/> */}
 
         <div style={{ marginBottom: '0.8rem' }}>
           <label><strong>Patient:</strong></label>
