@@ -3290,9 +3290,9 @@ if (
                   ).toLocaleString()}
                 </td>
                                  <td>
-  {paymentRecon.bill_id_ref?.billId ||
-    paymentRecon.bill_id_ref?.billNumber ||
-    paymentRecon.bill_id_ref?._id ||
+  {p.bill_id_ref?.billId ||
+    p.bill_id_ref?.billNumber ||
+    p.bill_id_ref?._id ||
     'N/A'}
 </td>
                 <td>
