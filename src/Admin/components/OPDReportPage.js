@@ -3028,44 +3028,162 @@ if (
 
          {/* Billing Summary UI */}
 
-          {(reportType === 'billing' ||
+   {(reportType === 'billing' ||
   reportType === 'all') &&
-  hasFetched &&
-  billingSummary && (
+  billingData && (
+
     <>
-      <h3>Billing Summary</h3>
 
-      <table className="opd-table">
-        <tbody>
+      <h2>Billing Summary</h2>
+
+      <h3>
+        Grand Total:
+        ₹{
+          typeof billingData.totalAmount=== 'number'
+            ? billingData.totalAmount.toFixed(2)
+            : '0.00'
+        }
+      </h3>
+
+      {/* ITEM BREAKDOWN */}
+
+      <h3>Breakdown by Item Type</h3>
+
+      <table className="table">
+        <thead>
           <tr>
+            <th>Item Type</th>
             <th>Total Amount</th>
-
-            <td>
-              ₹
-              {billingSummary.totalAmount ||
-                0}
-            </td>
+            <th>Count</th>
           </tr>
+        </thead>
 
-          {billingSummary
-            .paymentStatusBreakdown?.map(
-              (b, i) => (
-                <tr key={i}>
-                  <th>
-                    {b._id}
-                  </th>
+        <tbody>
 
-                  <td>
-                    ₹
-                    {b.totalAmount}
-                  </td>
-                </tr>
-              )
-            )}
+          {(billingData.breakdown || []).map(
+            (item, index) => (
+
+              <tr key={index}>
+                <td>{item.type}</td>
+                <td>
+                  ₹{
+                    typeof item.amount === 'number'
+                      ? item.amount.toFixed(2)
+                      : '0.00'
+                  }
+                </td>
+                <td>{item.count}</td>
+              </tr>
+
+            )
+          )}
+
         </tbody>
       </table>
+
+      {/* PAYMENT STATUS */}
+
+      <h3>Payment Status Breakdown</h3>
+
+      <table className="table">
+
+        <thead>
+          <tr>
+            <th>Status</th>
+            <th>Total Amount</th>
+          </tr>
+        </thead>
+
+        <tbody>
+
+          {(billingData.paymentStatusBreakdown || []).map(
+            (status, index) => (
+
+              <tr key={index}>
+                <td>{status._id || 'N/A'}</td>
+                <td>
+                  ₹{
+                    typeof status.totalAmount === 'number'
+                      ? status.totalAmount.toFixed(2)
+                      : '0.00'
+                  }
+                </td>
+                
+              </tr>
+
+            )
+          )}
+
+        </tbody>
+      </table>
+
+      {/* BILL DETAILS */}
+
+      {billingData.bills?.length > 0 && (
+        <>
+
+          <h3>Bill Details</h3>
+
+          <table className="table">
+
+            <thead>
+              <tr>
+                <th>Bill No</th>
+                <th>Patient</th>
+                <th>Date</th>
+                <th>Total</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+
+            <tbody>
+
+              {billingData.bills.map((bill, index) => (
+
+                <tr key={bill._id || index}>
+
+               <td>
+  {bill.billId ? bill.billId : (bill.billNumber ? bill.billNumber : bill._id)}
+</td>
+
+                  <td>
+                    {bill.patient_id_ref?.fullName ||
+                      bill.patient?.fullName ||
+                      'N/A'}
+                  </td>
+
+                  <td>
+                    {bill.createdAt
+                      ? new Date(
+                          bill.createdAt
+                        ).toLocaleDateString()
+                      : 'N/A'}
+                  </td>
+
+                ₹{
+  typeof bill.total_amount === 'number'
+    ? bill.total_amount.toFixed(2)
+    : '0.00'
+}
+
+                  <td>
+                    {bill.payment_status || 'N/A'}
+                  </td>
+
+                </tr>
+
+              ))}
+
+            </tbody>
+
+          </table>
+
+        </>
+      )}
+
     </>
-  )}
+)}
+
 
 
 
@@ -3154,6 +3272,7 @@ if (
         <thead>
           <tr>
             <th>Date</th>
+            <th>Bill NO</th>
             <th>Patient</th>
             <th>Method</th>
             <th>Amount</th>
@@ -3170,7 +3289,12 @@ if (
                     p.payment_date
                   ).toLocaleString()}
                 </td>
-
+                                 <td>
+  {payment.bill_id_ref?.billId ||
+    payment.bill_id_ref?.billNumber ||
+    payment.bill_id_ref?._id ||
+    'N/A'}
+</td>
                 <td>
                   {p.bill_id_ref
                     ?.patient_id_ref
