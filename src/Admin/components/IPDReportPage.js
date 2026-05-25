@@ -962,13 +962,11 @@ const handlePrint = () => {
                       : 'N/A'}
                   </td>
 
-                  <td>
-                    ₹{
-                      typeof bill.grand_total === 'number'
-                        ? bill.grand_total.toFixed(2)
-                        : '0.00'
-                    }
-                  </td>
+                ₹{
+  typeof bill.total_amount === 'number'
+    ? bill.total_amount.toFixed(2)
+    : '0.00'
+}
 
                   <td>
                     {bill.payment_status || 'N/A'}
