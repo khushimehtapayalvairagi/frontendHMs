@@ -944,11 +944,9 @@ const handlePrint = () => {
 
                 <tr key={bill._id || index}>
 
-                  <td>
-                   <td>
-  {bill.billId || bill.billNumber || bill._id}
+               <td>
+  {bill.billId ? bill.billId : (bill.billNumber ? bill.billNumber : bill._id)}
 </td>
-                  </td>
 
                   <td>
                     {bill.patient_id_ref?.fullName ||
