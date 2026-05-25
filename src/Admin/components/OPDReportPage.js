@@ -3030,7 +3030,7 @@ if (
 
    {(reportType === 'billing' ||
   reportType === 'all') &&
-  billingData && (
+  billingSummary && (
 
     <>
 
@@ -3039,8 +3039,8 @@ if (
       <h3>
         Grand Total:
         ₹{
-          typeof billingData.totalAmount=== 'number'
-            ? billingData.totalAmount.toFixed(2)
+          typeof billingSummary.totalAmount=== 'number'
+            ? billingSummary.totalAmount.toFixed(2)
             : '0.00'
         }
       </h3>
@@ -3060,7 +3060,7 @@ if (
 
         <tbody>
 
-          {(billingData.breakdown || []).map(
+          {(billingSummary.breakdown || []).map(
             (item, index) => (
 
               <tr key={index}>
@@ -3096,7 +3096,7 @@ if (
 
         <tbody>
 
-          {(billingData.paymentStatusBreakdown || []).map(
+          {(billingSummary.paymentStatusBreakdown || []).map(
             (status, index) => (
 
               <tr key={index}>
@@ -3119,7 +3119,7 @@ if (
 
       {/* BILL DETAILS */}
 
-      {billingData.bills?.length > 0 && (
+      {billingSummary.bills?.length > 0 && (
         <>
 
           <h3>Bill Details</h3>
@@ -3138,7 +3138,7 @@ if (
 
             <tbody>
 
-              {billingData.bills.map((bill, index) => (
+              {billingSummary.bills.map((bill, index) => (
 
                 <tr key={bill._id || index}>
 
@@ -3290,9 +3290,9 @@ if (
                   ).toLocaleString()}
                 </td>
                                  <td>
-  {payment.bill_id_ref?.billId ||
-    payment.bill_id_ref?.billNumber ||
-    payment.bill_id_ref?._id ||
+  {paymentRecon.bill_id_ref?.billId ||
+    paymentRecon.bill_id_ref?.billNumber ||
+    paymentRecon.bill_id_ref?._id ||
     'N/A'}
 </td>
                 <td>
