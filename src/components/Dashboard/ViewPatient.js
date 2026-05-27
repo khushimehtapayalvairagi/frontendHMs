@@ -33,7 +33,18 @@ import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
+
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+
+
 const ViewPatient = () => {
+
+const [editOpen, setEditOpen] = useState(false);
+const [editPatient, setEditPatient] = useState(null);
+
+
+
   const [patients, setPatients] = useState([]);
   const [searchId, setSearchId] = useState("");
   const [filteredPatient, setFilteredPatient] = useState(null);
@@ -47,25 +58,49 @@ const [dialogOpen, setDialogOpen] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
-  useEffect(() => {
-    const fetchPatients = async () => {
-      try {
-        const token = localStorage.getItem("jwt");
-        const res = await axios.get(
-          `${BASE_URL}/api/receptionist/patients`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        // const activePatients = res.data.patients?.filter(
-        //   (p) => p.status.toLowerCase() !== "discharged"
-        // );
-       setPatients(res.data.patients || []); 
-      } catch (err) {
-        toast.error("Failed to fetch patients");
-      }
-    };
+ const fetchPatients = async () => {
+  try {
+    const token = localStorage.getItem("jwt");
 
-    fetchPatients();
-  }, []);
+    const res = await axios.get(
+      `${BASE_URL}/api/receptionist/patients`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+
+    setPatients(res.data.patients || []);
+
+  } catch (err) {
+    toast.error("Failed to fetch patients");
+  }
+};
+
+useEffect(() => {
+  fetchPatients();
+}, []);
+ 
+  // useEffect(() => {
+  //   const fetchPatients = async () => {
+  //     try {
+  //       const token = localStorage.getItem("jwt");
+  //       const res = await axios.get(
+  //         `${BASE_URL}/api/receptionist/patients`,
+  //         { headers: { Authorization: `Bearer ${token}` } }
+  //       );
+  //       // const activePatients = res.data.patients?.filter(
+  //       //   (p) => p.status.toLowerCase() !== "discharged"
+  //       // );
+  //      setPatients(res.data.patients || []); 
+  //     } catch (err) {
+  //       toast.error("Failed to fetch patients");
+  //     }
+  //   };
+
+  //   fetchPatients();
+  // }, []);
 //   const normalizeDate = (dob) => {
 //   if (!dob) return null;
 //   const parts = dob.split("/").map(Number);
@@ -100,6 +135,83 @@ const handleSearch = () => {
     toast.error("No patient found");
   }
 }
+
+const handleEdit = (patient) => {
+  setEditPatient({
+    ...patient,
+    dob: patient.dob
+      ? patient.dob.split("T")[0]
+      : ""
+  });
+
+  setEditOpen(true);
+};
+
+
+const handleUpdatePatient = async () => {
+  try {
+
+    const token = localStorage.getItem("jwt");
+
+    await axios.put(
+      `${BASE_URL}/api/receptionist/patient/${editPatient._id}`,
+      editPatient,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+
+    toast.success("Patient updated");
+
+    setEditOpen(false);
+
+    fetchPatients();
+
+  } catch (err) {
+
+    console.log(err);
+
+    toast.error("Update failed");
+  }
+};
+
+const handleDeletePatient = async (id) => {
+
+  const confirmDelete =
+    window.confirm(
+      "Are you sure you want to delete?"
+    );
+
+  if (!confirmDelete) return;
+
+  try {
+
+    const token = localStorage.getItem("jwt");
+
+    await axios.delete(
+      `${BASE_URL}/api/receptionist/patient/${id}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+
+    toast.success("Patient deleted");
+
+    fetchPatients();
+
+  } catch (err) {
+
+    console.log(err);
+
+    toast.error("Delete failed");
+  }
+};
+
+
   const renderTableRow = (p, index) => (
     <React.Fragment key={p.patientId} >
       <TableRow hover sx={{ p: 1, border: 1 }}>
@@ -115,17 +227,101 @@ const handleSearch = () => {
     : "Active"}
 </TableCell>
         <TableCell >
-        <IconButton onClick={() => {
+        {/* <IconButton onClick={() => {
   setSelectedPatient(p);
   setDialogOpen(true);
 }}>
+   <EditIcon />
+  </IconButton> */}
+  {/* <IconButton
+  color="primary"
+  onClick={() => handleEdit(p)}
+>
+  <EditIcon />
+</IconButton> */}
+
+
+
+<TableCell>
+  {/* More Details */}
+  <IconButton
+    color="info"
+    onClick={() => {
+      setSelectedPatient(p);
+      setDialogOpen(true);
+    }}
+  >
+    <ExpandMoreIcon />
+  </IconButton>
+
+  {/* Edit */}
+  <IconButton
+    color="primary"
+    onClick={() => handleEdit(p)}
+  >
+    <EditIcon />
+  </IconButton>
+
+  {/* Delete */}
+  <IconButton
+    color="error"
+    onClick={() =>
+      handleDeletePatient(p._id)
+    }
+  >
+    <DeleteIcon />
+  </IconButton>
+</TableCell>
+
+
+{/* <TableCell> */}
+
+  {/* More Details */}
+  {/* <IconButton
+    color="info"
+    onClick={() => {
+      setSelectedPatient(p);
+      setDialogOpen(true);
+    }}
+  >
+    <ExpandMoreIcon />
+  </IconButton> */}
+
+  {/* Edit */}
+  {/* <IconButton
+    color="primary"
+    onClick={() => handleEdit(p)}
+  >
+    <EditIcon />
+  </IconButton> */}
+
+  {/* Delete */}
+  {/* <IconButton
+    color="error"
+    onClick={() =>
+      handleDeletePatient(p._id)
+    }
+  >
+    <DeleteIcon />
+  </IconButton>
+
+</TableCell> */}
+
+
+  {/* <IconButton
+    color="error"
+    onClick={() =>
+      handleDeletePatient(p._id)
+    }
+  >
+    <DeleteIcon />
   <ExpandMoreIcon />
-</IconButton>
+</IconButton> */}
 
         </TableCell>
       </TableRow>
       <TableRow sx={{ p: 1, border: 1 }}>
-        <TableCell colSpan={isMobile ? 4 : 7} sx={{ p: 0, border: 1 }}>
+        <TableCell colSpan={isMobile ? 5 : 8} sx={{ p: 0, border: 1 }}>
           <Collapse in={openRow === index} timeout="auto" unmountOnExit>
             <Box sx={{ p: 1, bgcolor: "black" , border: 1 }}>
               <Typography><strong>Email:</strong> {p.email}</Typography>
@@ -196,6 +392,8 @@ const rowsToRender = filteredPatient && filteredPatient.length > 0 ? filteredPat
     {!isMobile && <TableCell>Contact</TableCell>}
     <TableCell>Status</TableCell>
     <TableCell>More</TableCell>
+  {/* <TableCell>More</TableCell>
+<TableCell>Action</TableCell> */}
   </TableRow>
 </TableHead>
 
@@ -306,6 +504,128 @@ const rowsToRender = filteredPatient && filteredPatient.length > 0 ? filteredPat
       Close
     </Button>
   </DialogActions>
+</Dialog>
+
+<Dialog
+  open={editOpen}
+  onClose={() => setEditOpen(false)}
+  fullWidth
+  maxWidth="sm"
+>
+
+  <DialogTitle>
+    Edit Patient
+  </DialogTitle>
+
+  <DialogContent>
+
+    {editPatient && (
+
+      <Box
+        display="flex"
+        flexDirection="column"
+        gap={2}
+        mt={1}
+      >
+
+        <TextField
+          label="Full Name"
+          value={editPatient.fullName}
+          onChange={(e) =>
+            setEditPatient({
+              ...editPatient,
+              fullName: e.target.value
+            })
+          }
+        />
+
+        <TextField
+          type="date"
+          label="DOB"
+          InputLabelProps={{
+            shrink: true
+          }}
+          value={editPatient.dob}
+          onChange={(e) =>
+            setEditPatient({
+              ...editPatient,
+              dob: e.target.value
+            })
+          }
+        />
+
+        <TextField
+          label="Gender"
+          value={editPatient.gender}
+          onChange={(e) =>
+            setEditPatient({
+              ...editPatient,
+              gender: e.target.value
+            })
+          }
+        />
+
+        <TextField
+          label="Contact"
+          value={editPatient.contactNumber}
+          onChange={(e) =>
+            setEditPatient({
+              ...editPatient,
+              contactNumber:
+                e.target.value
+            })
+          }
+        />
+
+        <TextField
+          label="Email"
+          value={editPatient.email}
+          onChange={(e) =>
+            setEditPatient({
+              ...editPatient,
+              email: e.target.value
+            })
+          }
+        />
+
+        <TextField
+          label="Address"
+          multiline
+          rows={3}
+          value={editPatient.address}
+          onChange={(e) =>
+            setEditPatient({
+              ...editPatient,
+              address: e.target.value
+            })
+          }
+        />
+
+      </Box>
+
+    )}
+
+  </DialogContent>
+
+  <DialogActions>
+
+    <Button
+      onClick={() =>
+        setEditOpen(false)
+      }
+    >
+      Cancel
+    </Button>
+
+    <Button
+      variant="contained"
+      onClick={handleUpdatePatient}
+    >
+      Update
+    </Button>
+
+  </DialogActions>
+
 </Dialog>
 
     </Container>

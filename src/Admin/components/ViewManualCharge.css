@@ -1,7 +1,41 @@
-.manual-charge-container {
+/* .manual-charge-container {
   padding: 20px;
   max-width: 1000px;
   margin: 0 auto;
+} */
+
+/* Main page */
+.manual-charge-container {
+  padding: 20px;
+  max-width: 1100px;
+  margin: auto;
+  box-sizing: border-box;
+  min-height: 100vh;
+  overflow-y: auto;
+  padding-bottom: 80px; /* Bottom space fix */
+}
+
+/* Parent scroll fix */
+body,
+html,
+#root {
+  height: auto;
+  min-height: 100%;
+  overflow-y: auto;
+}
+
+/* Form/Textarea Fix */
+textarea {
+  width: 100%;
+  min-height: 90px;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+/* Last element cut fix */
+.table-wrapper,
+form {
+  margin-bottom: 40px;
 }
 
 .manual-charge-title {

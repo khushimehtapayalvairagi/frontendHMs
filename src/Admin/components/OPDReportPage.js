@@ -2162,6 +2162,114 @@ const [paymentRecon, setPaymentRecon] =
   const [hasFetched, setHasFetched] = useState(false);
 
   const BASE_URL = process.env.REACT_APP_BASE_URL;
+
+
+
+  // Remove IPD admitted patients
+
+const nonIpdCentralData =
+  centralData.filter(
+    (c) =>
+      !c.isIPDAdmitted &&
+      !c.ipdAdmissionId &&
+      !c.ipdPatientId
+  );
+
+// OPD Registration Payments
+
+const opdPayments =
+  centralData.map((c) => ({
+    _id: `OPD-${c._id}`,
+    billId: `OPD-${c._id}`,
+    patientName:
+      c.patientId?.fullName || 'N/A',
+    createdAt:
+      c.consultationDateTime,
+    payment:
+      Number(c.visitPayment || 0),
+    type: 'OPD Registration',
+    status: 'Paid'
+  }));
+
+// Bill Payments
+
+// const billPayments =
+//   (billingSummary?.bills || []).map(
+//     (bill) => ({
+//       _id: bill._id,
+//       billId:
+//         bill.billId ||
+//         bill.billNumber ||
+//         bill._id,
+//       patientName:
+//         bill.patient_id_ref
+//           ?.fullName ||
+//         bill.patient?.fullName ||
+//         'N/A',
+//       createdAt:
+//         bill.createdAt,
+//       payment:
+//         Number(
+//           bill.total_amount || 0
+//         ),
+//       type: 'Bill',
+//       status:
+//         bill.payment_status ||
+//         'N/A'
+//     })
+//   );
+
+const billPayments =
+  (billingSummary?.bills || [])
+    .filter(
+      (bill) =>
+        !bill.ipdAdmissionId &&
+        !bill.isIPD
+    )
+    .map((bill) => ({
+      _id: bill._id,
+      billId:
+        bill.billId ||
+        bill.billNumber ||
+        bill._id,
+      patientName:
+        bill.patient_id_ref
+          ?.fullName ||
+        bill.patient?.fullName ||
+        'N/A',
+      createdAt:
+        bill.createdAt,
+      payment:
+        Number(
+          bill.total_amount || 0
+        ),
+      type: 'Bill',
+      status:
+        bill.payment_status ||
+        'N/A'
+    }));
+
+// Merge Both
+
+const mergedPayments = [
+  ...opdPayments,
+  ...billPayments
+];
+
+// Grand Total
+
+const grandTotal =
+  mergedPayments.reduce(
+    (sum, item) =>
+      sum +
+      Number(
+        item.payment || 0
+      ),
+    0
+  );
+
+
+
   const token = localStorage.getItem('jwt');
 
   const headers = {
@@ -2685,14 +2793,21 @@ if (
                 </thead>
 
                 <tbody>
-                  {centralData.length === 0 ? (
+                  {
+                  nonIpdCentralData.length === 0
+                  // centralData.length === 0 
+                  
+                  ? (
                     <tr>
                       <td colSpan="5">
                         No data found
                       </td>
                     </tr>
                   ) : (
-                    centralData.map((c, i) => (
+                    // centralData.map(
+                    nonIpdCentralData.map(
+                      
+                      (c, i) => (
                       <tr key={i}>
                         <td>
                           {new Date(
@@ -2815,7 +2930,21 @@ if (
                 Doctor Wise Report
               </h3>
 
-              {doctorWiseData.map((doc, index) => (
+              {/* {doctorWiseData.map( */}
+                {/* {filteredConsultations.map(
+                (doc, index) => ( */}
+
+                {doctorWiseData.map((doc, index) => {
+
+  const filteredConsultations =
+    doc.consultations.filter(
+      (c) =>
+        !c.isIPDAdmitted &&
+        !c.ipdAdmissionId &&
+        !c.ipdPatientId
+    );
+
+  return (
                 <div key={index}>
 
                   <h4>
@@ -2841,7 +2970,8 @@ if (
                     </thead>
 
                     <tbody>
-                      {doc.consultations.map(
+                      {/* {doc.consultations.map( */}
+                      {filteredConsultations.map(
                         (c, i) => (
                           <tr key={i}>
                             <td>
@@ -2879,8 +3009,12 @@ if (
                     </tbody>
 
                   </table>
-                </div>
-              ))}
+                {/* </div>
+              ))} */}
+
+              </div>
+  );
+})}
             </>
           )}
 
@@ -3117,9 +3251,113 @@ if (
         </tbody>
       </table>
 
+
+
+
+
+      
+
       {/* BILL DETAILS */}
 
-      {billingSummary.bills?.length > 0 && (
+      
+{mergedPayments.length > 0 && (
+  <>
+    <h3>Bill Details</h3>
+
+    <table className="table">
+
+      <thead>
+        <tr>
+          <th>Bill No</th>
+          <th>Patient</th>
+          <th>Date</th>
+          <th>Type</th>
+          <th>Payment</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+
+      <tbody>
+
+        {mergedPayments.map(
+          (item, index) => (
+
+            <tr
+              key={
+                item._id || index
+              }
+            >
+
+              <td>
+                {item.billId}
+              </td>
+
+              <td>
+                {item.patientName}
+              </td>
+
+              <td>
+                {item.createdAt
+                  ? new Date(
+                      item.createdAt
+                    ).toLocaleDateString()
+                  : 'N/A'}
+              </td>
+
+              <td>
+                {item.type}
+              </td>
+
+              <td>
+                ₹
+                {Number(
+                  item.payment || 0
+                ).toFixed(2)}
+              </td>
+
+              <td>
+                {item.status}
+              </td>
+
+            </tr>
+          )
+        )}
+
+        {/* TOTAL ROW */}
+
+        <tr
+          style={{
+            fontWeight: 'bold',
+            background:
+              '#f0f0f0'
+          }}
+        >
+          <td
+            colSpan="4"
+            style={{
+              textAlign: 'right'
+            }}
+          >
+            Grand Total
+          </td>
+
+          <td>
+            ₹
+            {grandTotal.toFixed(
+              2
+            )}
+          </td>
+
+          <td></td>
+        </tr>
+
+      </tbody>
+
+    </table>
+  </>
+)}
+
+      {/* {billingSummary.bills?.length > 0 && (
         <>
 
           <h3>Bill Details</h3>
@@ -3179,7 +3417,7 @@ if (
           </table>
 
         </>
-      )}
+      )} */}
 
     </>
 )}

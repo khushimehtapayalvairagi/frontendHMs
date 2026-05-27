@@ -15,6 +15,12 @@ export default function BillPaymentHistory() {
   const [payments, setPayments] = useState([]);
   const [error, setError] = useState('');
   const [openDialog, setOpenDialog] = useState(false);
+
+const [editOpen, setEditOpen] = useState(false);
+const [editBill, setEditBill] = useState(null);
+
+
+
 const printRef = useRef(null);
   const token = localStorage.getItem('jwt');
   const headers = { Authorization: `Bearer ${token}` };
@@ -127,6 +133,56 @@ const isMobile = useMediaQuery('(max-width:600px)');
 
 
                 </Button>
+
+
+<Button
+  variant="outlined"
+  color="primary"
+  size="small"
+  style={{ marginTop: '5px', marginRight: '5px' }}
+  onClick={(e) => {
+    e.stopPropagation();
+    setEditBill(JSON.parse(JSON.stringify(b)));
+    setEditOpen(true);
+  }}
+>
+  Edit
+</Button>
+
+
+                <Button
+  variant="outlined"
+  color="error"
+  size="small"
+  style={{ marginTop: '5px' }}
+  onClick={async (e) => {
+    e.stopPropagation();
+
+    if (!window.confirm("Delete this bill?")) return;
+
+    try {
+      await axios.delete(
+        `${BASE_URL}/api/billing/bills/${b._id}`,
+        { headers }
+      );
+
+      toast.success("Bill deleted");
+
+      setBills(prev =>
+        prev.filter(x => x._id !== b._id)
+      );
+
+      if (selectedBill?._id === b._id) {
+        setOpenDialog(false);
+      }
+
+    } catch {
+      toast.error("Delete failed");
+    }
+  }}
+>
+  Delete
+</Button>
               </li>
             ))}
           </ul>
@@ -336,6 +392,82 @@ const isMobile = useMediaQuery('(max-width:600px)');
           <Button onClick={() => setOpenDialog(false)} variant="outlined">Close</Button>
         </DialogActions>
       </Dialog>
+
+
+
+      <Dialog
+  open={editOpen}
+  onClose={() => setEditOpen(false)}
+  maxWidth="md"
+  fullWidth
+>
+  <DialogTitle>Edit Bill</DialogTitle>
+
+  <DialogContent>
+    {editBill?.items?.map((item, idx) => (
+      <div key={idx} style={{ marginBottom: '15px' }}>
+        <p>{item.description}</p>
+
+        <input
+          type="number"
+          value={item.quantity}
+          onChange={(e) => {
+            const copy = { ...editBill };
+            copy.items[idx].quantity =
+              Number(e.target.value);
+            setEditBill(copy);
+          }}
+        />
+
+        <input
+          type="number"
+          value={item.unit_price}
+          style={{ marginLeft: 10 }}
+          onChange={(e) => {
+            const copy = { ...editBill };
+            copy.items[idx].unit_price =
+              Number(e.target.value);
+            setEditBill(copy);
+          }}
+        />
+      </div>
+    ))}
+  </DialogContent>
+
+  <DialogActions>
+    <Button onClick={() => setEditOpen(false)}>
+      Cancel
+    </Button>
+
+    <Button
+      variant="contained"
+      onClick={async () => {
+        try {
+          await axios.put(
+            `${BASE_URL}/api/billing/bills/${editBill._id}`,
+            editBill,
+            { headers }
+          );
+
+          toast.success("Bill updated");
+
+          const res = await axios.get(
+            `${BASE_URL}/api/billing/bills/patient/${selectedPatient}`,
+            { headers }
+          );
+
+          setBills(res.data.bills);
+          setEditOpen(false);
+
+        } catch {
+          toast.error("Update failed");
+        }
+      }}
+    >
+      Update
+    </Button>
+  </DialogActions>
+</Dialog>
 
       {selectedPatient && bills.length === 0 && (
         <p style={{ marginTop: '1rem', color: '#d32f2f' }}>No bills for this patient.</p>
