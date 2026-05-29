@@ -10,9 +10,17 @@ import {
   DialogContent,
   IconButton,
   Menu,
-  MenuItem
+  MenuItem,
+
+  DialogActions,
+  TextField
 } from '@mui/material'; // NEW: For dropdown & dialog
 import MoreVertIcon from '@mui/icons-material/MoreVert'; // NEW: Icon for dropdown
+
+
+import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
+
 
 const ViewDailyReports = () => {
   const location = useLocation();
@@ -26,7 +34,24 @@ const ViewDailyReports = () => {
 
   const [anchorEl, setAnchorEl] = useState(null); // NEW
   const [menuPatient, setMenuPatient] = useState(null); // NEW
+
+
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+const [editingReport, setEditingReport] = useState(null);
+const [editForm, setEditForm] = useState({
+  temperature: '',
+  pulse: '',
+  bp: '',
+  respiratoryRate: '',
+  nurseNotes: '',
+  treatmentsAdministeredText: '',
+  medicineConsumptionText: '',
+});
+
+
     const BASE_URL = process.env.REACT_APP_BASE_URL;
+
+    
   const handleOpenDialog = (patient) => {
     setSelectedPatient(patient);
     setDialogOpen(true);
@@ -36,6 +61,99 @@ const ViewDailyReports = () => {
     setDialogOpen(false);
     setSelectedPatient(null);
   };
+
+
+const handleDeleteReport = async (reportId) => {
+  if (!window.confirm('Delete this report?')) return;
+
+  try {
+    await axios.delete(
+      `${BASE_URL}/api/ipd/reports/${reportId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    toast.success('Report deleted');
+
+    setSelectedPatient(prev => ({
+      ...prev,
+      admissions: prev.admissions.map(adm => ({
+        ...adm,
+        reports: adm.reports.filter(r => r._id !== reportId)
+      }))
+    }));
+  } catch (err) {
+    toast.error('Delete failed');
+  }
+};
+
+const handleEditClick = (report) => {
+  setEditingReport(report);
+
+  setEditForm({
+    temperature: report.vitals?.temperature || '',
+    pulse: report.vitals?.pulse || '',
+    bp: report.vitals?.bp || '',
+    respiratoryRate: report.vitals?.respiratoryRate || '',
+    nurseNotes: report.nurseNotes || '',
+    treatmentsAdministeredText:
+      report.treatmentsAdministeredText || '',
+    medicineConsumptionText:
+      report.medicineConsumptionText || '',
+  });
+
+  setEditDialogOpen(true);
+};
+
+const handleUpdateReport = async () => {
+  try {
+    const payload = {
+      vitals: {
+        temperature: editForm.temperature,
+        pulse: editForm.pulse,
+        bp: editForm.bp,
+        respiratoryRate: editForm.respiratoryRate,
+      },
+      nurseNotes: editForm.nurseNotes,
+      treatmentsAdministeredText:
+        editForm.treatmentsAdministeredText,
+      medicineConsumptionText:
+        editForm.medicineConsumptionText,
+    };
+
+    const res = await axios.put(
+      `${BASE_URL}/api/ipd/reports/${editingReport._id}`,
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    toast.success('Report updated');
+
+    setSelectedPatient(prev => ({
+      ...prev,
+      admissions: prev.admissions.map(adm => ({
+        ...adm,
+        reports: adm.reports.map(r =>
+          r._id === editingReport._id
+            ? { ...r, ...res.data.report }
+            : r
+        )
+      }))
+    }));
+
+    setEditDialogOpen(false);
+  } catch (err) {
+    toast.error('Update failed');
+  }
+};
+
 
   useEffect(() => {
     const fetchSingleAdmissionReports = async () => {
@@ -197,6 +315,42 @@ const ViewDailyReports = () => {
           adm.reports.map((report, idx) => (
             <div key={report._id} style={styles.dialogReportCard}>
               <p><strong>Report {adm.reports.length - idx}</strong> — {new Date(report.reportDateTime).toLocaleString()}</p>
+
+
+  {/* ADD HERE */}
+  <div
+    style={{
+      display: 'flex',
+      gap: '10px',
+      marginBottom: '10px'
+    }}
+  >
+    <Button
+      variant="outlined"
+      size="small"
+      startIcon={<EditIcon />}
+      onClick={() => handleEditClick(report)}
+    >
+      Edit
+    </Button>
+
+    <Button
+      variant="outlined"
+      color="error"
+      size="small"
+      startIcon={<DeleteIcon />}
+      onClick={() => handleDeleteReport(report._id)}
+    >
+      Delete
+    </Button>
+  </div>
+
+  {/* <p>
+    <strong>Recorded By:</strong>
+    {report.recordedByUserId?.userId?.name}
+    ({report.recordedByUserId?.userId?.role})
+  </p> */}
+
              <p><strong>Recorded By:</strong> 
   {report.recordedByUserId?.userId?.name} 
   ({report.recordedByUserId?.userId?.role})
@@ -218,6 +372,140 @@ const ViewDailyReports = () => {
     ))}
   </DialogContent>
 </Dialog>
+
+{/* </Dialog> */}
+
+{/* EDIT DIALOG HERE */}
+<Dialog
+  open={editDialogOpen}
+  onClose={() => setEditDialogOpen(false)}
+  maxWidth="sm"
+  fullWidth
+>
+  <DialogTitle>Edit Report</DialogTitle>
+
+  <DialogContent>
+
+    <TextField
+      fullWidth
+      margin="dense"
+      label="Temperature"
+      value={editForm.temperature}
+      onChange={(e)=>
+        setEditForm({
+          ...editForm,
+          temperature:e.target.value
+        })
+      }
+    />
+
+    <TextField
+      fullWidth
+      margin="dense"
+      label="Pulse"
+      value={editForm.pulse}
+      onChange={(e)=>
+        setEditForm({
+          ...editForm,
+          pulse:e.target.value
+        })
+      }
+    />
+
+    <TextField
+      fullWidth
+      margin="dense"
+      label="BP"
+      value={editForm.bp}
+      onChange={(e)=>
+        setEditForm({
+          ...editForm,
+          bp:e.target.value
+        })
+      }
+    />
+
+    <TextField
+      fullWidth
+      margin="dense"
+      label="Respiratory Rate"
+      value={editForm.respiratoryRate}
+      onChange={(e)=>
+        setEditForm({
+          ...editForm,
+          respiratoryRate:e.target.value
+        })
+      }
+    />
+
+    <TextField
+      fullWidth
+      multiline
+      rows={2}
+      margin="dense"
+      label="Nurse Notes"
+      value={editForm.nurseNotes}
+      onChange={(e)=>
+        setEditForm({
+          ...editForm,
+          nurseNotes:e.target.value
+        })
+      }
+    />
+
+    <TextField
+      fullWidth
+      multiline
+      rows={2}
+      margin="dense"
+      label="Treatments"
+      value={editForm.treatmentsAdministeredText}
+      onChange={(e)=>
+        setEditForm({
+          ...editForm,
+          treatmentsAdministeredText:e.target.value
+        })
+      }
+    />
+
+    <TextField
+      fullWidth
+      multiline
+      rows={2}
+      margin="dense"
+      label="Medicines"
+      value={editForm.medicineConsumptionText}
+      onChange={(e)=>
+        setEditForm({
+          ...editForm,
+          medicineConsumptionText:e.target.value
+        })
+      }
+    />
+
+  </DialogContent>
+
+  <DialogActions>
+    <Button
+      onClick={() => setEditDialogOpen(false)}
+    >
+      Cancel
+    </Button>
+
+    <Button
+      variant="contained"
+      onClick={handleUpdateReport}
+    >
+      Update
+    </Button>
+  </DialogActions>
+</Dialog>
+
+ {/* // View Reports Dialog close */}
+
+
+
+
 
     </div>
   );

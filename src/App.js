@@ -303,7 +303,28 @@ const InventoryRoutes =()=>(
 
 
 
-<Route path="/inventoryManager-dashboard"  element={<InventoryManagerDashboard />} >
+<Route element={<ProtectedRoute role="INVENTORY_MANAGER" />}>
+  <Route
+    path="/inventoryManager-dashboard"
+    element={<InventoryManagerDashboard />}
+  >
+    <Route index element={<InventoryForm />} />
+
+    <Route path="InventoryForm" element={<InventoryForm />} />
+    <Route path="InventoryList" element={<InventoryList />} />
+    <Route path="inventory/edit/:id" element={<EditInventoryForm />} />
+    <Route
+      path="RecordTransactionForm"
+      element={<RecordTransactionForm />}
+    />
+    <Route
+      path="TransactionHistoryForm"
+      element={<TransactionHistoryForm />}
+    />
+  </Route>
+</Route>
+
+{/* <Route path="/inventoryManager-dashboard"  element={<InventoryManagerDashboard />} >
 <Route path ="InventoryForm" element ={<InventoryForm/>}/>
 <Route path ="InventoryList" element ={<InventoryList/>}/>
 <Route path="inventory/edit/:id" element={<EditInventoryForm />} />
@@ -311,7 +332,7 @@ const InventoryRoutes =()=>(
 <Route path ="TransactionHistoryForm" element={<TransactionHistoryForm/>}/>
 
 
-</Route>
+</Route> */}
 
 </Route>
 

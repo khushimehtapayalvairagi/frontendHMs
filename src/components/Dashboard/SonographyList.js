@@ -3,7 +3,7 @@ import axios from 'axios';
 import {
   Table, TableBody, TableCell, TableContainer,
   TableHead, TableRow, Paper, IconButton,
-  Dialog, DialogTitle, DialogContent, DialogActions, Button
+  Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { toast, ToastContainer } from 'react-toastify';
@@ -12,7 +12,15 @@ import { useNavigate } from 'react-router-dom';
 
 import DeleteIcon from '@mui/icons-material/Delete';
 
+import EditIcon from "@mui/icons-material/Edit";
+
+
 const ViewSonography = () => {
+
+
+const [editMode, setEditMode] = useState(false);
+const [editData, setEditData] = useState({});
+
 
   const [records, setRecords] = useState([]);
   const [filteredRecords, setFilteredRecords] = useState([]);
@@ -79,8 +87,73 @@ const ViewSonography = () => {
   const handleCloseDialog = () => {
     setDialogOpen(false);
     setSelectedRecord(null);
+
+    setEditMode(false);
+
   };
 
+
+
+
+  const handleEditOpen = () => {
+  setEditMode(true);
+  setEditData({
+    scanType: selectedRecord.scanType || "",
+    cost: selectedRecord.cost || "",
+    paymentStatus: selectedRecord.paymentStatus || "",
+    report: selectedRecord.report || "",
+    startDate: selectedRecord.startDate
+      ? selectedRecord.startDate.slice(0,16)
+      : "",
+    endDate: selectedRecord.endDate
+      ? selectedRecord.endDate.slice(0,16)
+      : ""
+  });
+};
+
+
+const handleUpdate = async () => {
+
+  try {
+
+    const token = localStorage.getItem("jwt");
+
+    await axios.put(
+      `${BASE_URL}/api/sonography/${selectedRecord._id}`,
+      editData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+
+    toast.success("Record updated successfully");
+
+    // dialog update
+    setSelectedRecord({
+      ...selectedRecord,
+      ...editData
+    });
+
+    // table update without refresh
+    const updatedRecords = records.map(item =>
+      item._id === selectedRecord._id
+        ? { ...item, ...editData }
+        : item
+    );
+
+    setRecords(updatedRecords);
+    setFilteredRecords(updatedRecords);
+
+    setEditMode(false);
+
+  } catch (err) {
+
+    console.log(err.response?.data || err.message);
+    toast.error("Update failed");
+  }
+};
 
 
 
@@ -765,14 +838,201 @@ ${record.report || "Pending"}
       <Dialog open={dialogOpen} onClose={handleCloseDialog} fullWidth>
         <DialogTitle>📝 Sonography Details</DialogTitle>
 
-        <DialogContent>
+
+<DialogContent>
+  {selectedRecord && (
+    <>
+      <p>
+        <strong>👤 Patient:</strong>{" "}
+        {selectedRecord.patientId?.fullName}
+      </p>
+
+      {editMode ? (
+        <>
+          <TextField
+            fullWidth
+            margin="dense"
+            label="Scan Type"
+            value={editData.scanType}
+            onChange={(e) =>
+              setEditData({
+                ...editData,
+                scanType: e.target.value
+              })
+            }
+          />
+
+          <TextField
+            fullWidth
+            margin="dense"
+            label="Start Date"
+            type="datetime-local"
+            value={editData.startDate}
+            InputLabelProps={{ shrink: true }}
+            onChange={(e) =>
+              setEditData({
+                ...editData,
+                startDate: e.target.value
+              })
+            }
+          />
+
+          <TextField
+            fullWidth
+            margin="dense"
+            label="End Date"
+            type="datetime-local"
+            value={editData.endDate}
+            InputLabelProps={{ shrink: true }}
+            onChange={(e) =>
+              setEditData({
+                ...editData,
+                endDate: e.target.value
+              })
+            }
+          />
+
+          <TextField
+            fullWidth
+            margin="dense"
+            label="Cost"
+            type="number"
+            value={editData.cost}
+            onChange={(e) =>
+              setEditData({
+                ...editData,
+                cost: e.target.value
+              })
+            }
+          />
+
+          <TextField
+            fullWidth
+            margin="dense"
+            label="Payment Status"
+            value={editData.paymentStatus}
+            onChange={(e) =>
+              setEditData({
+                ...editData,
+                paymentStatus: e.target.value
+              })
+            }
+          />
+
+          <TextField
+            fullWidth
+            multiline
+            rows={3}
+            margin="dense"
+            label="Report"
+            value={editData.report}
+            onChange={(e) =>
+              setEditData({
+                ...editData,
+                report: e.target.value
+              })
+            }
+          />
+        </>
+      ) : (
+        <>
+          <p><strong>🧪 Scan:</strong> {selectedRecord.scanType}</p>
+
+          <p>
+            <strong>📅 Start Date:</strong>{" "}
+            {selectedRecord.startDate
+              ? new Date(selectedRecord.startDate).toLocaleString()
+              : "N/A"}
+          </p>
+
+          <p>
+            <strong>📅 End Date:</strong>{" "}
+            {selectedRecord.endDate
+              ? new Date(selectedRecord.endDate).toLocaleString()
+              : "N/A"}
+          </p>
+
+          <p><strong>💰 Cost:</strong> ₹{selectedRecord.cost || 0}</p>
+
+          <p>
+            <strong>💳 Payment:</strong>{" "}
+            {selectedRecord.paymentStatus}
+          </p>
+
+          <p>
+            <strong>🧾 Manual Charge:</strong>{" "}
+            {selectedRecord.manualChargeId?.itemName || "N/A"}
+          </p>
+
+          <p>
+            <strong>📝 Report:</strong>{" "}
+            {selectedRecord.report || "N/A"}
+          </p>
+        </>
+      )}
+
+      <Button
+        onClick={() => sendWhatsApp(selectedRecord)}
+        sx={{
+          background: "green",
+          color: "#fff",
+          mt: 2
+        }}
+      >
+        WhatsApp
+      </Button>
+
+      <Button
+        onClick={() => printReport(selectedRecord)}
+        sx={{
+          background: "#1976d2",
+          color: "#fff",
+          ml: 2,
+          mt: 2
+        }}
+      >
+        Print
+      </Button>
+
+      {!editMode ? (
+        <Button
+          startIcon={<EditIcon />}
+          onClick={handleEditOpen}
+          sx={{
+            background: "#ff9800",
+            color: "#fff",
+            ml: 2,
+            mt: 2
+          }}
+        >
+          Edit
+        </Button>
+      ) : (
+        <Button
+          onClick={handleUpdate}
+          sx={{
+            background: "#2e7d32",
+            color: "#fff",
+            ml: 2,
+            mt: 2
+          }}
+        >
+          Update
+        </Button>
+      )}
+    </>
+  )}
+</DialogContent>
+
+
+        {/* <DialogContent>
           {selectedRecord && (
             <>
               <p><strong>👤 Patient:</strong> {selectedRecord.patientId?.fullName}</p>
-              <p><strong>🧪 Scan:</strong> {selectedRecord.scanType}</p>
+              <p><strong>🧪 Scan:</strong> {selectedRecord.scanType}</p> */}
               {/* <p><strong>📊 Status:</strong> {selectedRecord.status}</p> */}
 
-
+{/* 
               <p>
   <strong>📅 Start Date:</strong>{" "}
   {selectedRecord.startDate
@@ -790,7 +1050,7 @@ ${record.report || "Pending"}
               <p><strong>💰 Cost:</strong> ₹{selectedRecord.cost || 0}</p>
 <p><strong>💳 Payment:</strong> {selectedRecord.paymentStatus}</p>
 <p><strong>🧾 Manual Charge:</strong> {selectedRecord.manualChargeId?.itemName || "N/A"}</p>
-              <p><strong>📝 Report:</strong> {selectedRecord.report || "N/A"}</p>
+              <p><strong>📝 Report:</strong> {selectedRecord.report || "N/A"}</p> */}
 
               {/* ✅ COMPLETE BUTTON */}
               {/* {selectedRecord.status !== "Completed" && (
@@ -806,16 +1066,16 @@ ${record.report || "Pending"}
               )} */}
 
               {/* ✅ WHATSAPP */}
-              <Button
+              {/* <Button
                 onClick={() => sendWhatsApp(selectedRecord)}
                 sx={{ background: "green", color: "#fff" }}
               >
                 WhatsApp
-              </Button>
+              </Button> */}
 
 {/* ✅ PRINT */}
 
-
+{/* 
               <Button
   onClick={() => printReport(selectedRecord)}
   sx={{
@@ -828,7 +1088,7 @@ ${record.report || "Pending"}
 </Button>
             </>
           )}
-        </DialogContent>
+        </DialogContent> */}
 
         <DialogActions>
           <Button onClick={handleCloseDialog}>Close</Button>
