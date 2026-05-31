@@ -666,7 +666,7 @@ const AddUser = () => {
                  <option value="Sonography Assist">Sonography</option>
 
 
-                  <option value="Inventory Manager">Inventory Manager</option>
+                  <option value="Inventory Manager">Pharmacists</option>
                   <option value="Other">Other</option>
                 </select>
                 <select name="department" value={form.department} onChange={handleChange}>

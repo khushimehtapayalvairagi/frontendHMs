@@ -112,7 +112,7 @@ const ViewAnesthesiaRecord = () => {
       const token = localStorage.getItem('jwt');
 
       await axios.put(
-        `${BASE_URL}/api/procedures/anesthesia-record/${editRecord._id}`,
+        `${BASE_URL}/api/procedures/anesthesia-records/${editRecord._id}`,
         editRecord,
         {
           headers: {
@@ -144,7 +144,7 @@ const ViewAnesthesiaRecord = () => {
       const token = localStorage.getItem('jwt');
 
       await axios.delete(
-        `${BASE_URL}/api/procedures/anesthesia-record/${id}`,
+        `${BASE_URL}/api/procedures/anesthesia-records/${id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`
