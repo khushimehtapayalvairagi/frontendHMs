@@ -1,6 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import * as XLSX from "xlsx";
+
+
 const MonthlyLabReport = () => {
   const [reports, setReports] = useState([]);
   const [totalTests, setTotalTests] = useState(0);
@@ -237,6 +242,125 @@ th{
     win.document.close();
   };
 
+const handleDownloadPDF = () => {
+  const doc = new jsPDF("l", "mm", "a4");
+
+  doc.setFontSize(18);
+  doc.text("Monthly Lab Report", 14, 15);
+
+  doc.setFontSize(11);
+  doc.text(`From: ${startDate || "All"}`, 14, 24);
+  doc.text(`To: ${endDate || "All"}`, 80, 24);
+  doc.text(`Printed: ${new Date().toLocaleString()}`, 160, 24);
+
+  doc.text(`Total Tests: ${totalTests}`, 14, 32);
+  doc.text(`Total Payment: ₹${totalPayment}`, 80, 32);
+
+  autoTable(doc, {
+    startY: 40,
+
+    head: [[
+      "Sr No",
+      "Date",
+      "Patient ID",
+      "Patient Name",
+      "Test Type",
+      "Amount",
+      "Payment",
+      "Priority",
+      "Status",
+      "Technician"
+    ]],
+
+    body: reports.map((r, index) => [
+      index + 1,
+      r.date
+        ? new Date(r.date).toLocaleDateString()
+        : "N/A",
+
+      r.patientId?.patientId || "N/A",
+
+      r.patientId?.fullName || "N/A",
+
+      r.testType || "N/A",
+
+      `₹${r.payment?.amount || 0}`,
+
+      r.payment?.status || "Pending",
+
+      r.priority || "N/A",
+
+      r.status || "N/A",
+
+      r.labTechnician?.userId?.name || "N/A",
+    ]),
+
+    styles: {
+      fontSize: 8,
+    },
+
+    headStyles: {
+      fillColor: [30, 41, 59],
+    },
+  });
+
+  doc.save("Monthly_Lab_Report.pdf");
+};
+
+
+const handleDownloadExcel = () => {
+
+  const workbook = XLSX.utils.book_new();
+
+  const excelData = reports.map((r, index) => ({
+
+    "Sr No": index + 1,
+
+    Date: r.date
+      ? new Date(r.date).toLocaleDateString()
+      : "N/A",
+
+    "Patient ID":
+      r.patientId?.patientId || "N/A",
+
+    "Patient Name":
+      r.patientId?.fullName || "N/A",
+
+    "Test Type":
+      r.testType || "N/A",
+
+    "Payment Amount":
+      r.payment?.amount || 0,
+
+    "Payment Status":
+      r.payment?.status || "Pending",
+
+    Priority:
+      r.priority || "N/A",
+
+    Status:
+      r.status || "N/A",
+
+    Technician:
+      r.labTechnician?.userId?.name || "N/A",
+
+  }));
+
+  const ws = XLSX.utils.json_to_sheet(excelData);
+
+  XLSX.utils.book_append_sheet(
+    workbook,
+    ws,
+    "Monthly Lab Report"
+  );
+
+  XLSX.writeFile(
+    workbook,
+    "Monthly_Lab_Report.xlsx"
+  );
+};
+
+
   return (
     <div
       style={{
@@ -308,7 +432,7 @@ th{
             Search
           </button>
 
-          <button
+          {/* <button
             onClick={handlePrint}
             style={{
               padding: "10px 20px",
@@ -321,7 +445,60 @@ th{
             }}
           >
             Print Report
-          </button>
+          </button> */}
+
+          <div
+  style={{
+    display: "flex",
+    gap: "10px",
+    flexWrap: "wrap",
+  }}
+>
+  <button
+    onClick={handlePrint}
+    style={{
+      padding: "10px 20px",
+      border: "none",
+      background: "#16a34a",
+      color: "#fff",
+      borderRadius: "6px",
+      cursor: "pointer",
+      fontWeight: "bold",
+    }}
+  >
+    🖨 Print
+  </button>
+
+  <button
+    onClick={handleDownloadPDF}
+    style={{
+      padding: "10px 20px",
+      border: "none",
+      background: "#dc2626",
+      color: "#fff",
+      borderRadius: "6px",
+      cursor: "pointer",
+      fontWeight: "bold",
+    }}
+  >
+    📄 PDF
+  </button>
+
+  <button
+    onClick={handleDownloadExcel}
+    style={{
+      padding: "10px 20px",
+      border: "none",
+      background: "#2563eb",
+      color: "#fff",
+      borderRadius: "6px",
+      cursor: "pointer",
+      fontWeight: "bold",
+    }}
+  >
+    📊 Excel
+  </button>
+</div>
         </div>
 
       <div

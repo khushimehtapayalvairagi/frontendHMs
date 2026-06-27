@@ -36,6 +36,10 @@ import PatientVisitsViewer from './components/Dashboard/PatientVisitsViewer';
  import OPDConsultationForm from './components/Dashboard/OPDConsultationForm';
  import PreviousConsultations from './components/Dashboard/PreviousConsultantPatient';
  import UpdateVisitStatusPage from './components/Dashboard/UpdateVisitStatus';
+
+ import PendingIPDAdmissions from "./components/Dashboard/PendingIPDAdmissions";
+
+
 import IPDAdmissionForm from './components/Dashboard/IPDAdmissionform'
 import IPDAdmissionList from './components/Dashboard/IPDAdmissionList';
 import ProcedureForm from './components/Dashboard/ProcedureForm';
@@ -90,6 +94,13 @@ const App = () => {
     <Route path="visit-form" element={<VisitForm />} />
     <Route path="patient-visits-viewer" element={<PatientVisitsViewer />} />
      <Route path="UpdatePatientStatus" element={<UpdateVisitStatusPage />} /> 
+
+     <Route
+  path="/pending-ipd-admissions"
+  element={<PendingIPDAdmissions />}
+/>
+
+
     <Route path="IPDAdmissionForm" element={<IPDAdmissionForm />} />
     <Route path="ProcedureForm" element={<ProcedureForm />} />
     <Route path="AnesthesiaForm" element={<AnesthesiaForm/>}/>
@@ -197,6 +208,13 @@ const InventoryRoutes =()=>(
    <Route path="viewPatient" element={<ViewPatient/>} />
       <Route path="visit-form" element={<VisitForm/>} />
        <Route path="patient-visits-viewer" element={<PatientVisitsViewer/>} />
+
+       <Route
+  path="pending-ipd-admissions"
+  element={<PendingIPDAdmissions />}
+/>
+
+
  <Route path="UpdatePatientStatus" element={<UpdateVisitStatusPage/>} /> 
 <Route path="IPDAdmissionForm" element={<IPDAdmissionForm/>} />
 <Route path="IPDAdmissionList/:patientId" element={<IPDAdmissionList />} />

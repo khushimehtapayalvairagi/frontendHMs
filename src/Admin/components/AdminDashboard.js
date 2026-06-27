@@ -325,7 +325,7 @@ const closeDoctorMenu = () => setDoctorAnchor(null);
        
          <Box sx={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 1 }}>
       <IconButton color="inherit" onClick={openRoleMenu} title="Roles">
-  <AssignmentInd />
+  {/* <AssignmentInd /> */}
 </IconButton>
       <Menu anchorEl={roleAnchor} open={Boolean(roleAnchor)} onClose={closeRoleMenu}>
     {/* <MenuItem

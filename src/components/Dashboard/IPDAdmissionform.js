@@ -650,25 +650,64 @@ const IPDAdmissionForm = () => {
   const { adviceData } = useAdmissionAdvice();
   const BASE_URL = process.env.REACT_APP_BASE_URL;
 
-  const patient = location.state?.patient || null;
-  const visit = location.state?.visit || null;
+  // const patient = location.state?.patient || null;
+  // const visit = location.state?.visit || null;
 
-  const [patientId, setPatientId] = useState(
-    adviceData?.patientDbId || patient?._id || ""
-  );
-  const [visitId, setVisitId] = useState(
-    adviceData?.visitId || visit?._id || ""
-  );
-  const [admittingDoctorId, setAdmittingDoctorId] = useState(
-    adviceData?.admittingDoctorId || visit?.assignedDoctorId || ""
-  );
 
-  const [patientName, setPatientName] = useState(
-    adviceData?.patientName || patient?.name || visit?.patientName || ""
-  );
-  const [doctorName, setDoctorName] = useState(
-    adviceData?.doctorName || visit?.doctorName || ""
-  );
+  const admissionData = location.state || {};
+
+const [patientId, setPatientId] = useState(
+  adviceData?.patientDbId ||
+    admissionData?.patientId?._id ||
+    admissionData?.patientId ||
+    ""
+);
+
+const [visitId, setVisitId] = useState(
+  adviceData?.visitId ||
+    admissionData?.visitId ||
+    ""
+);
+
+const [admittingDoctorId, setAdmittingDoctorId] = useState(
+  adviceData?.admittingDoctorId ||
+    admissionData?.doctorId?._id ||
+    admissionData?.doctorId ||
+    ""
+);
+
+const [patientName, setPatientName] = useState(
+  adviceData?.patientName ||
+    admissionData?.patientId?.fullName ||
+    admissionData?.patientName ||
+    ""
+);
+
+const [doctorName, setDoctorName] = useState(
+  adviceData?.doctorName ||
+    admissionData?.doctorId?.userId?.name ||
+    admissionData?.doctorId?.name ||
+    admissionData?.doctorName ||
+    ""
+);
+
+
+  // const [patientId, setPatientId] = useState(
+  //   adviceData?.patientDbId || patient?._id || ""
+  // );
+  // const [visitId, setVisitId] = useState(
+  //   adviceData?.visitId || visit?._id || ""
+  // );
+  // const [admittingDoctorId, setAdmittingDoctorId] = useState(
+  //   adviceData?.admittingDoctorId || visit?.assignedDoctorId || ""
+  // );
+
+  // const [patientName, setPatientName] = useState(
+  //   adviceData?.patientName || patient?.name || visit?.patientName || ""
+  // );
+  // const [doctorName, setDoctorName] = useState(
+  //   adviceData?.doctorName || visit?.doctorName || ""
+  // );
 
   const [wards, setWards] = useState([]);
   const [roomCategories, setRoomCategories] = useState([]);
@@ -702,17 +741,64 @@ const IPDAdmissionForm = () => {
   }, []);
 
   // ✅ CONTEXT SYNC (MOST IMPORTANT)
-  useEffect(() => {
-    if (adviceData) {
-      console.log("✅ Context data applied:", adviceData);
+  // useEffect(() => {
+  //   if (adviceData) {
+  //     console.log("✅ Context data applied:", adviceData);
 
-      setPatientId(adviceData.patientDbId || "");
-      setVisitId(adviceData.visitId || "");
-      setAdmittingDoctorId(adviceData.admittingDoctorId || "");
-      setPatientName(adviceData.patientName || "");
-      setDoctorName(adviceData.doctorName || "");
-    }
-  }, [adviceData]);
+  //     setPatientId(adviceData.patientDbId || "");
+  //     setVisitId(adviceData.visitId || "");
+  //     setAdmittingDoctorId(adviceData.admittingDoctorId || "");
+  //     setPatientName(adviceData.patientName || "");
+  //     setDoctorName(adviceData.doctorName || "");
+  //   }
+  // }, [adviceData]);
+
+
+useEffect(() => {
+  if (adviceData) {
+    setPatientId(adviceData.patientDbId || "");
+    setVisitId(adviceData.visitId || "");
+    setAdmittingDoctorId(adviceData.admittingDoctorId || "");
+    setPatientName(adviceData.patientName || "");
+    setDoctorName(adviceData.doctorName || "");
+  }
+
+  if (location.state) {
+    setPatientId(
+      location.state?.patientId?._id ||
+      location.state?.patientId ||
+      ""
+    );
+
+    setVisitId(
+      location.state?.visitId || ""
+    );
+
+    setAdmittingDoctorId(
+      location.state?.doctorId?._id ||
+      location.state?.doctorId ||
+      ""
+    );
+
+    setPatientName(
+      location.state?.patientId?.fullName ||
+      location.state?.patientName ||
+      ""
+    );
+
+    setDoctorName(
+      location.state?.doctorId?.userId?.name ||
+      location.state?.doctorName ||
+      ""
+    );
+  }
+}, [adviceData, location.state]);
+
+
+
+
+
+
 
   const fetchWards = async () => {
     try {

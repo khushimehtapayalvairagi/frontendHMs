@@ -6,6 +6,12 @@ import './IPDReportPage.css';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
+
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
+
 const IPDReportPage = () => {
 
   const printRef = useRef();
@@ -508,6 +514,323 @@ const handlePrint = () => {
   win.document.close();
 };
 
+
+const handleDownloadPDF = async () => {
+  if (!printRef.current) {
+    toast.error("No report found");
+    return;
+  }
+
+  const input = printRef.current;
+
+  const canvas = await html2canvas(input, {
+    scale: 2,
+    useCORS: true,
+  });
+
+  const imgData = canvas.toDataURL("image/png");
+
+  const pdf = new jsPDF("p", "mm", "a4");
+
+  const pageWidth = pdf.internal.pageSize.getWidth();
+
+  const pageHeight = pdf.internal.pageSize.getHeight();
+
+  const imgWidth = pageWidth;
+
+  const imgHeight =
+    (canvas.height * imgWidth) / canvas.width;
+
+  let heightLeft = imgHeight;
+
+  let position = 0;
+
+  pdf.addImage(
+    imgData,
+    "PNG",
+    0,
+    position,
+    imgWidth,
+    imgHeight
+  );
+
+  heightLeft -= pageHeight;
+
+  while (heightLeft > 0) {
+    position = heightLeft - imgHeight;
+
+    pdf.addPage();
+
+    pdf.addImage(
+      imgData,
+      "PNG",
+      0,
+      position,
+      imgWidth,
+      imgHeight
+    );
+
+    heightLeft -= pageHeight;
+  }
+
+  pdf.save("IPD_Report.pdf");
+};
+
+
+const handleDownloadExcel = () => {
+
+  const workbook = XLSX.utils.book_new();
+
+  // CENTRAL
+
+  if (centralData.length > 0) {
+
+    const data = centralData.map((item) => {
+
+      const admission = new Date(item.admissionDate);
+
+      const discharge = item.actualDischargeDate
+        ? new Date(item.actualDischargeDate)
+        : new Date();
+
+      const days = Math.max(
+        1,
+        Math.ceil(
+          (discharge - admission) /
+            (1000 * 60 * 60 * 24)
+        )
+      );
+
+      return {
+
+        Patient: item.patient?.fullName,
+
+        Doctor: item.doctor?.name,
+
+        Department: item.doctor?.specialty,
+
+        Ward: item.ward?.name,
+
+        Room: item.roomCategory?.name,
+
+        Bed: item.bedNumber,
+
+        Admission: admission.toLocaleDateString(),
+
+        Discharge: item.actualDischargeDate
+          ? discharge.toLocaleDateString()
+          : "N/A",
+
+        "Total Days": days,
+
+        Status: item.status,
+
+      };
+
+    });
+
+    const ws = XLSX.utils.json_to_sheet(data);
+
+    XLSX.utils.book_append_sheet(
+      workbook,
+      ws,
+      "Central IPD"
+    );
+
+  }
+
+  // Department
+
+  if (departmentData.length > 0) {
+
+const departmentExcel = [];
+
+departmentData.forEach((dept) => {
+  (dept.admissions || []).forEach((a) => {
+    departmentExcel.push({
+      Department: dept.specialty,
+      Patient: a.patient?.fullName || "N/A",
+      Doctor: a.doctor?.name || "N/A",
+      Bed: a.bedNumber || "N/A",
+      Status: a.status || "N/A",
+    });
+  });
+});
+
+const ws = XLSX.utils.json_to_sheet(departmentExcel);
+
+XLSX.utils.book_append_sheet(
+  workbook,
+  ws,
+  "Department"
+);
+
+    // XLSX.utils.book_append_sheet(
+    //   workbook,
+    //   ws,
+    //   "Department"
+    // );
+
+  }
+
+  // OT
+
+  if (otData.length > 0) {
+
+const otExcel = otData.map((item) => ({
+  Patient: item.patient?.name || "N/A",
+  Procedure: item.procedure?.name || "N/A",
+  Surgeon: item.surgeon?.name || "N/A",
+  Date: item.scheduledDateTime
+    ? new Date(item.scheduledDateTime).toLocaleString()
+    : "N/A",
+  Status: item.status || "N/A",
+}));
+
+const ws = XLSX.utils.json_to_sheet(otExcel);
+
+XLSX.utils.book_append_sheet(
+  workbook,
+  ws,
+  "OT Register"
+);
+    // XLSX.utils.book_append_sheet(
+    //   workbook,
+    //   ws,
+    //   "OT"
+    // );
+
+  }
+
+  // Anaesthesia
+
+  if (anesthesiaData.length > 0) {
+
+const anesthesiaExcel = anesthesiaData.map((item) => ({
+  Patient: item.patient?.name || "N/A",
+  Anesthetist: item.anesthetist?.name || "N/A",
+  Procedure: item.procedureType || "N/A",
+  "Anesthesia Type": item.anesthesiaType || "N/A",
+  "Start Time": item.induceTime
+    ? new Date(item.induceTime).toLocaleString()
+    : "N/A",
+  "End Time": item.endTime
+    ? new Date(item.endTime).toLocaleString()
+    : "N/A",
+}));
+
+const ws = XLSX.utils.json_to_sheet(anesthesiaExcel);
+
+XLSX.utils.book_append_sheet(
+  workbook,
+  ws,
+  "Anaesthesia"
+);
+
+    // XLSX.utils.book_append_sheet(
+    //   workbook,
+    //   ws,
+    //   "Anaesthesia"
+    // );
+
+  }
+
+  // Birth
+
+  if (birthData.length > 0) {
+
+const birthExcel = birthData.map((item) => ({
+  Patient: item.patientId?.fullName || "N/A",
+  "Baby Name": item.babyName || "N/A",
+  Gender: item.gender || "N/A",
+  DOB: item.dobBaby
+    ? new Date(item.dobBaby).toLocaleDateString()
+    : "N/A",
+  "Delivery Type": item.deliveryType || "N/A",
+}));
+
+const ws = XLSX.utils.json_to_sheet(birthExcel);
+
+XLSX.utils.book_append_sheet(
+  workbook,
+  ws,
+  "Birth Register"
+);
+
+    // XLSX.utils.book_append_sheet(
+    //   workbook,
+    //   ws,
+    //   "Birth"
+    // );
+
+  }
+
+  // Fumigation
+
+  if (fumigationData.length > 0) {
+const fumigationExcel = fumigationData.map((item) => ({
+  Date: item.date
+    ? new Date(item.date).toLocaleDateString()
+    : "N/A",
+  "OT Room": item.otRoomId?.name || "N/A",
+  "Performed By": item.performedBy?.name || "N/A",
+  Remarks: item.remarks || "N/A",
+}));
+
+const ws = XLSX.utils.json_to_sheet(fumigationExcel);
+
+XLSX.utils.book_append_sheet(
+  workbook,
+  ws,
+  "Fumigation"
+);
+
+    // XLSX.utils.book_append_sheet(
+    //   workbook,
+    //   ws,
+    //   "Fumigation"
+    // );
+
+  }
+
+  // Sonography
+
+  if (sonographyData.length > 0) {
+
+ const sonoExcel = sonographyData.map((item) => ({
+  Date: item.createdAt
+    ? new Date(item.createdAt).toLocaleString()
+    : "N/A",
+  Patient: item.patientId?.fullName || "N/A",
+  Doctor: item.doctorId?.userId?.name || "N/A",
+  Scan: item.scanType || "N/A",
+  Cost: item.cost || 0,
+  Status: item.status || "Pending",
+}));
+
+const ws = XLSX.utils.json_to_sheet(sonoExcel);
+
+XLSX.utils.book_append_sheet(
+  workbook,
+  ws,
+  "Sonography"
+);
+
+    // XLSX.utils.book_append_sheet(
+    //   workbook,
+    //   ws,
+    //   "Sonography"
+    // );
+
+  }
+
+  XLSX.writeFile(
+    workbook,
+    "IPD_Report.xlsx"
+  );
+
+};
+
   return (
 
     <div className="report-container">
@@ -671,7 +994,7 @@ const handlePrint = () => {
 
         {/* BUTTONS */}
 
-        <div className="button-group">
+        {/* <div className="button-group">
 
           <button
             type="submit"
@@ -681,8 +1004,7 @@ const handlePrint = () => {
               ? 'Loading...'
               : 'Generate Report'}
           </button>
-{/* 
-          {hasFetched && ( */}
+
           {(
   centralData.length > 0 ||
   departmentData.length > 0 ||
@@ -701,10 +1023,63 @@ const handlePrint = () => {
             >
               🖨 Print Reports
             </button>
+            
           )}
 
-        </div>
+        </div> */}
 
+  <div className="button-group">
+
+<button
+type="submit"
+className="generate-btn"
+>
+{loading ? "Loading..." : "Generate Report"}
+</button>
+
+{(
+centralData.length > 0 ||
+departmentData.length > 0 ||
+otData.length > 0 ||
+anesthesiaData.length > 0 ||
+birthData.length > 0 ||
+fumigationData.length > 0 ||
+sonographyData.length > 0 ||
+billingData ||
+paymentData
+) && (
+
+<>
+
+<button
+type="button"
+className="print-btn"
+onClick={handlePrint}
+>
+🖨 Print
+</button>
+
+<button
+type="button"
+className="print-btn"
+onClick={handleDownloadPDF}
+>
+📄 PDF
+</button>
+
+<button
+type="button"
+className="print-btn"
+onClick={handleDownloadExcel}
+>
+📊 Excel
+</button>
+
+</>
+
+)}
+
+</div>
       </form>
 
       {/* REPORTS */}
@@ -1250,6 +1625,7 @@ const handlePrint = () => {
                     <th>Bed</th>
                     <th>Admission</th>
                     <th>Discharged Date</th>
+                    <th>Total Days</th>
 
                     <th>Status</th>
                   </tr>
@@ -1258,54 +1634,144 @@ const handlePrint = () => {
 
                 <tbody>
 
-                  {centralData.map((entry) => (
+                  {/* {centralData.map((entry) => ( */}
 
-                    <tr key={entry._id}>
 
-                      <td>
-                        {entry.patient?.fullName}
-                      </td>
+{centralData.map((entry) => {
 
-                      <td>
-                        {entry.doctor?.name}
-                      </td>
+  const admissionDate = new Date(entry.admissionDate);
 
-                      <td>
-                        {entry.doctor?.specialty}
-                      </td>
+  const dischargeDate = entry.actualDischargeDate
+    ? new Date(entry.actualDischargeDate)
+    : new Date();
 
-                      <td>
-                        {entry.ward?.name}
-                      </td>
+  const totalDays =
+    Math.max(
+      1,
+      Math.ceil(
+        (dischargeDate - admissionDate) /
+        (1000 * 60 * 60 * 24)
+      )
+    );
 
-                      <td>
-                        {entry.roomCategory?.name}
-                      </td>
+  return (
 
-                      <td>
-                        {entry.bedNumber}
-                      </td>
 
-                      <td>
-                        {new Date(
-                          entry.admissionDate
-                        ).toLocaleDateString()}
-                      </td>
-      <td>
-  {entry.actualDischargeDate
-    ? new Date(
-        entry.actualDischargeDate
-      ).toLocaleDateString()
-    : 'N/A'}
-</td>
+    <tr key={entry._id}>
 
-                      <td>
-                        {entry.status}
-                      </td>
+  <td>
+    {entry.patient?.fullName}
+  </td>
 
-                    </tr>
+  <td>
+    {entry.doctor?.name}
+  </td>
 
-                  ))}
+  <td>
+    {entry.doctor?.specialty}
+  </td>
+
+  <td>
+    {entry.ward?.name}
+  </td>
+
+  <td>
+    {entry.roomCategory?.name}
+  </td>
+
+  <td>
+    {entry.bedNumber}
+  </td>
+
+  <td>
+    {new Date(entry.admissionDate).toLocaleDateString()}
+  </td>
+
+  <td>
+    {entry.actualDischargeDate
+      ? new Date(entry.actualDischargeDate).toLocaleDateString()
+      : "N/A"}
+  </td>
+
+  <td>
+    {totalDays} Day{totalDays > 1 ? "s" : ""}
+  </td>
+
+  <td>
+    {entry.status}
+  </td>
+
+</tr>
+
+//                     <tr key={entry._id}>
+
+//                       <td>
+//                         {entry.patient?.fullName}
+//                       </td>
+
+//                       <td>
+//                         {entry.doctor?.name}
+//                       </td>
+
+//                       <td>
+//                         {entry.doctor?.specialty}
+//                       </td>
+
+//                       <td>
+//                         {entry.ward?.name}
+//                       </td>
+
+//                       <td>
+//                         {entry.roomCategory?.name}
+//                       </td>
+
+//                       <td>
+//                         {entry.bedNumber}
+//                       </td>
+
+//                       <td>
+//                         {new Date(
+//                           entry.admissionDate
+//                         ).toLocaleDateString()}
+
+//                          </td>
+//                       {/*
+//       <td>
+//   {entry.actualDischargeDate
+//     ? new Date(
+//         entry.actualDischargeDate
+//       ).toLocaleDateString()
+//     : 'N/A'}
+// </td>
+
+//                       <td>
+//                         {entry.status}
+//                       </td> */}
+
+
+// <td>
+//   {entry.actualDischargeDate
+//     ? new Date(
+//         entry.actualDischargeDate
+//       ).toLocaleDateString()
+//     : "N/A"}
+// </td>
+
+// <td>
+//   {totalDays} Day{totalDays > 1 ? "s" : ""}
+// </td>
+
+// <td>
+//   {entry.status}
+// </td>
+
+//                     </tr>
+
+                 
+
+
+                  );
+})}
 
                 </tbody>
 

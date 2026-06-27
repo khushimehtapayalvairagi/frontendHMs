@@ -2135,6 +2135,10 @@ import './OPDReportPage.css';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
+import * as XLSX from "xlsx";
+
 const OPDReportPage = () => {
   const printRef = useRef();
 
@@ -2637,6 +2641,364 @@ if (
 
   win.document.close();
 };
+
+
+const handleDownloadPDF = async () => {
+
+  if (!printRef.current) {
+    toast.error("No report found");
+    return;
+  }
+
+  const canvas = await html2canvas(printRef.current, {
+    scale: 2,
+    useCORS: true,
+  });
+
+  const imgData = canvas.toDataURL("image/png");
+
+  const pdf = new jsPDF("p", "mm", "a4");
+
+  const pdfWidth = pdf.internal.pageSize.getWidth();
+
+  const pdfHeight =
+    (canvas.height * pdfWidth) /
+    canvas.width;
+
+  let heightLeft = pdfHeight;
+
+  let position = 0;
+
+  pdf.addImage(
+    imgData,
+    "PNG",
+    0,
+    position,
+    pdfWidth,
+    pdfHeight
+  );
+
+  heightLeft -=
+    pdf.internal.pageSize.getHeight();
+
+  while (heightLeft > 0) {
+
+    position =
+      heightLeft - pdfHeight;
+
+    pdf.addPage();
+
+    pdf.addImage(
+      imgData,
+      "PNG",
+      0,
+      position,
+      pdfWidth,
+      pdfHeight
+    );
+
+    heightLeft -=
+      pdf.internal.pageSize.getHeight();
+  }
+
+  pdf.save("OPD_Report.pdf");
+
+};
+
+
+const handleDownloadExcel = () => {
+
+  const wb = XLSX.utils.book_new();
+
+  // =========================
+  // CENTRAL OPD
+  // =========================
+
+  if (nonIpdCentralData.length > 0) {
+
+    const ws = XLSX.utils.json_to_sheet(
+
+      nonIpdCentralData.map((item) => ({
+
+        Date: new Date(
+          item.consultationDateTime
+        ).toLocaleString(),
+
+        Patient:
+          item.patientId?.fullName || "",
+
+        UHID:
+          item.patientId?.uhid || "",
+
+        Doctor:
+          item.doctorId?.userId?.name || "",
+
+        Department:
+          item.doctorId?.specialty?.name || "",
+
+        Diagnosis:
+          item.diagnosis || "",
+
+        Payment:
+          item.visitPayment || 0
+
+      }))
+
+    );
+
+    XLSX.utils.book_append_sheet(
+      wb,
+      ws,
+      "Central OPD"
+    );
+
+  }
+
+  // =========================
+  // DEPARTMENT WISE
+  // =========================
+
+  Object.keys(departmentWiseData).forEach((dept) => {
+
+    const ws = XLSX.utils.json_to_sheet(
+
+      departmentWiseData[dept].map((item) => ({
+
+        Date: new Date(
+          item.consultationDateTime
+        ).toLocaleString(),
+
+        Patient:
+          item.patientId?.fullName || "",
+
+        Doctor:
+          item.doctorId?.userId?.name || "",
+
+        Diagnosis:
+          item.diagnosis || ""
+
+      }))
+
+    );
+
+    XLSX.utils.book_append_sheet(
+      wb,
+      ws,
+      dept.substring(0, 31)
+    );
+
+  });
+
+  // =========================
+  // DOCTOR WISE
+  // =========================
+
+  doctorWiseData.forEach((doc) => {
+
+    const ws = XLSX.utils.json_to_sheet(
+
+      doc.consultations.map((c) => ({
+
+        Date: new Date(
+          c.consultationDateTime
+        ).toLocaleString(),
+
+        Patient:
+          c.patientId?.fullName || "",
+
+        ChiefComplaint:
+          c.chiefComplaint || "",
+
+        Diagnosis:
+          c.diagnosis || "",
+
+        Payment:
+          c.visitPayment || 0
+
+      }))
+
+    );
+
+    XLSX.utils.book_append_sheet(
+      wb,
+      ws,
+      `Dr-${doc.doctor.name}`.substring(0,31)
+    );
+
+  });
+
+  // =========================
+  // NEW VS OLD
+  // =========================
+
+  if (newVsOldData) {
+
+    const ws = XLSX.utils.json_to_sheet([{
+
+      TotalConsultations:
+        newVsOldData.totalConsultations,
+
+      UniquePatients:
+        newVsOldData.uniquePatients,
+
+      NewPatients:
+        newVsOldData.newPatients,
+
+      OldPatients:
+        newVsOldData.oldPatients
+
+    }]);
+
+    XLSX.utils.book_append_sheet(
+      wb,
+      ws,
+      "New Vs Old"
+    );
+
+  }
+
+  // =========================
+  // SONOGRAPHY
+  // =========================
+
+  if (sonographyData.length > 0) {
+
+    const ws = XLSX.utils.json_to_sheet(
+
+      sonographyData.map((item) => ({
+
+        Date: new Date(
+          item.createdAt
+        ).toLocaleString(),
+
+        Patient:
+          item.patientId?.fullName || "",
+
+        Doctor:
+          item.doctorId?.userId?.name || "",
+
+        ScanType:
+          item.scanType,
+
+        Procedure:
+          item.procedureType ||
+          item.manualChargeId?.itemName,
+
+        Report:
+          item.report,
+
+        Cost:
+          item.cost,
+
+        Status:
+          item.status
+
+      }))
+
+    );
+
+    XLSX.utils.book_append_sheet(
+      wb,
+      ws,
+      "Sonography"
+    );
+
+  }
+
+  // =========================
+  // BILLING
+  // =========================
+
+  if (mergedPayments.length > 0) {
+
+    const ws = XLSX.utils.json_to_sheet(
+
+      mergedPayments.map((bill) => ({
+
+        BillNo:
+          bill.billId,
+
+        Patient:
+          bill.patientName,
+
+        Date:
+          bill.createdAt
+            ? new Date(
+                bill.createdAt
+              ).toLocaleDateString()
+            : "",
+
+        Type:
+          bill.type,
+
+        Payment:
+          bill.payment,
+
+        Status:
+          bill.status
+
+      }))
+
+    );
+
+    XLSX.utils.book_append_sheet(
+      wb,
+      ws,
+      "Billing"
+    );
+
+  }
+
+  // =========================
+  // PAYMENT
+  // =========================
+
+  if (paymentRecon?.payments?.length) {
+
+    const ws = XLSX.utils.json_to_sheet(
+
+      paymentRecon.payments.map((p) => ({
+
+        Date:
+          new Date(
+            p.payment_date
+          ).toLocaleString(),
+
+        BillNo:
+          p.bill_id_ref?.billId,
+
+        Patient:
+          p.bill_id_ref?.patient_id_ref?.fullName,
+
+        Method:
+          p.payment_method,
+
+        Amount:
+          p.amount_paid,
+
+        ReceivedBy:
+          p.received_by_user_id_ref?.name
+
+      }))
+
+    );
+
+    XLSX.utils.book_append_sheet(
+      wb,
+      ws,
+      "Payments"
+    );
+
+  }
+
+  XLSX.writeFile(
+    wb,
+    "OPD_Report.xlsx"
+  );
+
+};
+
+
   return (
     <div className="opd-report-container">
 
@@ -2746,7 +3108,45 @@ if (
 
       {/* BUTTONS */}
 
-      <div className="button-row">
+<div className="button-row">
+
+  <button
+    className="fetch-btn"
+    onClick={handleFetchReports}
+  >
+    Fetch Reports
+  </button>
+
+  {hasFetched && (
+    <>
+
+      <button
+        className="print-btn"
+        onClick={handlePrint}
+      >
+        🖨 Print
+      </button>
+
+      <button
+        className="print-btn"
+        onClick={handleDownloadPDF}
+      >
+        📄 PDF
+      </button>
+
+      <button
+        className="print-btn"
+        onClick={handleDownloadExcel}
+      >
+        📊 Excel
+      </button>
+
+    </>
+  )}
+
+</div>
+
+      {/* <div className="button-row">
 
         <button
           className="fetch-btn"
@@ -2763,7 +3163,7 @@ if (
             🖨 Print Reports
           </button>
         )}
-      </div>
+      </div> */}
 
       {/* REPORT AREA */}
 
@@ -2788,7 +3188,7 @@ if (
                     <th>Doctor</th>
                     <th>Department</th>
                     <th>Diagnosis</th>
-                    <th>Payment</th>
+                    {/* <th>Payment</th> */}
                   </tr>
                 </thead>
 

@@ -75,6 +75,14 @@ const drawerContent = (
         // { label: "Visit Form", path: "/receptionist-dashboard/visit-form", icon: <VisitIcon /> },
         { label: "Patient Visits Viewer", path: "/receptionist-dashboard/patient-visits-viewer", icon: <PharmacyIcon /> },
         //  { label: "Update Patient Satus", path: "/receptionist-dashboard/UpdatePatientStatus", icon: <UpdateIcon /> },
+
+        {
+  label: "Pending IPD Admissions",
+  path: "/receptionist-dashboard/pending-ipd-admissions",
+  icon: <AdmissionIcon />
+},
+
+
         { label: "IPD Admission Form", path: "/receptionist-dashboard/IPDAdmissionForm", icon: <AdmissionIcon /> },
          { label: "IPD Admission List", path: `/receptionist-dashboard/IPDAdmissionList/${patientId}`, icon: <ListIcon /> },
         { label: "ProcedureForm", path: "/receptionist-dashboard/ProcedureForm", icon: <ProcedureIcon /> },
@@ -214,11 +222,13 @@ const drawerContent = (
 
 
       {/* Main Content */}
-      <Box
+<Box
   component="main"
   sx={{
+    flexGrow: 1,
     p: 3,
-    width:"100%"
+    overflowX: "hidden",   // ✅
+    maxWidth: "100%",
   }}
 >
 
