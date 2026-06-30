@@ -89,12 +89,56 @@ const handleSubmit = async (e) => {
             padding: 15px;
           }
 
-          .header {
+
+
+          .print-header{
+    width:90px;
+    padding-top:10px;   /* Logo ko niche lane ke liye sirf ye value badhana */
+}
+
+.print-header img{
+    width:60px;
+    height:60px;
+    display:block;
+    margin:auto;
+}
+
+.header-content{
+    flex:1;
+    text-align:center;
+}
+
+.title{
+
+    text-align:center;
+
+    font-size:22px;
+
+    font-weight:bold;
+
+    margin-top:10px;
+
+    margin-bottom:10px;
+
+    letter-spacing:1px;
+
+}
+
+        .header {
             text-align: center;
             border-bottom: 2px solid #000;
             padding-bottom: 10px;
             margin-bottom: 10px;
           }
+
+        /*  .hospital-logo{
+    width:90px;
+    height:90px;
+    object-fit:contain;
+    display:block;
+    margin-top:-8px;
+    margin-left:-8px;
+}*/
 
           .hospital-name {
             font-size: 20px;
@@ -102,8 +146,21 @@ const handleSubmit = async (e) => {
           }
 
           .hospital-address {
-            font-size: 12px;
-          }
+            font-size: 15px;
+          } 
+
+          .print-header{
+    position: absolute;
+    top: 15px;
+    left: 20px;
+}
+
+.print-header img{
+    width:70px;
+    height:70px;
+    object-fit:contain;
+     top: 50px;
+}
 
           .patient-info {
             display: flex;
@@ -148,15 +205,33 @@ const handleSubmit = async (e) => {
       <body>
         <div class="bill-container">
 
-          <div class="header">
+      
+
+<div class="print-header">
+    <img src="/hospital-print-header.png" />
+</div>
+
+
+
+    <div class="header">
             <div class="hospital-name">
               Dr. M.I. Jamkhanawala Tibbia Medical College
             </div>
             <div class="hospital-address">
               Anjuman-I-Islam Complex, Mumbai 400061
             </div>
-            <div><strong>OPD PRESCRIPTION</strong></div>
+
+            <div class="title">
+
+OPD PRESCRIPTION
+
+</div>
+
           </div>
+
+
+
+
 
           <div class="patient-info">
             <div>
@@ -202,6 +277,23 @@ const handleSubmit = async (e) => {
                 <td>${medicinesPrescribedText}</td>
               </tr>
             </table>
+
+            <div
+style="
+
+height:150px;
+
+border-left:1px solid black;
+
+border-right:1px solid black;
+
+border-bottom:1px solid black;
+
+">
+
+</div>
+
+
           </div>
 
           <div class="footer">

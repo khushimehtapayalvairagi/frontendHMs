@@ -2643,8 +2643,70 @@ if (
 };
 
 
-const handleDownloadPDF = async () => {
+// const handleDownloadPDF = async () => {
 
+//   if (!printRef.current) {
+//     toast.error("No report found");
+//     return;
+//   }
+
+//   const canvas = await html2canvas(printRef.current, {
+//     scale: 2,
+//     useCORS: true,
+//   });
+
+//   const imgData = canvas.toDataURL("image/png");
+
+//   const pdf = new jsPDF("p", "mm", "a4");
+
+//   const pdfWidth = pdf.internal.pageSize.getWidth();
+
+//   const pdfHeight =
+//     (canvas.height * pdfWidth) /
+//     canvas.width;
+
+//   let heightLeft = pdfHeight;
+
+//   let position = 0;
+
+//   pdf.addImage(
+//     imgData,
+//     "PNG",
+//     0,
+//     position,
+//     pdfWidth,
+//     pdfHeight
+//   );
+
+//   heightLeft -=
+//     pdf.internal.pageSize.getHeight();
+
+//   while (heightLeft > 0) {
+
+//     position =
+//       heightLeft - pdfHeight;
+
+//     pdf.addPage();
+
+//     pdf.addImage(
+//       imgData,
+//       "PNG",
+//       0,
+//       position,
+//       pdfWidth,
+//       pdfHeight
+//     );
+
+//     heightLeft -=
+//       pdf.internal.pageSize.getHeight();
+//   }
+
+//   pdf.save("OPD_Report.pdf");
+
+// };
+
+
+const handleDownloadPDF = async () => {
   if (!printRef.current) {
     toast.error("No report found");
     return;
@@ -2653,58 +2715,56 @@ const handleDownloadPDF = async () => {
   const canvas = await html2canvas(printRef.current, {
     scale: 2,
     useCORS: true,
+    backgroundColor: "#ffffff",
+    scrollY: -window.scrollY,
   });
 
   const imgData = canvas.toDataURL("image/png");
 
   const pdf = new jsPDF("p", "mm", "a4");
 
-  const pdfWidth = pdf.internal.pageSize.getWidth();
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  const pageHeight = pdf.internal.pageSize.getHeight();
 
-  const pdfHeight =
-    (canvas.height * pdfWidth) /
-    canvas.width;
+  // ✅ Leave margins
+  const margin = 8;
 
-  let heightLeft = pdfHeight;
+  const imgWidth = pageWidth - margin * 2;
+  const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-  let position = 0;
+  let heightLeft = imgHeight;
+  let position = margin;
 
   pdf.addImage(
     imgData,
     "PNG",
-    0,
+    margin,
     position,
-    pdfWidth,
-    pdfHeight
+    imgWidth,
+    imgHeight
   );
 
-  heightLeft -=
-    pdf.internal.pageSize.getHeight();
+  heightLeft -= pageHeight - margin * 2;
 
   while (heightLeft > 0) {
-
-    position =
-      heightLeft - pdfHeight;
+    position = heightLeft - imgHeight + margin;
 
     pdf.addPage();
 
     pdf.addImage(
       imgData,
       "PNG",
-      0,
+      margin,
       position,
-      pdfWidth,
-      pdfHeight
+      imgWidth,
+      imgHeight
     );
 
-    heightLeft -=
-      pdf.internal.pageSize.getHeight();
+    heightLeft -= pageHeight - margin * 2;
   }
 
   pdf.save("OPD_Report.pdf");
-
 };
-
 
 const handleDownloadExcel = () => {
 
@@ -3183,7 +3243,7 @@ const handleDownloadExcel = () => {
               <table className="opd-table">
                 <thead>
                   <tr>
-                    <th>Date</th>
+                    {/* <th>Date</th> */}
                     <th>Patient</th>
                     <th>Doctor</th>
                     <th>Department</th>
@@ -3209,11 +3269,11 @@ const handleDownloadExcel = () => {
                       
                       (c, i) => (
                       <tr key={i}>
-                        <td>
+                        {/* <td>
                           {new Date(
                             c.consultationDateTime
                           ).toLocaleString()}
-                        </td>
+                        </td> */}
 
                         <td>
                           {c.patientId?.fullName ||
@@ -3420,7 +3480,7 @@ const handleDownloadExcel = () => {
 
         {/* NEW OLD */}
 
-        {(reportType === 'newold' ||
+        {/* {(reportType === 'newold' ||
           reportType === 'all') &&
           hasFetched &&
           newVsOldData && (
@@ -3475,7 +3535,123 @@ const handleDownloadExcel = () => {
                 </tbody>
               </table>
             </>
+          )} */}
+
+
+          {(reportType === "newold" || reportType === "all") &&
+  hasFetched &&
+  newVsOldData && (
+    <>
+      <h3>New Vs Old Patients</h3>
+
+      <table className="opd-table">
+        <tbody>
+          <tr>
+            <th>Total Consultations</th>
+            <td>{newVsOldData.totalConsultations}</td>
+          </tr>
+
+          <tr>
+            <th>Unique Patients</th>
+            <td>{newVsOldData.uniquePatients}</td>
+          </tr>
+
+          <tr>
+            <th>New Patients</th>
+            <td>{newVsOldData.newPatients}</td>
+          </tr>
+
+          <tr>
+            <th>Old Patients</th>
+            <td>{newVsOldData.oldPatients}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      {/* New Patients List */}
+
+      <h4 style={{ marginTop: "20px" }}>
+        New Patients List
+      </h4>
+
+      <table className="opd-table">
+        <thead>
+          <tr>
+            <th>Sr No.</th>
+            <th>Patient Name</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {newVsOldData.newPatientList &&
+          newVsOldData.newPatientList.length > 0 ? (
+            newVsOldData.newPatientList.map(
+              (patient, index) => (
+                <tr key={index}>
+                  <td>{index + 1}</td>
+                  <td>{patient.patientName}</td>
+                  <td>
+                    {new Date(
+                      patient.date
+                    ).toLocaleDateString()}
+                  </td>
+                </tr>
+              )
+            )
+          ) : (
+            <tr>
+              <td colSpan="3">
+                No New Patients Found
+              </td>
+            </tr>
           )}
+        </tbody>
+      </table>
+
+      {/* Old Patients List */}
+
+      <h4 style={{ marginTop: "20px" }}>
+        Old Patients List
+      </h4>
+
+      <table className="opd-table">
+        <thead>
+          <tr>
+            <th>Sr No.</th>
+            <th>Patient Name</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {newVsOldData.oldPatientList &&
+          newVsOldData.oldPatientList.length > 0 ? (
+            newVsOldData.oldPatientList.map(
+              (patient, index) => (
+                <tr key={index}>
+                  <td>{index + 1}</td>
+                  <td>{patient.patientName}</td>
+                  <td>
+                    {new Date(
+                      patient.date
+                    ).toLocaleDateString()}
+                  </td>
+                </tr>
+              )
+            )
+          ) : (
+            <tr>
+              <td colSpan="3">
+                No Old Patients Found
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </>
+)}
+
 
         {/* SONOGRAPHY */}
 

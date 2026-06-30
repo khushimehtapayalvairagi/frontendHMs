@@ -515,6 +515,67 @@ const handlePrint = () => {
 };
 
 
+// const handleDownloadPDF = async () => {
+//   if (!printRef.current) {
+//     toast.error("No report found");
+//     return;
+//   }
+
+//   const input = printRef.current;
+
+//   const canvas = await html2canvas(input, {
+//     scale: 2,
+//     useCORS: true,
+//   });
+
+//   const imgData = canvas.toDataURL("image/png");
+
+//   const pdf = new jsPDF("p", "mm", "a4");
+
+//   const pageWidth = pdf.internal.pageSize.getWidth();
+
+//   const pageHeight = pdf.internal.pageSize.getHeight();
+
+//   const imgWidth = pageWidth;
+
+//   const imgHeight =
+//     (canvas.height * imgWidth) / canvas.width;
+
+//   let heightLeft = imgHeight;
+
+//   let position = 0;
+
+//   pdf.addImage(
+//     imgData,
+//     "PNG",
+//     0,
+//     position,
+//     imgWidth,
+//     imgHeight
+//   );
+
+//   heightLeft -= pageHeight;
+
+//   while (heightLeft > 0) {
+//     position = heightLeft - imgHeight;
+
+//     pdf.addPage();
+
+//     pdf.addImage(
+//       imgData,
+//       "PNG",
+//       0,
+//       position,
+//       imgWidth,
+//       imgHeight
+//     );
+
+//     heightLeft -= pageHeight;
+//   }
+
+//   pdf.save("IPD_Report.pdf");
+// };
+
 const handleDownloadPDF = async () => {
   if (!printRef.current) {
     toast.error("No report found");
@@ -526,6 +587,8 @@ const handleDownloadPDF = async () => {
   const canvas = await html2canvas(input, {
     scale: 2,
     useCORS: true,
+    backgroundColor: "#ffffff",
+    scrollY: -window.scrollY,
   });
 
   const imgData = canvas.toDataURL("image/png");
@@ -533,49 +596,49 @@ const handleDownloadPDF = async () => {
   const pdf = new jsPDF("p", "mm", "a4");
 
   const pageWidth = pdf.internal.pageSize.getWidth();
-
   const pageHeight = pdf.internal.pageSize.getHeight();
 
-  const imgWidth = pageWidth;
+  // ✅ Margin
+  const margin = 10;
 
-  const imgHeight =
-    (canvas.height * imgWidth) / canvas.width;
+  const imgWidth = pageWidth - margin * 2;
+  const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
   let heightLeft = imgHeight;
+  let position = margin;
 
-  let position = 0;
-
+  // First page
   pdf.addImage(
     imgData,
     "PNG",
-    0,
+    margin,
     position,
     imgWidth,
     imgHeight
   );
 
-  heightLeft -= pageHeight;
+  heightLeft -= (pageHeight - margin * 2);
 
+  // Extra pages
   while (heightLeft > 0) {
-    position = heightLeft - imgHeight;
+    position = heightLeft - imgHeight + margin;
 
     pdf.addPage();
 
     pdf.addImage(
       imgData,
       "PNG",
-      0,
+      margin,
       position,
       imgWidth,
       imgHeight
     );
 
-    heightLeft -= pageHeight;
+    heightLeft -= (pageHeight - margin * 2);
   }
 
   pdf.save("IPD_Report.pdf");
 };
-
 
 const handleDownloadExcel = () => {
 
