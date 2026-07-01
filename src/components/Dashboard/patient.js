@@ -459,7 +459,7 @@ const handlePrint = () => {
 
         {/* HEADER */}
 
-  <div
+  {/* <div
   style={{
     textAlign: "center",
     borderBottom: "2px solid black",
@@ -487,6 +487,85 @@ const handlePrint = () => {
   <h2 style={{ marginTop: "10px" }}>
     Patient Registration Receipt
   </h2>
+
+</div> */}
+
+<div
+  style={{
+    display: "flex",
+    alignItems: "center",
+    borderBottom: "2px solid black",
+    paddingBottom: "10px",
+    marginBottom: "20px"
+  }}
+>
+
+  {/* Logo */}
+  <div
+    style={{
+      width: "50px",
+      textAlign: "left"
+    }}
+  >
+    <img
+      src="/hospital-print-header.png"
+      alt="Hospital Logo"
+      style={{
+        width: "90px",
+        height: "90px",
+        objectFit: "contain"
+      }}
+    />
+  </div>
+
+  {/* Hospital Details */}
+  <div
+    style={{
+      flex: 1,
+      textAlign: "center"
+    }}
+  >
+    <h1
+      style={{
+        margin: 0,
+        fontSize: "28px"
+      }}
+    >
+      Dr. M.I. Jamkhanawala Tibbia Medical College
+    </h1>
+
+    <h3
+      style={{
+        margin: "4px 0"
+      }}
+    >
+      Haji Abdul Razzak Kalsekar Tibbia Hospital
+    </h3>
+
+    <p
+      style={{
+        margin: "2px 0"
+      }}
+    >
+      Anjuman-I-Islam Complex, Versova, Mumbai
+    </p>
+
+    <p
+      style={{
+        margin: "2px 0"
+      }}
+    >
+      Contact : +91 9876543210
+    </p>
+
+    <h2
+      style={{
+        marginTop: "10px"
+      }}
+    >
+      Patient Registration Receipt
+    </h2>
+  </div>
 
 </div>
 
@@ -560,7 +639,7 @@ const handlePrint = () => {
             marginBottom: "20px"
           }}
         >
-          <tbody>
+          {/* <tbody>
 
             <tr>
               <td><b>Visit Type</b></td>
@@ -590,7 +669,38 @@ const handlePrint = () => {
               </td>
             </tr>
 
-          </tbody>
+          </tbody> */}
+
+          <tbody>
+
+  <tr>
+    <td><b>Visit Type</b></td>
+    <td>{submittedData.visit.visitType}</td>
+
+    <td><b>Doctor Name</b></td>
+    <td>{submittedData.doctorName}</td>
+  </tr>
+
+  <tr>
+    <td><b>Department</b></td>
+    <td>{submittedData.specialty}</td>
+
+    <td><b>Payment Amount</b></td>
+    <td>₹ {submittedData.visit.payment?.amount || 0}</td>
+  </tr>
+
+  <tr>
+    <td><b>Payment Status</b></td>
+    <td>
+      {submittedData.visit.payment?.isPaid ? "Paid" : "Pending"}
+    </td>
+
+    {/* <td><b>Visit Date</b></td>
+    <td>{new Date().toLocaleString()}</td> */}
+  </tr>
+
+
+</tbody>
         </table>
 
         {/* FOOTER */}

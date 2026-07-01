@@ -2499,12 +2499,30 @@ if (
             width:100%;
           }
 
-          .header{
-            text-align:center;
-            border-bottom:3px solid #000;
-            padding-bottom:10px;
-            margin-bottom:15px;
-          }
+      .header{
+    display:flex;
+    align-items:center;
+    border-bottom:3px solid #000;
+    padding-bottom:10px;
+    margin-bottom:15px;
+}
+
+.logo{
+    width:90px;
+    flex-shrink:0;
+}
+
+.logo img{
+    width:100px;
+    height:100px;
+    object-fit:contain;
+    display:block;
+}
+
+.header-content{
+    flex:1;
+    text-align:center;
+}
 
           .hospital-title{
             font-size:22px;
@@ -2576,24 +2594,38 @@ if (
 
         <div class="report-container">
 
-          <div class="header">
+      <div class="header">
 
-            <div class="hospital-title">
-              Dr. M.I. Jamkhanawala Tibbia Medical College
-            </div>
+    <div class="logo">
 
-            <div class="hospital-sub">
-              Haji Abdul Razzak Kalsekar Tibbia Hospital
-            </div>
+        <img
+            src="${window.location.origin}/hospital-print-header.png"
+            alt="Hospital Logo"
+        />
 
-            <div class="hospital-sub">
-              Anjuman-I-Islam Complex, Versova, Mumbai
-            </div>
+    </div>
 
-            <div class="report-title">
-              OPD REPORT
-            </div>
-          </div>
+    <div class="header-content">
+
+        <div class="hospital-title">
+            Dr. M.I. Jamkhanawala Tibbia Medical College
+        </div>
+
+        <div class="hospital-sub">
+            Haji Abdul Razzak Kalsekar Tibbia Hospital
+        </div>
+
+        <div class="hospital-sub">
+            Anjuman-I-Islam Complex, Versova, Mumbai
+        </div>
+
+        <div class="report-title">
+            OPD REPORT
+        </div>
+
+    </div>
+
+</div>
 
           <div class="date-row">
             <div>
@@ -2604,10 +2636,7 @@ if (
               <b>To:</b> ${endDate}
             </div>
 
-            <div>
-              <b>Printed:</b>
-              ${new Date().toLocaleString()}
-            </div>
+           
           </div>
 
           ${printContents}
@@ -2641,6 +2670,22 @@ if (
 
   win.document.close();
 };
+
+
+        // <div class="date-row">
+        //     <div>
+        //       <b>From:</b> ${startDate}
+        //     </div>
+
+        //     <div>
+        //       <b>To:</b> ${endDate}
+        //     </div>
+
+        //     // <div>
+        //     //   <b>Printed:</b>
+        //     //   ${new Date().toLocaleString()}
+        //     // </div>
+        //   </div>
 
 
 // const handleDownloadPDF = async () => {
@@ -3294,9 +3339,9 @@ const handleDownloadExcel = () => {
                           {c.diagnosis || 'N/A'}
                         </td>
 
-                        <td>
+                        {/* <td>
                          ₹{c.visitPayment || 0}
-                        </td>
+                        </td> */}
 
 
                       </tr>
@@ -4150,3 +4195,6 @@ const handleDownloadExcel = () => {
 };
 
 export default OPDReportPage;
+
+
+

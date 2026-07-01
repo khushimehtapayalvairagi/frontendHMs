@@ -68,26 +68,121 @@ const isMobile = useMediaQuery('(max-width:600px)');
     }
     setOpenDialog(true);
   };
+
+
+
   const handlePrint = () => {
   if (!printRef.current) return;
   const printContents = printRef.current.innerHTML;
+  const logoUrl = `${window.location.origin}/hospital-print-header.png`;
   const newWindow = window.open('', '', 'width=900,height=700');
   newWindow.document.write(`
     <html>
       <head>
         <title>Bill & Payment History</title>
         <style>
-          body { font-family: Arial, sans-serif; padding: 20px; }
-          table { width: 100%; border-collapse: collapse; margin-bottom: 1rem; }
-          th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-          th { background-color: #f5f5f5; }
-          h2, h3, h4 { margin-top: 1rem; }
-          .payment-card { border:1px solid #ccc; padding:8px; margin-bottom:8px; border-radius:6px; }
+       body{
+    font-family: Arial, sans-serif;
+    padding:20px;
+    color:#000;
+}
+
+.header{
+    display:flex;
+    align-items:center;
+    border-bottom:3px solid #000;
+    padding-bottom:12px;
+    margin-bottom:20px;
+}
+
+.logo{
+    width:90px;
+    flex-shrink:0;
+}
+
+.logo img{
+    width:75px;
+    height:75px;
+    object-fit:contain;
+    display:block;
+}
+
+.header-content{
+    flex:1;
+    text-align:center;
+    margin-right:90px;
+}
+
+.hospital-title{
+    font-size:24px;
+    font-weight:bold;
+}
+
+.hospital-sub{
+    font-size:13px;
+    margin-top:3px;
+}
+
+.report-title{
+    margin-top:10px;
+    font-size:20px;
+    font-weight:bold;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:10px;
+}
+
+th,td{
+    border:1px solid #ccc;
+    padding:8px;
+    text-align:left;
+}
+
+th{
+    background:#f5f5f5;
+}
+
+.payment-card{
+    border:1px solid #ccc;
+    padding:8px;
+    margin-bottom:8px;
+    border-radius:6px;
+}
         </style>
       </head>
-      <body>
+           <body>
+
+        <div class="header">
+
+        
+
+          <div class="header-content">
+            <div class="hospital-title">
+              Dr. M.I. Jamkhanawala Tibbia Medical College
+            </div>
+
+            <div class="hospital-sub">
+              Haji Abdul Razzak Kalsekar Tibbia Hospital
+            </div>
+
+            <div class="hospital-sub">
+              Anjuman-I-Islam Complex, Versova, Mumbai
+            </div>
+
+            <div class="report-title">
+              BILL & PAYMENT HISTORY
+            </div>
+          </div>
+
+        </div>
+
         ${printContents}
+
       </body>
+
     </html>
   `);
   newWindow.document.close();

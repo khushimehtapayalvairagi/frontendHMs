@@ -801,6 +801,47 @@ const selectedVisit = visits.find(
             color:#000;
           }
 
+          .header{
+    display:flex;
+    align-items:center;
+    border-bottom:3px solid #000;
+    padding-bottom:10px;
+    margin-bottom:20px;
+}
+
+.logo{
+    width:90px;
+    flex-shrink:0;
+}
+
+.logo img{
+    width:100px;
+    height:100px;
+    object-fit:contain;
+    display:block;
+}
+
+.header-content{
+    flex:1;
+    text-align:center;
+}
+
+.hospital-title{
+    font-size:24px;
+    font-weight:bold;
+}
+
+.hospital-sub{
+    font-size:14px;
+    margin-top:4px;
+}
+
+.report-title{
+    font-size:20px;
+    font-weight:bold;
+    margin-top:10px;
+}
+
           h1,h2,h3,h4{
             margin-bottom:10px;
           }
@@ -857,19 +898,36 @@ const selectedVisit = visits.find(
 
       <body>
 
-        <div style="text-align:center;margin-bottom:20px;">
-          <h1>🏥 Hospital Bill & Payment Receipt</h1>
+ <div class="header">
 
-          <h2>
+    <div class="logo">
+        <img
+            src="${window.location.origin}/hospital-print-header.png"
+            alt="Hospital Logo"
+        />
+    </div>
+
+    <div class="header-content">
+
+        <div class="hospital-title">
             Dr. M.I. Jamkhanawala Tibbia Unani Medical College
-          </h2>
-
-          <p>
-            Haji Abdul Razzak Kalsekar Tibbia Hospital
-          </p>
-
-          
         </div>
+
+        <div class="hospital-sub">
+            Haji Abdul Razzak Kalsekar Tibbia Hospital
+        </div>
+
+        <div class="hospital-sub">
+            Anjuman-I-Islam Complex, Versova, Mumbai
+        </div>
+
+        <div class="report-title">
+            Hospital Bill & Payment Receipt
+        </div>
+
+    </div>
+
+</div>
 
         ${printContents}
 

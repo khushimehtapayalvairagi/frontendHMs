@@ -287,6 +287,21 @@ const IPDReportPage = () => {
  
 
 
+    // <div>
+    //           <b>Department:</b>
+    //           ${
+    //             departments.find(
+    //               (d) => d._id === selectedDepartment
+    //             )?.name || "All"
+    //           }
+    //         </div>
+
+    //         <div>
+    //           <b>Printed:</b>
+    //           ${new Date().toLocaleString()}
+    //         </div>
+
+
 
 
 const handlePrint = () => {
@@ -336,12 +351,30 @@ const handlePrint = () => {
             width:100%;
           }
 
-          .header{
-            text-align:center;
-            border-bottom:3px solid #000;
-            padding-bottom:10px;
-            margin-bottom:20px;
-          }
+        .header{
+    display:flex;
+    align-items:center;
+    border-bottom:3px solid #000;
+    padding-bottom:10px;
+    margin-bottom:20px;
+}
+
+.logo{
+    width:90px;
+    flex-shrink:0;
+}
+
+.logo img{
+    width:100px;
+    height:100px;
+    object-fit:contain;
+    display:block;
+}
+
+.header-content{
+    flex:1;
+    text-align:center;
+}
 
           .hospital-title{
             font-size:24px;
@@ -435,25 +468,36 @@ const handlePrint = () => {
 
         <div class="report-container">
 
-          <div class="header">
+      <div class="header">
 
-            <div class="hospital-title">
-              Dr. M.I. Jamkhanawala Tibbia Medical College
-            </div>
+    <div class="logo">
+        <img
+            src="/hospital-print-header.png"
+            alt="Hospital Logo"
+        />
+    </div>
 
-            <div class="hospital-sub">
-              Haji Abdul Razzak Kalsekar Tibbia Hospital
-            </div>
+    <div class="header-content">
 
-            <div class="hospital-sub">
-              Anjuman-I-Islam Complex, Versova, Mumbai
-            </div>
+        <div class="hospital-title">
+            Dr. M.I. Jamkhanawala Tibbia Medical College
+        </div>
 
-            <div class="report-title">
-               IPD REPORT
-            </div>
+        <div class="hospital-sub">
+            Haji Abdul Razzak Kalsekar Tibbia Hospital
+        </div>
 
-          </div>
+        <div class="hospital-sub">
+            Anjuman-I-Islam Complex, Versova, Mumbai
+        </div>
+
+        <div class="report-title">
+            IPD REPORT
+        </div>
+
+    </div>
+
+</div>
 
           <div class="date-row">
 
@@ -474,10 +518,7 @@ const handlePrint = () => {
               }
             </div>
 
-            <div>
-              <b>Printed:</b>
-              ${new Date().toLocaleString()}
-            </div>
+          
 
           </div>
 
