@@ -695,6 +695,8 @@ const handlePrint = () => {
       {submittedData.visit.payment?.isPaid ? "Paid" : "Pending"}
     </td>
 
+<td><b>Visit Date</b></td>
+<td>{new Date().toLocaleDateString("en-GB")}</td>
     {/* <td><b>Visit Date</b></td>
     <td>{new Date().toLocaleString()}</td> */}
   </tr>

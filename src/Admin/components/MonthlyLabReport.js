@@ -166,8 +166,12 @@ th,td{
 }
 
 th{
-  background:#f0f0f0 !important;
+  background:#1976d2 !important;
+  color:#fff !important;
+  border:1px solid #000;
+  font-weight:bold;
   -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
 }
 
             .footer{
@@ -668,7 +672,7 @@ const handleDownloadExcel = () => {
   ) : (
     <tr>
       <td
-        colSpan="9"
+        colSpan="10"
         style={{
           textAlign: "center",
           padding: "20px",

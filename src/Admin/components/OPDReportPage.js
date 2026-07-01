@@ -3389,9 +3389,14 @@ const handleDownloadExcel = () => {
                       ].map((c, i) => (
                         <tr key={i}>
                           <td>
-                            {new Date(
-                              c.consultationDateTime
-                            ).toLocaleString()}
+                            {
+                            
+                            new Date(c.consultationDateTime).toLocaleDateString()
+                            // new Date(
+                            //   c.consultationDateTime
+                            // ).toLocaleString()
+                            
+                            }
                           </td>
 
                           <td>
@@ -3480,9 +3485,13 @@ const handleDownloadExcel = () => {
                         (c, i) => (
                           <tr key={i}>
                             <td>
-                              {new Date(
-                                c.consultationDateTime
-                              ).toLocaleString()}
+                              {
+                              new Date(c.consultationDateTime).toLocaleDateString()
+                              // new Date(
+                              //   c.consultationDateTime
+                              // ).toLocaleString()
+                              
+                              }
                             </td>
 
                             <td>
@@ -3735,9 +3744,14 @@ const handleDownloadExcel = () => {
                       <tr key={i}>
 
                         <td>
-                          {new Date(
-                            s.createdAt
-                          ).toLocaleString()}
+                          {
+                          new Date(s.createdAt).toLocaleDateString()
+                          
+                          // new Date(
+                          //   s.createdAt
+                          // ).toLocaleString()
+                          
+                          }
                         </td>
 
                         <td>
@@ -4144,9 +4158,14 @@ const handleDownloadExcel = () => {
             (p, i) => (
               <tr key={i}>
                 <td>
-                  {new Date(
-                    p.payment_date
-                  ).toLocaleString()}
+                  {
+                  new Date(p.payment_date).toLocaleDateString()
+                  
+                  // new Date(
+                  //   p.payment_date
+                  // ).toLocaleString()
+                  
+                  }
                 </td>
                                  <td>
   {p.bill_id_ref?.billId ||
